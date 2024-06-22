@@ -249,12 +249,14 @@ if ($mform->is_cancelled()) {
             );
             if ($results['status'] != 200) {
                 \core\notification::error('Error parsing file: ' . $results['message']);
+                $file->delete();
             } else {
                 $nodes = $results['nodes'];
                 // Send nodes to indexing server
                 $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file_name, $content_data['file_type'], false);
                 if ($upload->status != 200) {
                     \core\notification::error('Error uploading file to indexing server: ' . $upload->message);
+                    $file->delete();
                 } else {
                     // Save converted file to moodle
                     if ($file_was_converted) {
