@@ -61,35 +61,14 @@ function xmldb_local_cria_install()
     // Insert record;
     $DB->insert_record('local_cria_type', $record);
 
-    // Create a record for meeting notes bot types
+    // Create a record for factual bot types
     $record = new stdClass();
-    $record->name = 'Transcript to Meeting minutes';
-    $record->description = 'Meeting Notes bots are designed to convert transcription of a meeting into a set of meeting notes with action items.';
+    $record->name = 'GenAI';
+    $record->description = 'Gen AI does not use a knowledge base to provide responses. It uses a generative model to generate responses.'
+     . 'It does not provide a system message either. It is designed to provide responses based on the user input.';
     $record->use_bot_server = 0;
-    $record->system_message = 'You are a factual bot that creates meeting notes from the transcript provided. ';
-    $record->system_message .= 'You do not add content that is not available in the transcript. ';
-    $record->system_message .= 'Your response must be in the same language as the transcript provided. ';
-    $record->timecreated = time();
-    $record->timemodified = time();
-    $record->usermodified = $USER->id;
-    // Insert record;
-    $DB->insert_record('local_cria_type', $record);
-
-
-    // Create a record for meeting notes bot types
-    $record = new stdClass();
-    $record->name = 'Legal Documents';
-    $record->description = 'This bot creates legal documents based on information available in Ontario';
-    $record->use_bot_server = 0;
-    $record->system_message = 'You are a bot that creates legal documents specifically for universities in Ontario, ';
-    $record->system_message .= ' Canada. You only provide factual information and you never provide false or untrue ';
-    $record->system_message .= ' information. You can use factual information from renowned legal websites in Ontario, ';
-    $record->system_message .= 'Canada or any Canadian-related articles that serve Ontario, Canada. You do not provide ';
-    $record->system_message .= 'assistance with anything but legal matters. You do not answer questions about courses, ';
-    $record->system_message .= 'events, financials, mental health or any other topic that does not meet the legal ';
-    $record->system_message .= 'documentation requirements.  If the question asked is not related to legal matters, ';
-    $record->system_message .= 'please reply, "This is not a legal matter. I cannot help you with this request." ';
-    $record->timecreated = time();
+    $record->system_message = '';
+     $record->timecreated = time();
     $record->timemodified = time();
     $record->usermodified = $USER->id;
     // Insert record;
