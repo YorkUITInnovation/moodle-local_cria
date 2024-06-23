@@ -1,5 +1,6 @@
 
 .idea/
+tmp_files/
 
 .DS_Store
 import_questions_ibm.xlsx
