@@ -337,6 +337,8 @@ $string['criadex_api_key_help'] = 'Enter the API key for the CriaDex instance yo
     'Note: MUST BE A MASTER KEY<br> ';
 $string['criaparse_url'] = 'CriaParse URL';
 $string['criaparse_url_help'] = 'Enter the URL for the CriaParse instance you are connecting too.';
+$string['criascraper_url'] = 'CriaScraper URL';
+$string['criascraper_url_help'] = 'Enter the URL for the CriaScraper instance you are connecting too.';
 // MinutesMaster
 $string['convert'] = 'Convert';
 $string['convertapi_api_key'] = 'ConvertAPI API Key';

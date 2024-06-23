@@ -26,6 +26,7 @@ use local_cria\bot;
 use local_cria\intent;
 use local_cria\criaparse;
 use local_cria\file;
+use local_cria\scraper;
 
 class files
 {
@@ -251,43 +252,8 @@ class files
 
         foreach ($urls as $url) {
             // Get the content of the url using curl
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3');
-
-            $content = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                echo 'Curl error: ' . curl_error($ch);
-            }
-
-            curl_close($ch);
-
-            // Clean up HTML content
-            $content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $content);
-            $content = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', "", $content);
-            $content = preg_replace('/<link\b[^>]*>(.*?)<\/link>/is', "", $content);
-            $content = preg_replace('/<meta\b[^>]*>(.*?)<\/meta>/is', "", $content);
-            $content = preg_replace('/<noscript\b[^>]*>(.*?)<\/noscript>/is', "", $content);
-            $content = preg_replace('/<iframe\b[^>]*>(.*?)<\/iframe>/is', "", $content);
-            $content = preg_replace('/<img\b[^>]*>(.*?)<\/img>/is', "", $content);
-            $content = preg_replace('/<svg\b[^>]*>(.*?)<\/svg>/is', "", $content);
-            $content = preg_replace('/<form\b[^>]*>(.*?)<\/form>/is', "", $content);
-            $content = preg_replace('/<input\b[^>]*>(.*?)<\/input>/is', "", $content);
-            $content = preg_replace('/<button\b[^>]*>(.*?)<\/button>/is', "", $content);
-            $content = preg_replace('/<select\b[^>]*>(.*?)<\/select>/is', "", $content);
-            $content = preg_replace('/<textarea\b[^>]*>(.*?)<\/textarea>/is', "", $content);
-            $content = preg_replace('/<audio\b[^>]*>(.*?)<\/audio>/is', "", $content);
-            $content = preg_replace('/<video\b[^>]*>(.*?)<\/video>/is', "", $content);
-            $content = preg_replace('/<embed\b[^>]*>(.*?)<\/embed>/is', "", $content);
-            $content = preg_replace('/<object\b[^>]*>(.*?)<\/object>/is', "", $content);
-            $content = preg_replace('/<applet\b[^>]*>(.*?)<\/applet>/is', "", $content);
-            $content = preg_replace('/<frame\b[^>]*>(.*?)<\/frame>/is', "", $content);
-            $content = preg_replace('/<frameset\b[^>]*>(.*?)<\/frameset>/is', "", $content);
-            $content = preg_replace('/<link\b[^>]*>/is', "", $content);
+            $results = scraper::execute($url);
+            $content = $results->content;
 
             // Save into an html file with filename based on the url while removing thhp:// or https://
             $file_name = str_replace(['http://', 'https://'], '', $url);
@@ -304,41 +270,12 @@ class files
             $file_name = $file_name . '.html';
             file_put_contents($path . $file_name, $content);
 
-            // if convertapi_api_key is set convert file to docx
-            if ($config->convertapi_api_key) {
-                $original_file_path = $path . $file_name;
-                $FILE->convert_file_to_docx($path, $file_name, 'html');
-                $file_name = str_replace('.html', '.docx', $file_name);
-                $file_type = 'docx';
-                $file_was_converted = true;
-            }
-
-            // Save converted file to moodle
-            if ($file_was_converted) {
-                $fileinfo = [
-                    'contextid' => $context->id,   // ID of the context.
-                    'component' => 'local_cria', // Your component name.
-                    'filearea' => 'content',       // Usually = table name.
-                    'itemid' => $this->intent_id,              // Usually = ID of row in table.
-                    'filepath' => '/',            // Any path beginning and ending in /.
-                    'filename' => $file_name,   // Any filename.
-                ];
-                // Get file first
-                $files = $fs->get_area_files($context->id, 'local_cria', 'content', $this->intent_id);
-                foreach ($files as $area_file) {
-                    // if file with $file_name already exists, delete it
-                    if ($area_file->get_filename() == $file_name) {
-                        $area_file->delete();
-                    }
-                }
-                // Create file from pathname
-                $fs->create_file_from_pathname($fileinfo, $path . $file_name);
-            }
             // Parse the file
             $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
                 $file_type,
                 $bot_parsing_strategy
             );
+
             $results = $PARSER->execute(
                 $BOT->get_model_id(),
                 $BOT->get_embedding_id(),
@@ -364,13 +301,36 @@ class files
                 if ($record) {
                     $update_nodes = true;
                 }
+
                 // Send nodes to indexing server
                 $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file_name, $file_type, $update_nodes);
+
                 if ($upload->status != 200) {
                     $errors .= 'Error uploading file to indexing server: ' . $upload->message . '<br>';
                 } else {
                     $content_data['name'] = $file_name;
 
+                    // Save  file to moodle
+                    $fileinfo = [
+                        'contextid' => $context->id,   // ID of the context.
+                        'component' => 'local_cria', // Your component name.
+                        'filearea' => 'content',       // Usually = table name.
+                        'itemid' => $this->intent_id,              // Usually = ID of row in table.
+                        'filepath' => '/',            // Any path beginning and ending in /.
+                        'filename' => $file_name,   // Any filename.
+                    ];
+                    // Get file first
+                    $files = $fs->get_area_files($context->id, 'local_cria', 'content', $this->intent_id);
+                    foreach ($files as $area_file) {
+                        // if file with $file_name already exists, delete it
+                        if ($area_file->get_filename() == $file_name) {
+                            $area_file->delete();
+                        }
+                    }
+                    // Create file from pathname
+                    $fs->create_file_from_pathname($fileinfo, $path . $file_name);
+
+                    // insert or update fiel info in DB
                     if (!$record) {
                         $record = new \stdClass();
                         // Insert the content into the database
@@ -387,8 +347,8 @@ class files
             }
             // Delete temp files
             unlink($path . $file_name);
-            unlink($original_file_path);
 
+            // Set status
             if (!empty($errors)) {
                 $status->status = 404;
                 $status->message = $errors;
@@ -397,7 +357,6 @@ class files
                 $status->message = 'URLs published successfully';
                 $status->id = $record->id;
                 $status->file = $file_name;
-
             }
         }
         return $status;

@@ -47,21 +47,21 @@ if ($hassiteconfig) {
         'local_cria/criabot_url',
         get_string('criabot_url', 'local_cria'),
         get_string('criabot_url_help', 'local_cria'),
-        '', PARAM_TEXT, 255
+        'http://criabot:25575', PARAM_TEXT, 255
     ));
 
     $settings->add( new admin_setting_configtext(
         'local_cria/criadex_url',
         get_string('criadex_url', 'local_cria'),
         get_string('criadex_url_help', 'local_cria'),
-        '', PARAM_TEXT, 255
+        'http://criadex:25574', PARAM_TEXT, 255
     ));
 
     $settings->add( new admin_setting_configtext(
         'local_cria/criaparse_url',
         get_string('criaparse_url', 'local_cria'),
         get_string('criaparse_url_help', 'local_cria'),
-        '', PARAM_TEXT, 255
+        'http://criaparse:25576', PARAM_TEXT, 255
     ));
 
     $settings->add( new admin_setting_configtext(
@@ -69,6 +69,13 @@ if ($hassiteconfig) {
         get_string('criaembed_url', 'local_cria'),
         get_string('criaembed_url_help', 'local_cria'),
         '', PARAM_TEXT, 255
+    ));
+
+    $settings->add( new admin_setting_configtext(
+        'local_cria/criascraper_url',
+        get_string('criascraper_url', 'local_cria'),
+        get_string('criascraper_url_help', 'local_cria'),
+        'http://criascraper:25580', PARAM_TEXT, 255
     ));
 
     $settings->add( new admin_setting_configpasswordunmask(
