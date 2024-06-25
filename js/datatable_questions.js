@@ -76,7 +76,7 @@ $(document).ready(function () {
     // $('.buttons-html5').addClass('mr-2');
     // $('.buttons-html5').removeClass('btn-secondary');
 
-    $('#cria-question-select-all').on('click', function () {
+    $('#cria-select-questions').on('click', function () {
         // if this element is checked, select all checkboxes .row-checkbox
         if ($(this).is(':checked')) {
             $('.cria-question-dt-select-box').prop('checked', true);

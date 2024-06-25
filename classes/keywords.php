@@ -73,6 +73,9 @@ class keywords
     public function get_keywords_for_criabot($keywords_json)
     {
         global $DB;
+        if (empty($keywords_json)) {
+            return [];
+        }
         // Get keywords and synonyms
         $keywords = [];
         $keywords_array = json_decode($keywords_json);
