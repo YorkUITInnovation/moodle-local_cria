@@ -68,6 +68,7 @@ function perform_request() {
         $('#cria-cost').html('$' + result.cost.toPrecision(6));
         $('#stacktrace').html('<pre>' + JSON.stringify(json, null, '\t') + '</pre>');
         $('#cria-file-name').html(result.file_name);
+        related_prompts();
     }).fail(function (e) {
         alert(e.message + ' Your prompt contains unsupported characters. ' +
             'Please try again.');
@@ -81,5 +82,15 @@ function page_unload() {
         e.returnValue = '';
         alert('Please wait for the process to complete.');
 
+    });
+}
+
+// Run a gpt request on .btn-related-prompts click
+function related_prompts() {
+    $('.btn-related-prompts').off();
+    $('.btn-related-prompts').on('click', function () {
+        var prompt = $(this).data('prompt');
+        $('#user-prompt').val(prompt);
+        perform_request();
     });
 }

@@ -163,6 +163,27 @@ class edit_question_form extends \moodleform
         );
         $keywords->setMultiple(true);
 
+        // Related questions
+        $mform->addElement(
+            'html',
+            '<h3>' . get_string('related_questions', 'local_cria') . '</h3>'
+        );
+        // Add a related question textarea element
+        $mform->addElement(
+            'textarea',
+            'related_questions',
+            get_string('related_questions', 'local_cria')
+        );
+        $mform->setType(
+            'related_questions',
+            PARAM_RAW
+        );
+        $mform->addHelpButton(
+            'related_questions',
+            'related_questions',
+            'local_cria'
+        );
+
         $mform->addElement(
             'html',
             '<h3>' . get_string('automated_tasks', 'local_cria') . '</h3>'

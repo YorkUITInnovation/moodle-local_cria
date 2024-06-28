@@ -508,8 +508,6 @@ class question extends crud
         $INTENT = new intent($this->intent_id);
         // Delete question from criabot
         $delete_on_bot_server = criabot::question_delete($INTENT->get_bot_name(), $this->document_name);
-        print_object('Delete status');
-        print_object($delete_on_bot_server);
         if ($delete_on_bot_server->status == 200) {
             // Delete example questions
             $DB->delete_records('local_cria_question_example', ['questionid' => $this->id]);

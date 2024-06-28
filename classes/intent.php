@@ -398,6 +398,19 @@ class intent extends crud
         // Get keywords and synonyms
         $KEYWORDS = new keywords();
         $keywords = $KEYWORDS->get_keywords_for_criabot($question->keywords);
+        // Get all related questions
+        $related_prompts =  [];
+        if (!empty($question->related_questions)) {
+            $related_questions = explode("\n", $question->related_questions);
+            foreach ($related_questions as $related_question) {
+                // Explode on pipe
+                $related_question = explode('|', $related_question);
+                $related_prompts[] = [
+                    'label' => $related_question[0],
+                    'prompt' => $related_question[1]
+                    ];
+            }
+        }
         // Get all question examples
         $question_examples = $DB->get_records(
             'local_cria_question_example',
@@ -418,6 +431,7 @@ class intent extends crud
                 'questions' => explode(',', $question_examples_string),
                 'answer' => strip_tags($question->answer),
                 'llm_reply' => $return_generated_answer,
+                'related_prompts' => $related_prompts,
             ),
             'file_metadata' => array(
                 'keywords' => $keywords,

@@ -21,5 +21,29 @@ function xmldb_local_cria_upgrade($oldversion)
 
     $dbman = $DB->get_manager();
 
+    if ($oldversion < 2024062700) {
+
+        // Define table local_cria_question_related to be dropped.
+        $table = new xmldb_table('local_cria_question_related');
+
+        // Conditionally launch drop table for local_cria_question_related.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Define field related_questions to be added to local_cria_question.
+        $table = new xmldb_table('local_cria_question');
+        $field = new xmldb_field('related_questions', XMLDB_TYPE_TEXT, null, null, null, null, null, 'keywords');
+
+        // Conditionally launch add field related_questions.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024062700, 'local', 'cria');
+    }
+
+
     return true;
 }

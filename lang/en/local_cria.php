@@ -227,6 +227,13 @@ $string['publish_questions_confirmation'] = 'Are you sure you want to publish th
 $string['question'] = 'Question';
 $string['questions'] = 'Questions';
 $string['question_for'] = 'Questions for';
+$string['related_questions'] = 'Related Questions';
+$string['related_questions_help'] = '<p>Related Questions are follow-up questions that are related to the main question. ' .
+    'These questions are used to help quide the requester to the correct answer. The field will only capture the first three questions</p>' .
+    '<p>Enter one question per line. Each question should be in the following format:</p>' .
+    '<b>Label</b> pipe (|) <b>Question (prompt)</b> <br><br>' .
+    'Example:<br>' .
+    'Capital of Canada!|What is the capital of Canada?';
 $string['requires_content_prompt'] = 'Requires content prompt';
 $string['requires_content_prompt_help'] = 'Select Yes if you want a text area to paste content that can be used with a user prompt';
 $string['requires_user_prompt'] = 'Requires user prompt';

@@ -237,7 +237,7 @@ class criabot
     public static function question_update($bot_name, $data) {
         // Get Config
         $config = get_config('local_cria');
-
+file_put_contents('/var/www/moodledata/temp/question_data.json', json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criabot_url,

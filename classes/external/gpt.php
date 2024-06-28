@@ -84,7 +84,7 @@ class local_cria_external_gpt extends external_api
      */
     public static function response($bot_id, $chat_id, $prompt, $content, $filters)
     {
-        global $CFG, $USER, $DB, $PAGE;
+        global $CFG, $USER, $DB, $PAGE, $OUTPUT;
         require_once($CFG->dirroot . '/local/cria/classes/Michelf/Markdown.inc.php');
         //Parameter validation
         $params = self::validate_parameters(self::response_parameters(), array(
@@ -177,9 +177,12 @@ class local_cria_external_gpt extends external_api
             $content = html_entity_decode($content);
             // Replace href and add traget blank
             $content = str_replace('href=', 'target="_blank" href=', $content);
+            // Get related prompts and add to the content
+            $related_prompts = $result->reply->related_prompts;
+            $related_prompts_html = $OUTPUT->render_from_template('local_cria/test_bot_related_prompts', ['related_prompts' => $related_prompts]);
             // Build message object
             $message = new \stdClass();
-            $message->message = $content;
+            $message->message = $content . '<div>' . $related_prompts_html . '</div>';
             $message->prompt_tokens = $token_usage->prompt_tokens;
             $message->completion_tokens = $token_usage->completion_tokens;
             $message->total_tokens = $token_usage->total_tokens;
