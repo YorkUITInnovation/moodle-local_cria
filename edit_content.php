@@ -241,9 +241,12 @@ if ($mform->is_cancelled()) {
                 $content_data['file_type'],
                 $bot_parsing_strategy
             );
+            // Get bot parameters to use proper model ids
+            $bot_parameters = json_decode($BOT->get_bot_parameters_json());
+
             $results = $PARSER->execute(
-                $BOT->get_model_id(),
-                $BOT->get_embedding_id(),
+                $bot_parameters->llm_model_id,
+                $bot_parameters->embedding_model_id,
                 $parsing_strategy,
                 $path . '/' . $converted_file_name
             );
