@@ -110,25 +110,119 @@ class local_cria_external_bot extends external_api
     {
         return new external_function_parameters(
             array(
-                'name' => new external_value(PARAM_TEXT, 'Bot name', false, ''),
-                'description' => new external_value(PARAM_TEXT, 'Bot description', false, ''),
-                'bot_type' => new external_value(PARAM_INT, 'Bot type', false, 0),
-                'model_id' => new external_value(PARAM_INT, 'Cria GPT model used', false, 0),
-                'embedding_id' => new external_value(PARAM_INT, 'Bot server', false, 0),
-                'bot_system_message' => new external_value(PARAM_TEXT, 'Bot system message', false, ''),
-                'requires_content_prompt' => new external_value(PARAM_INT, 'Requires content prompt', false, 0),
-                'requires_user_prompt' => new external_value(PARAM_INT, 'Requires user prompt', false, 0),
-                'user_prompt' => new external_value(PARAM_TEXT, 'User prompt', false, ''),
-                'publish' => new external_value(PARAM_INT, 'Publish', false, 0),
-                'welcome_message' => new external_value(PARAM_TEXT, 'Welcome message for embedded bot', false, ''),
-                'theme_color' => new external_value(PARAM_TEXT, 'Hex code for embedded bot color. Default Red', false, '#e31837'),
-                'max_tokens' => new external_value(PARAM_INT, 'Max tokens', false, 1024),
-                'temperature' => new external_value(PARAM_FLOAT, 'Temperature', false, 0.1),
-                'top_p' => new external_value(PARAM_FLOAT, 'Top p', false, 0.1),
-                'top_k' => new external_value(PARAM_INT, 'Top k', false, 1),
+                'name' => new external_value(
+                    PARAM_TEXT,
+                    'Bot name',
+                    false,
+                    ''
+                ),
+                'description' => new external_value(
+                    PARAM_TEXT,
+                    'Bot description',
+                    false,
+                    ''
+                ),
+                'bot_type' => new external_value(
+                    PARAM_INT,
+                    'Bot type',
+                    false,
+                    0
+                ),
+                'bot_system_message' => new external_value(
+                    PARAM_INT,
+                    'Bot type',
+                    false,
+                    0
+                ),
+                'model_id' => new external_value(
+                    PARAM_INT,
+                    'Cria GPT model used',
+                    false,
+                    0
+                ),
+                'embedding_id' => new external_value(
+                    PARAM_INT,
+                    'Bot server',
+                    false,
+                    0
+                ),
+                'rerank_model_id' => new external_value(
+                    PARAM_INT,
+                    'Rerank model ID',
+                    false,
+                    0
+                ),
+                'bot_system_message' => new external_value(
+                    PARAM_TEXT,
+                    'Bot system message',
+                    false,
+                    ''
+                ),
+                'requires_content_prompt' => new external_value(
+                    PARAM_INT,
+                    'Requires content prompt',
+                    false,
+                    0
+                ),
+                'requires_user_prompt' => new external_value(
+                    PARAM_INT,
+                    'Requires user prompt',
+                    false,
+                    0
+                ),
+                'user_prompt' => new external_value(
+                    PARAM_TEXT,
+                    'User prompt',
+                    false,
+                    ''
+                ),
+                'publish' => new external_value(
+                    PARAM_INT,
+                    'Publish',
+                    false,
+                    0
+                ),
+                'welcome_message' => new external_value(
+                    PARAM_TEXT,
+                    'Welcome message for embedded bot',
+                    false,
+                    ''
+                ),
+                'theme_color' => new external_value(
+                    PARAM_TEXT,
+                    'Hex code for embedded bot color. Default Red',
+                    false,
+                    '#e31837'
+                ),
+                'max_tokens' => new external_value(
+                    PARAM_INT,
+                    'Max tokens',
+                    false,
+                    10000
+                ),
+                'temperature' => new external_value(
+                    PARAM_FLOAT,
+                    'Temperature',
+                    false,
+                    0.1
+                ),
+                'top_p' => new external_value(PARAM_FLOAT,
+                    'Top p',
+                    false,
+                    0.1
+                ),
+                'top_k' => new external_value(
+                    PARAM_INT,
+                    'Top k',
+                    false, 40
+                ),
                 'min_relevance' => new external_value(PARAM_FLOAT, 'Min relevance', false, 0.9),
                 'max_context' => new external_value(PARAM_INT, 'Max context', false, 0),
-                'no_context_message' => new external_value(PARAM_TEXT, 'No context message', false, 'Nothing found')
+                'no_context_message' => new external_value(PARAM_TEXT, 'No context message', false, 'Nothing found'),
+                'no_context_use_message' => new external_value(PARAM_INT, 'Should we use the no context message', false, 1),
+                'no_context_llm_guess' => new external_value(PARAM_INT, 'Should we use the LLM to generate an answer if no context found', false, 0),
+                'available_child' => new external_value(PARAM_INT, 'Should this bot be available to other bots', false, 0),
+                'parse_strategy' => new external_value(PARAM_TEXT, 'Waht parsing strategy shoudl be used by default? Currently, only two available: GENERIC, ALSYLABUS', false, 'GENERIC'),
             )
         );
     }
