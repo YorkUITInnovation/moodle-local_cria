@@ -1,17 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
-
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 // Moodle is free software: you can redistribute it and/or modify
@@ -41,7 +40,8 @@ use local_cria\questions;
 require_once($CFG->libdir . "/externallib.php");
 require_once("$CFG->dirroot/config.php");
 
-class local_cria_external_question extends external_api {
+class local_cria_external_question extends external_api
+{
     //**************************** SEARCH USERS **********************
 
     /*     * ***********************
@@ -52,7 +52,8 @@ class local_cria_external_question extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function delete_parameters() {
+    public static function delete_parameters()
+    {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'Question id', false, 0)
@@ -67,7 +68,8 @@ class local_cria_external_question extends external_api {
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function delete($id) {
+    public static function delete($id)
+    {
         global $CFG, $USER, $DB, $PAGE;
 
         //Parameter validation
@@ -81,7 +83,7 @@ class local_cria_external_question extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-       // Get the question based on id
+        // Get the question based on id
         $question = $DB->get_record('local_cria_question', ['id' => $id]);
         $INTENT = new intent($question->intent_id);
         // Delete question from criabot
@@ -101,9 +103,103 @@ class local_cria_external_question extends external_api {
      * Returns description of method result value
      * @return external_description
      */
-    public static function delete_returns() {
+    public static function delete_returns()
+    {
         return new external_value(PARAM_INT, 'return code');
     }
+
+    //*********************Create question*************************
+
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function create_parameters()
+    {
+        return new external_function_parameters(
+            array(
+                'intentid' => new external_value(PARAM_INT, 'The intent id', false, 0),
+                'name' => new external_value(PARAM_TEXT, 'Name for the question', false, ''),
+                'value' => new external_value(PARAM_TEXT, 'The question being asked', false, ''),
+                'answer' => new external_value(PARAM_RAW, 'The answer for the question', false, ''),
+                'relatedquestions' => new external_value(PARAM_RAW, 'A JSON array: [{"label":"Label name", "prompt":"The prompt"}]', false, ''),
+                'lang' => new external_value(PARAM_TEXT, 'Default en', false, 'en'),
+                'generateanswer' => new external_value(PARAM_INT, 'Whether the answer should be returned as is or paraphrased by LLM', false, 0),
+                'examplequestions' => new external_value(PARAM_RAW, 'JSON of examples [{"value":"An example question"}]', false, ''),
+            )
+        );
+    }
+
+    public static function create(
+        $intentid,
+        $name,
+        $value,
+        $answer,
+        $relatedquestions = '',
+        $lang = 'en',
+        $generateanswer = 0,
+        $examplequestions = ''
+    )
+    {
+        global $CFG, $USER, $DB, $PAGE;
+
+        //Parameter validation
+        $params = self::validate_parameters(self::create_parameters(), array(
+                'intentid' => $intentid,
+                'name' => $name,
+                'value' => $value,
+                'answer' => $answer,
+                'relatedquestions' => $relatedquestions,
+                'lang' => $lang,
+                'generateanswer' => $generateanswer,
+                'examplequestions' => $examplequestions
+            )
+        );
+
+        //Context validation
+        //OPTIONAL but in most web service it should present
+        $context = \context_system::instance();
+        self::validate_context($context);
+
+        $INTENT = new intent($intentid);
+        $BOT = new criabot($INTENT->get_bot_id());
+        $question = [
+            'intent_id' => $intentid,
+            'name' => $name,
+            'value' => $value,
+            'answer' => $answer,
+            'relatedquestions' => $relatedquestions,
+            'lang' => $lang,
+            'generateanswer' => $generateanswer,
+            'document_name' => $BOT->get_name(),
+            'timecreated' => time(),
+            'timemodified' => time(),
+            'usermodified' => $USER->id
+        ];
+        $new_id = $DB->insert_record('local_cria_question', $question);
+        // Insert example questions
+        $examplequestions = json_decode($examplequestions);
+        foreach ($examplequestions as $example) {
+            $example = (array)$example;
+            $example['questionid'] = $new_id;
+            $example['timecreated'] = time();
+            $example['timemodified'] = time();
+            $example['usermodified'] = $USER->id;
+            $DB->insert_record('local_cria_question_example', $example);
+        }
+        return $new_id;
+    }
+
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function create_returns()
+    {
+        return new external_value(PARAM_INT, 'Return new record id');
+    }
+
+    //*********************Create question*************************
 
     //*********************Get answer by question id*************************
 
@@ -142,7 +238,7 @@ class local_cria_external_question extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-       // Get the question based on id
+        // Get the question based on id
         $question = $DB->get_record('local_cria_question', ['id' => $id]);
         // Update record
 
@@ -162,6 +258,7 @@ class local_cria_external_question extends external_api {
     }
 
     //*********************Publish question*************************
+
     /**
      * Returns description of method parameters
      * @return external_function_parameters
@@ -219,6 +316,7 @@ class local_cria_external_question extends external_api {
     }
 
     //*********************update example question*************************
+
     /**
      * Returns description of method parameters
      * @return external_function_parameters
@@ -273,7 +371,7 @@ class local_cria_external_question extends external_api {
             'usermodified' => $USER->id
         ];
         $DB->update_record('local_cria_question', $question_params);
-       return true;
+        return true;
     }
 
     /**
@@ -286,11 +384,13 @@ class local_cria_external_question extends external_api {
     }
 
     //*********************Delete exmaple question*************************
+
     /**
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function delete_example_parameters() {
+    public static function delete_example_parameters()
+    {
         return new external_function_parameters(
             array(
                 'id' => new external_value(PARAM_INT, 'Question id', true)
@@ -305,7 +405,8 @@ class local_cria_external_question extends external_api {
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function delete_example($id) {
+    public static function delete_example($id)
+    {
         global $CFG, $USER, $DB, $PAGE;
 
         //Parameter validation
@@ -331,11 +432,13 @@ class local_cria_external_question extends external_api {
      * Returns description of method result value
      * @return external_description
      */
-    public static function delete_example_returns() {
+    public static function delete_example_returns()
+    {
         return new external_value(PARAM_BOOL, 'return code');
     }
 
     //*********************Create example question*************************
+
     /**
      * Returns description of method parameters
      * @return external_function_parameters
@@ -401,7 +504,8 @@ class local_cria_external_question extends external_api {
      * Returns description of method parameters
      * @return external_function_parameters
      */
-    public static function delete_all_parameters() {
+    public static function delete_all_parameters()
+    {
         return new external_function_parameters(
             array(
                 'intent_id' => new external_value(PARAM_INT, 'Intent id', false, 0)
@@ -416,7 +520,8 @@ class local_cria_external_question extends external_api {
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function delete_all($intent_id) {
+    public static function delete_all($intent_id)
+    {
         global $CFG, $USER, $DB, $PAGE;
 
         //Parameter validation
@@ -440,7 +545,8 @@ class local_cria_external_question extends external_api {
      * Returns description of method result value
      * @return external_description
      */
-    public static function delete_all_returns() {
+    public static function delete_all_returns()
+    {
         return new external_value(PARAM_INT, 'return code');
     }
 }

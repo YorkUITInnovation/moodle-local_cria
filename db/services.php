@@ -194,6 +194,15 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'cria_question_create' => array(
+        'classname' => 'local_cria_external_question',
+        'methodname' => 'create',
+        'classpath' => 'local/cria/classes/external/question.php',
+        'description' => 'Create a new question and return the question id',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
     'cria_question_delete_all' => array(
         'classname' => 'local_cria_external_question',
         'methodname' => 'delete_all',

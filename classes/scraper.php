@@ -15,8 +15,9 @@ class scraper
     {
         // Get local cria config
         $config = get_config('local_cria');
+        $scraper_url = $config->criascraper_url;
         // Device information: https://github.com/amerkurev/scrapper/blob/master/app/internal/deviceDescriptorsSource.json
-        $url = "$config->criascraper_url/api/article?url=" . urlencode($url)
+        $url = "$scraper_url/api/article?url=" . urlencode($url)
             . "&full-content=true"
             . "&resouce=document"
             . "&sleep=100"
