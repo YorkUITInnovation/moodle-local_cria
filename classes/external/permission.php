@@ -169,7 +169,7 @@ class local_cria_external_permission extends external_api
             array(
                 'role_id' => new external_value(PARAM_INT, 'Role id', true),
                 'id' => new external_value(PARAM_INT, 'User id', false, -1),
-                'name' => new external_value(PARAM_TEXT, 'User first or last name', false, null)
+                'name' => new external_value(PARAM_TEXT, 'User first or last name', false, '')
             )
         );
     }
@@ -235,7 +235,7 @@ class local_cria_external_permission extends external_api
      */
     public static function user_details() {
         $fields = array(
-            'id' => new external_value(PARAM_INT, 'Record id', false),
+            'id' => new external_value(PARAM_INT, 'Record id', false, 0),
             'firstname' => new external_value(PARAM_TEXT, 'User first name', true),
             'lastname' => new external_value(PARAM_TEXT, 'User last name', true),
             'email' => new external_value(PARAM_TEXT, 'email', true),
@@ -314,7 +314,7 @@ class local_cria_external_permission extends external_api
      */
     public static function get_assigned_users_details() {
         $fields = array(
-            'id' => new external_value(PARAM_INT, 'Record id', false),
+            'id' => new external_value(PARAM_INT, 'Record id', false, 0),
             'firstname' => new external_value(PARAM_TEXT, 'User first name', true),
             'lastname' => new external_value(PARAM_TEXT, 'User last name', true),
             'email' => new external_value(PARAM_TEXT, 'email', true),

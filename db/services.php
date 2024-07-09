@@ -86,15 +86,6 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
-    'cria_get_approximate_cost' => array(
-        'classname' => 'local_cria_external_tokenizer',
-        'methodname' => 'response',
-        'classpath' => 'local/cria/classes/external/tokenizer.php',
-        'description' => 'Get approximate cost for call to GPT',
-        'type' => 'read',
-        'capabilities' => '',
-        'ajax' => true
-    ),
     'cria_delete_bot_role' => array(
         'classname' => 'local_cria_external_bot_role',
         'methodname' => 'delete',
@@ -155,6 +146,15 @@ $functions = array(
         'classpath' => 'local/cria/classes/external/bot.php',
         'description' => 'Create a new bot',
         'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+    'cria_get_bot_name' => array(
+        'classname' => 'local_cria_external_bot',
+        'methodname' => 'get_bot_name',
+        'classpath' => 'local/cria/classes/external/bot.php',
+        'description' => 'Retunrs bot name',
+        'type' => 'read',
         'capabilities' => '',
         'ajax' => true
     ),
