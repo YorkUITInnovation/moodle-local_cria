@@ -129,7 +129,7 @@ class local_cria_external_bot extends external_api
                     0
                 ),
                 'bot_system_message' => new external_value(
-                    PARAM_INT,
+                    PARAM_TEXT,
                     'Bot type',
                     false,
                     0
@@ -171,7 +171,7 @@ class local_cria_external_bot extends external_api
                     ''
                 ),
                 'welcome_message' => new external_value(
-                    PARAM_TEXT,
+                    PARAM_RAW,
                     'Welcome message for embedded bot',
                     false,
                     ''
@@ -268,12 +268,6 @@ class local_cria_external_bot extends external_api
                     false,
                     0
                 ),
-                'welcome_message' => new external_value(
-                    PARAM_RAW,
-                    'Welcome message for embedded bot',
-                    false,
-                    ''
-                ),
                 'title' => new external_value(
                     PARAM_TEXT,
                     'The title of the bot for the embed',
@@ -287,7 +281,7 @@ class local_cria_external_bot extends external_api
                     ''
                 ),
                 'embed_position' => new external_value(
-                    PARAM_TEXT,
+                    PARAM_RAW,
                     'The position the embed bot will have on a page',
                     false,
                     'bottom-left'
