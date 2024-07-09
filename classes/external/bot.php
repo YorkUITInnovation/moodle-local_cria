@@ -281,10 +281,10 @@ class local_cria_external_bot extends external_api
                     ''
                 ),
                 'embed_position' => new external_value(
-                    PARAM_RAW,
+                    PARAM_INT,
                     'The position the embed bot will have on a page',
                     false,
-                    'bottom-left'
+                    1
                 ),
                 'theme_color' => new external_value(
                     PARAM_TEXT,
@@ -384,7 +384,7 @@ class local_cria_external_bot extends external_api
         $botwatermark = 0,
         $title = '',
         $subtitle = '',
-        $embed_position = 'bottom-left',
+        $embed_position = 1,
         $icon_url = '',
         $bot_locale = 'en',
         $child_bots = ''
