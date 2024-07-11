@@ -29,9 +29,6 @@ class index_files extends \core\task\scheduled_task
         $FILE = new file();
         // Get p;lugin config
         $config = get_config('local_cria');
-        // Set default path
-        $path = $CFG->dataroot . '/temp/cria';
-        base::create_directory_if_not_exists($path);
         // Set context
         $context = \context_system::instance();
         // Get all files that are in state other than completed
@@ -41,6 +38,9 @@ class index_files extends \core\task\scheduled_task
         foreach ($files as $file) {
             $INTENT = new intent($file->intent_id);
             $BOT = new bot($INTENT->get_bot_id());
+            // Set default path
+            $path = $CFG->dataroot . '/temp/cria';
+            base::create_directory_if_not_exists($path);
             // Set path based on intent_id
             $path = $CFG->dataroot . '/temp/cria/' . $file->intent_id;
             base::create_directory_if_not_exists($path);
