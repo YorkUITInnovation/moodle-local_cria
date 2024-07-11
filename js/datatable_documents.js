@@ -51,12 +51,13 @@ $(document).ready(function () {
                 "data": "select",
             },
             {"data": "name"},
+            {"data": "indexed"},
             {"data": "actions"}
         ],
         "order": [[1, "asc"]],
         "columnDefs": [
             {
-                "targets": [0, 2],
+                "targets": [0, 3],
                 "orderable": false
             },
             {

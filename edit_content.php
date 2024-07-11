@@ -81,6 +81,7 @@ if ($mform->is_cancelled()) {
         'intent_id' => $data->intent_id,
         'content' => '',
         'keywords' => $keywords,
+        'parsingstrategy' => $data->parsingstrategy,
         'usermodified' => $USER->id,
         'timemodified' => time(),
         'timecreated' => time(),
@@ -171,13 +172,7 @@ if ($mform->is_cancelled()) {
             $fs->create_file_from_pathname($fileinfo, $path . '/' . $file);
         }
     }
-    // Now, index the files
-    // Create various objects
-    $PARSER = new criaparse();
-    $INTENT = new intent($data->intent_id);
-    $BOT = new bot($INTENT->get_bot_id());
-    // set bot parsing strategy
-    $bot_parsing_strategy = $BOT->get_parse_strategy();
+
     // Once again, get area files
     $files = $fs->get_area_files(
         $context->id,
@@ -185,12 +180,13 @@ if ($mform->is_cancelled()) {
         'content',
         $data->intent_id
     );
-
-    // Iterate through each file
+    // Save files to file table
     foreach ($files as $file) {
         if ($file->get_filename() != '.' && $file->get_filename() != '' && in_array($file->get_filename(), $draft_area_filenames)) {
             // Insert file type
             $content_data['file_type'] = $FILE->get_file_type_from_mime_type($file->get_mimetype());
+            // Set indexing to pending
+            $content_data['indexed'] = $FILE::INDEXING_PENDING;
             // get file name
             $file_name = $file->get_filename();
             // Convert files to docx based on file type
@@ -231,72 +227,39 @@ if ($mform->is_cancelled()) {
                 }
             }
             $converted_file_path = $path . '/' . $converted_file_name;
+            // Save converted file to moodle
+            if ($file_was_converted) {
+                $fileinfo = [
+                    'contextid' => $context->id,   // ID of the context.
+                    'component' => 'local_cria', // Your component name.
+                    'filearea' => 'content',       // Usually = table name.
+                    'itemid' => $data->intent_id,              // Usually = ID of row in table.
+                    'filepath' => '/',            // Any path beginning and ending in /.
+                    'filename' => $converted_file_name,   // Any filename.
+                ];
 
-            // If $BOT->get_parse_strategy() is not equal to $data->parsingstrategy, then update $parsing_strategy
-            if ($data->parsingstrategy != $BOT->get_parse_strategy()) {
-                $bot_parsing_strategy = $data->parsingstrategy;
-            }
-            // Set parsing strategy based on file type.
-            $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
-                $content_data['file_type'],
-                $bot_parsing_strategy
-            );
-            // Get bot parameters to use proper model ids
-            $bot_parameters = json_decode($BOT->get_bot_parameters_json());
-
-            $results = $PARSER->execute(
-                $bot_parameters->llm_model_id,
-                $bot_parameters->embedding_model_id,
-                $parsing_strategy,
-                $path . '/' . $converted_file_name
-            );
-            if ($results['status'] != 200) {
-                \core\notification::error('Error parsing file: ' . $results['message']);
+                $fs->create_file_from_pathname($fileinfo, $converted_file_path);
+                // Delete the original file from the file area
                 $file->delete();
-            } else {
-                $nodes = $results['nodes'];
-                // Send nodes to indexing server
-                $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file_name, $content_data['file_type'], false);
-                if ($upload->status != 200) {
-                    \core\notification::error('Error uploading file to indexing server: ' . $upload->message);
-                    $file->delete();
-                } else {
-                    // Save converted file to moodle
-                    if ($file_was_converted) {
-                        $fileinfo = [
-                            'contextid' => $context->id,   // ID of the context.
-                            'component' => 'local_cria', // Your component name.
-                            'filearea' => 'content',       // Usually = table name.
-                            'itemid' => $data->intent_id,              // Usually = ID of row in table.
-                            'filepath' => '/',            // Any path beginning and ending in /.
-                            'filename' => $converted_file_name,   // Any filename.
-                        ];
-
-                        $fs->create_file_from_pathname($fileinfo, $converted_file_path);
-                        // Delete the original file from the file area
-                        $file->delete();
-                    }
-                    // Verification paramaters
-                    $content_verification = [
-                        'name' => $file_name,
-                        'intent_id' => $data->intent_id
-                    ];
-                    if (!$DB->get_record('local_cria_files', $content_verification)) {
-                        // Insert the content into the database
-                        $file_id = $DB->insert_record('local_cria_files', $content_data);
-
-                    } else {
-                        // Update the content into the database
-                        $content_data['id'] = $data->id;
-                        $DB->update_record('local_cria_files', $content_data);
-                        $update = true;
-                    }
-                }
             }
-            // Delete the file from the server
-            base::delete_files($path);
+
+            $content_data['indexed'] = $FILE::INDEXING_PENDING;
+            // Verification paramaters
+            $content_verification = [
+                'name' => $content_data['name'],
+                'intent_id' => $data->intent_id
+            ];
+            if (!$DB->get_record('local_cria_files', $content_verification)) {
+                // Insert the content into the database
+                $file_id = $DB->insert_record('local_cria_files', $content_data);
+            }
         }
     }
+
+    // This is where this function ends. The rest will be performed by a scheduled task.
+
+    // Now, index the files
+
 
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/content.php?bot_id=' . $data->bot_id . '&intent_id=' . $data->intent_id);

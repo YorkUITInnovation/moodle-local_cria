@@ -14,11 +14,13 @@
 
 
 use local_cria\datatables;
+use local_cria\file;
 
 require_once('../../../config.php');
 
 global $CFG, $DB, $USER;
 
+$FILE = new file();
 $context = context_system::instance();
 require_login(1, false);
 
@@ -74,7 +76,7 @@ datatables::set_query_params(['intent_id' => $intent_id]);
 datatables::set_term($term);
 datatables::set_order_column($orderColumn);
 datatables::set_order_direction($orderDirection);
-datatables::set_columns(['id', 'name', 'intent_id']);
+datatables::set_columns(['id', 'name', 'indexed', 'intent_id', 'error_message']);
 datatables::set_require_actions(true);
 datatables::set_start($start);
 datatables::set_end($end);
@@ -118,6 +120,24 @@ datatables::set_action_item_buttons(
 // Get results
 $data = datatables::get_records();
 
+// Iterate through $data->results and add additional data
+foreach ($data->results as $key => $result) {
+    // Get indexed value and set appropriate html
+    switch($result['indexed']) {
+        case $FILE::INDEXING_PENDING:
+            $data->results[$key]['indexed'] = '<span class="badge bg-warning text-dark">' . get_string('indexing_pending', 'local_cria') . '</span>';
+            break;
+        case $FILE::INDEXING_FAILED:
+            $data->results[$key]['indexed'] = '<span class="badge bg-danger" title="' . $result['error_message'] . '">' . get_string('indexing_failed', 'local_cria') . '</span>';
+            break;
+        case $FILE::INDEXING_COMPLETE:
+            $data->results[$key]['indexed'] = '<span class="badge bg-success">' . get_string('indexing_success', 'local_cria') . '</span>';
+            break;
+        case $FILE::INDEXING_STARTED:
+            $data->results[$key]['indexed'] = '<span class="badge bg-info">' . get_string('indexing_started', 'local_cria') . '</span>';
+            break;
+    }
+}
 // Create datatables object
 $params = [
     "draw" => $draw,
@@ -128,3 +148,4 @@ $params = [
 //print_object($params);
 // Return Datatables json object
 echo json_encode($params);
+

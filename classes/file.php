@@ -31,6 +31,10 @@ use local_cria\intent;
 class file extends crud
 {
 
+    const INDEXING_PENDING = 0;
+    const INDEXING_COMPLETE = 1;
+    const INDEXING_FAILED = 2;
+    const INDEXING_STARTED = 3;
 
     /**
      *
@@ -429,22 +433,23 @@ class file extends crud
         $context = \context_system::instance();
         // Delete on criabot server
         $result = criabot::document_delete($this->get_bot_name(), $this->get_name());
+        // Delete area on moodle file system
+        $fs = get_file_storage();
+        $file = $fs->get_file(
+            $context->id,
+            'local_cria',
+            'content',
+            $this->get_intent_id(),
+            '/',
+            $this->get_name()
+        );
         if ($result->status == '200') {
-            // Delete area on moodle file system
-            $fs = get_file_storage();
-            $file = $fs->get_file(
-                $context->id,
-                'local_cria',
-                'content',
-                $this->get_intent_id(),
-                '/',
-                $this->get_name()
-            );
             $file->delete();
             // Delete on local database
             $DB->delete_records($this->table, array('id' => $this->get_id()));
             return true;
         } else {
+            $file->delete();
             $DB->delete_records($this->table, array('id' => $this->get_id()));
             return false;
         }

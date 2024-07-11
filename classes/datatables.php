@@ -195,6 +195,26 @@ class datatables
     }
 
     /**
+     * Set extra html column
+     * Allows to add an extra column with html
+     * Within the html, you can use the following placeholders: [column_name]
+     * @param string $extra_html_column
+     */
+    public static function set_extra_html_column($extra_html_column): void
+    {
+        self::$extra_html_column = $extra_html_column;
+    }
+
+    /**
+     * Set extra html column columns
+     * @param array $extra_html_column_columns
+     */
+    public static function set_extra_html_column_columns($extra_html_column_columns): void
+    {
+        self::$extra_html_column_columns = $extra_html_column_columns;
+    }
+
+    /**
      * Array of buttons to display in action column
      * [
      *      [
@@ -295,6 +315,10 @@ class datatables
             if (self::$require_actions) {
                 $results[$i]['actions'] = self::draw_actions($record);
             }
+
+            if (isset(self::$extra_html_column)) {
+                $results[$i]['extra_html'] = self::draw_extra_html_column($record);
+            }
             $i++;
         }
 
@@ -374,6 +398,19 @@ class datatables
             'local_cria/datatables_actions',
             $params
         );
+    }
+
+    /**
+     * Draw extra html column
+     */
+    public static function draw_extra_html_column($data) {
+        // Get columns for extra html column
+        $columns = self::$extra_html_column_columns;
+        $html = self::$extra_html_column;
+        foreach ($columns as $column) {
+            $html = str_replace("[$column]", $data->$column, $html);
+        }
+        return $html;
     }
 
 
