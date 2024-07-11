@@ -98,9 +98,9 @@ if ($mform->is_cancelled()) {
 
 
 base::page(
-    new moodle_url('/local/cria/providers/ms-azure-openai/model.php', ['id' => $id]),
-    'MS Azure OpenAI ' . get_string('model', 'local_cria'),
-    'MS Azure OpenAI ' . get_string('model', 'local_cria'),
+    new moodle_url('/local/cria/providers/cohere/model.php', ['id' => $id]),
+    'Cohere ' . get_string('model', 'local_cria'),
+    'Cohere ' . get_string('model', 'local_cria'),
     $context,
     'standard'
 );
