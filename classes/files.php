@@ -275,76 +275,49 @@ class files
                 $file_type,
                 $bot_parsing_strategy
             );
+            $content_data['parsingstrategy'] = $parsing_strategy;
 
-            $results = $PARSER->execute(
-                $BOT->get_model_id(),
-                $BOT->get_embedding_id(),
-                $parsing_strategy,
-                $path . $file_name
-            );
+            $content_data['name'] = $file_name;
 
-            if ($results['status'] != 200) {
-                $errors .= 'Error parsing file: ' . $results['message'] . '<br>';
-            } else {
-                $nodes = $results['nodes'];
-                // set variable to update nodes
-                $update_nodes = false;
-
-                // Verification paramaters
-                $content_verification = [
-                    'name' => $file_name,
-                    'intent_id' => $this->intent_id
-                ];
-                // get existing record
-                $record = $DB->get_record('local_cria_files', $content_verification);
-                // If record exists, set update_nodes to true
-                if ($record) {
-                    $update_nodes = true;
-                }
-
-                // Send nodes to indexing server
-                $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file_name, $file_type, $update_nodes);
-
-                if ($upload->status != 200) {
-                    $errors .= 'Error uploading file to indexing server: ' . $upload->message . '<br>';
-                } else {
-                    $content_data['name'] = $file_name;
-
-                    // Save  file to moodle
-                    $fileinfo = [
-                        'contextid' => $context->id,   // ID of the context.
-                        'component' => 'local_cria', // Your component name.
-                        'filearea' => 'content',       // Usually = table name.
-                        'itemid' => $this->intent_id,              // Usually = ID of row in table.
-                        'filepath' => '/',            // Any path beginning and ending in /.
-                        'filename' => $file_name,   // Any filename.
-                    ];
-                    // Get file first
-                    $files = $fs->get_area_files($context->id, 'local_cria', 'content', $this->intent_id);
-                    foreach ($files as $area_file) {
-                        // if file with $file_name already exists, delete it
-                        if ($area_file->get_filename() == $file_name) {
-                            $area_file->delete();
-                        }
-                    }
-                    // Create file from pathname
-                    $fs->create_file_from_pathname($fileinfo, $path . $file_name);
-
-                    // insert or update fiel info in DB
-                    if (!$record) {
-                        $record = new \stdClass();
-                        // Insert the content into the database
-                        $content_data['content'] = $url;
-                        $content_data['timecreated'] = time();
-                        $record->id  = $DB->insert_record('local_cria_files', $content_data);
-                    } else {
-                        // Update the content into the database
-                        $content_data['id'] = $record->id;
-                        $content_data['content'] = $url;
-                        $DB->update_record('local_cria_files', $content_data);
-                    }
+            // Save  file to moodle
+            $fileinfo = [
+                'contextid' => $context->id,   // ID of the context.
+                'component' => 'local_cria', // Your component name.
+                'filearea' => 'content',       // Usually = table name.
+                'itemid' => $this->intent_id,              // Usually = ID of row in table.
+                'filepath' => '/',            // Any path beginning and ending in /.
+                'filename' => $file_name,   // Any filename.
+            ];
+            // Get file first
+            $files = $fs->get_area_files($context->id, 'local_cria', 'content', $this->intent_id);
+            foreach ($files as $area_file) {
+                // if file with $file_name already exists, delete it
+                if ($area_file->get_filename() == $file_name) {
+                    $area_file->delete();
                 }
             }
+            // Create file from pathname
+            $fs->create_file_from_pathname($fileinfo, $path . $file_name);
+            $content_verification = [
+                'name' => $file_name,
+                'intent_id' => $this->intent_id
+            ];
+            $record = $DB->get_record('local_cria_files', $content_verification);
+            // insert or update fiel info in DB
+            if (!$record) {
+                $record = new \stdClass();
+                // Insert the content into the database
+                $content_data['content'] = $url;
+                $content_data['timecreated'] = time();
+                $record->id = $DB->insert_record('local_cria_files', $content_data);
+            } else {
+                // Update the content into the database
+                $content_data['id'] = $record->id;
+                $content_data['content'] = $url;
+                $DB->update_record('local_cria_files', $content_data);
+            }
+
+
             // Delete temp files
             unlink($path . $file_name);
 
