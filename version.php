@@ -13,7 +13,7 @@
 */
 
 
-$plugin->version = 20240701200; // version 1.0
+$plugin->version = 20240701202; // version 1.0
 // Moodle version required
 $plugin->requires = 2022112800; //Moodle 4.1
 $plugin->maturity = MATURITY_STABLE;

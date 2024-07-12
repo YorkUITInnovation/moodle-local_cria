@@ -169,6 +169,20 @@ class provider extends crud
         return $this->llm_models;
     }
 
+    public function get_type(): string
+    {
+        switch ($this->idnumber) {
+            case 'ms-azure-openai':
+                $type = 'azure';
+                break;
+            case 'cohere':
+                $type = 'cohere';
+                break;
+            default:
+                $type = 'azure';
+        }
+        return $type;
+    }
     /**
      * return array of llm models
      */

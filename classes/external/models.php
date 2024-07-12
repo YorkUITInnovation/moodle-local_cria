@@ -37,6 +37,8 @@
 require_once($CFG->libdir . "/externallib.php");
 require_once("$CFG->dirroot/config.php");
 
+use local_cria\model;
+
 class local_cria_external_models extends external_api {
     //**************************** SEARCH USERS **********************
 
@@ -77,15 +79,8 @@ class local_cria_external_models extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        // Get all bots with model id
-        $bots = $DB->get_records('local_cria', array('model_id' => $id));
-        // Delete all files for each bot and the bot
-        foreach ($bots as $bot) {
-            $DB->delete_records('local_cria_files', array('bot_id' => $bot->id));
-            $DB->delete_records('local_cria_bot', array('id' => $bot->id));
-        }
-        // Delete the type
-        $DB->delete_records('local_cria_models', array('id' => $id));
+        $MODEL = new model($id);
+        $MODEL->delete_record();
 
         return true;
     }

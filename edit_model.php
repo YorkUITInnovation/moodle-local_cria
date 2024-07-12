@@ -69,6 +69,9 @@ base::page(
     'standard'
 );
 
+// Load amd js
+$PAGE->requires->js_call_amd('local_cria/models', 'init', array());
+
 
 echo $OUTPUT->header();
 //**********************

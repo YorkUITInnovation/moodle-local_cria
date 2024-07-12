@@ -295,4 +295,13 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'cria_model_delete' => array(
+        'classname' => 'local_cria_external_models',
+        'methodname' => 'delete',
+        'classpath' => 'local/cria/classes/external/models.php',
+        'description' => 'Delete Model',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
 );

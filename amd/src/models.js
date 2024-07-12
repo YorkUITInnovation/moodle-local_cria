@@ -28,8 +28,7 @@ function delete_model() {
                         id: id
                     }
                 }]);
-
-                delete_content[0].done(function () {
+                delete_model[0].done(function () {
                     location.reload();
                 }).fail(function () {
                     alert('An error has occurred. The record was not deleted');
