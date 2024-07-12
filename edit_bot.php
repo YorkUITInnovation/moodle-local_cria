@@ -91,6 +91,7 @@ if ($mform->is_cancelled()) {
     unset($data->bot_api_key);
     unset($data->bot_name);
 
+
     if ($data->id) {
         $id = $data->id;
         $BOT = new bot($data->id);
@@ -146,6 +147,7 @@ $PAGE->requires->js_call_amd('local_cria/bot_form', 'init');
 $PAGE->requires->js(new moodle_url('/local/cria/js/jscolor.js'));
 $PAGE->requires->css(new moodle_url('/local/cria/css/select2.min.css'));
 $PAGE->requires->css(new moodle_url('/local/cria/css/select2-bootstrap4.min.css'));
+
 
 echo $OUTPUT->header();
 //**********************

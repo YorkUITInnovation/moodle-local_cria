@@ -297,6 +297,16 @@ class bot extends crud
      */
     private $parse_strategy;
 
+    /**
+     * @var int
+     */
+    private $debugging;
+
+    /**
+     * @var string
+     */
+    private $related_prompts;
+
 
     /**
      *
@@ -363,6 +373,8 @@ class bot extends crud
         $this->title = $result->title ?? '';
         $this->subtitle = $result->subtitle ?? '';
         $this->bot_locale = $result->bot_locale ?? 'en-US';
+        $this->debugging = $result->debugging ?? 0;
+        $this->related_prompts = $result->related_prompts ?? '';
     }
 
     /**
@@ -719,6 +731,23 @@ class bot extends crud
     public function get_bot_locale(): string
     {
         return $this->bot_locale;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_debugging(): int
+    {
+        return $this->debugging;
+    }
+
+    /**
+     * Returns json array of related prompts
+     * @return string
+     */
+    public function get_related_prompts(): string
+    {
+        return $this->related_prompts;
     }
 
     /**

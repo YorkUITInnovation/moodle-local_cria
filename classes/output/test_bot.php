@@ -69,9 +69,12 @@ class test_bot implements \renderable, \templatable
             $chat_id = $session->chat_id;
         }
         $debug = false;
-        if ($CFG->debug != 0) {
+        if ($BOT->get_debugging() != 0) {
             $debug = true;
         }
+
+        $related_prompts = json_decode($BOT->get_related_prompts());
+
         $data = [
             'bot_id' => $this->bot_id,
             'name' => $BOT->get_name(),
@@ -84,6 +87,7 @@ class test_bot implements \renderable, \templatable
             'test_bot_page' => true,
             'return_url' => 'test_bot',
             'debug' => $debug,
+            'related_prompts' => $related_prompts,
         ];
 
         return $data;

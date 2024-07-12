@@ -94,6 +94,7 @@ $string['create_meeting_notes'] = 'MinutesMaster';
 $string['create_meeting_notes_help'] = 'Use this tool to create meeting notes based on a transcription';
 $string['cria_suite'] = 'Cria Suite';
 $string['date_range'] = 'Date range';
+$string['debugging'] = 'Debugging';
 $string['default_user_prompt'] = 'Default user prompt';
 $string['default_user_prompt_help'] = 'If your but has a default prompt, enter it here. If the requires user prompt ' .
     ' above is set to Yes, this prompt will prepended to the user propmt. Note it is not visible on the page.';
@@ -239,6 +240,12 @@ $string['related_questions_help'] = '<p>Related Questions are follow-up question
     '<b>Label</b> pipe (|) <b>Question (prompt)</b> <br><br>' .
     'Example:<br>' .
     'Capital of Canada!|What is the capital of Canada?';
+$string['related_prompts'] = 'Start-up questions';
+$string['related_prompts_help'] = 'You can add up to 6 start up questions/prompts. These questions will be displayed to the user when the bot is first started.'
+. 'The questions must be in the follwoing JSON format:<br>'
+. '<pre>'
+. '[{"label":"a display name", "prompt":"the question prompt"},{"label":"nother display name", "prompt":"another question prompt"}]'
+. '</pre>';
 $string['requires_content_prompt'] = 'Requires content prompt';
 $string['requires_content_prompt_help'] = 'Select Yes if you want a text area to paste content that can be used with a user prompt';
 $string['requires_user_prompt'] = 'Requires user prompt';

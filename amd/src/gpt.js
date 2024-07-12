@@ -4,6 +4,7 @@ import ajax from 'core/ajax';
 export const init = () => {
     get_response();
     page_unload();
+    related_prompts();
 };
 
 /**

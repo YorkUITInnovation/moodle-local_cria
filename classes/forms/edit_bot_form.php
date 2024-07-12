@@ -853,6 +853,24 @@ class edit_bot_form extends \moodleform
             PARAM_RAW
         );
 
+        // Add textare element for related_prompts
+        $mform->addElement(
+            'textarea',
+            'related_prompts',
+            get_string('related_prompts', 'local_cria'),
+            ['rows' => 8]
+        );
+        $mform->setType(
+            'related_prompts',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'related_prompts',
+            'related_prompts',
+            'local_cria'
+        );
+
         // Add icon url element
         $mform->addElement(
             'filemanager',
@@ -974,6 +992,17 @@ class edit_bot_form extends \moodleform
             . get_string('bot_api_key_instructions', 'local_cria')
             . ' </p>
             </div>'
+        );
+
+        // Add element to enable debugging
+        $mform->addElement(
+            'selectyesno',
+            'debugging',
+            get_string('debugging', 'local_cria')
+        );
+        $mform->setType(
+            'debugging',
+            PARAM_INT
         );
 
         $mform->addElement(
