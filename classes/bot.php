@@ -747,6 +747,9 @@ class bot extends crud
      */
     public function get_related_prompts(): string
     {
+        if (empty($this->related_prompts)) {
+            return '[]';
+        }
         return $this->related_prompts;
     }
 

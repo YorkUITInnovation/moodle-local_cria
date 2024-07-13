@@ -66,7 +66,7 @@ class bot_config implements \renderable, \templatable
             'can_view_bot_types' => has_capability('local/cria:view_bot_types', $context),
             'can_view_bot_models' => has_capability('local/cria:view_models', $context),
             'is_siteadmin' => is_siteadmin(),
-            "criachat" => $config->embedding_server_url
+            "criachat" => $config->criaembed_url
         ];
 
         return $data;

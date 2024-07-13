@@ -45,7 +45,8 @@ class criaembed
             "botEmbedDefaultEnabled" => $BOT->get_embed_enabled_bool(),
             "botEmbedPosition" => $BOT->get_embed_position(),
             "botWatermark" => $BOT->get_bot_watermark_string_bool(),
-            "botLocale" => $BOT->get_bot_locale()
+            "botLocale" => $BOT->get_bot_locale(),
+            "initialPrompts" => $BOT->get_related_prompts(),
         ];
         // Create model
         return gpt::_make_call(
