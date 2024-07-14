@@ -40,6 +40,8 @@ class criabot
     public static function bot_create($bot_name, $data) {
         // Get Config
         $config = get_config('local_cria');
+        file_put_contents('/var/www/moodledata/temp/bot_data.json', json_encode($data, JSON_PRETTY_PRINT));
+        file_put_contents('/var/www/moodledata/temp/bot_name.json', json_encode($bot_name, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criabot_url,
