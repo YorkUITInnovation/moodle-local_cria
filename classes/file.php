@@ -466,7 +466,6 @@ class file extends crud
         // Set the file path with filename
         $file_path = $data->path . '/' . $file_name;
 // save the file
-        file_put_contents($file_path, $data->file_content);
 // Save file to moodle file system
         $fs = get_file_storage();
         $file_info = [

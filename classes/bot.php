@@ -805,7 +805,6 @@ class bot extends crud
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() .
             '}';
-        file_put_contents('/var/www/moodledata/temp/bot_parameters.json', $params);
         return $params;
     }
 
@@ -843,7 +842,6 @@ class bot extends crud
         //Set user
         $data->usermodified = $USER->id;
 
-        file_put_contents('/var/www/moodledata/temp/bot__create_params.json', json_encode($data, JSON_PRETTY_PRINT));
         $id = $DB->insert_record($this->table, $data);
 
         $NEW_BOT = new bot($id);
@@ -851,11 +849,9 @@ class bot extends crud
         // Only if bot uses bot server
         // Otherwise, create bot on bot server
         if ($NEW_BOT->use_bot_server()) {
-            file_put_contents('/var/www/moodledata/temp/use_bot_server.txt', 'use bot server' . PHP_EOL, FILE_APPEND);
             $intent_id = $this->create_default_intent($id);
             // Create embed server code
-            $criaembed_status = criaembed::manage_insert($intent_id);
-            file_put_contents('/var/www/moodledata/temp/cria_embed.json', json_encode($criaembed_status, JSON_PRETTY_PRINT));
+            criaembed::manage_insert($intent_id);
         } else {
             $NEW_BOT->create_bot_on_bot_server(0);
         }
@@ -907,7 +903,6 @@ class bot extends crud
         $INTENT = new intent();
         // If default intent does not exist, create it
         if (!$INTENT->default_intent_exists($bot_id)) {
-            file_put_contents('/var/www/moodledata/temp/default_intent_exists.txt', 'default intent does not exist' . PHP_EOL, FILE_APPEND);
             $params = new \stdClass();
             $params->bot_id = $bot_id;
             $params->is_default = 1;

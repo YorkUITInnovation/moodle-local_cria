@@ -268,7 +268,6 @@ class files
             }
             $path = $CFG->dataroot . '/temp/cria/' . $this->intent_id . '/';
             $file_name = $file_name . '.html';
-            file_put_contents($path . $file_name, $content);
 
             // Parse the file
             $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
