@@ -23,6 +23,7 @@
 namespace local_cria;
 
 use core\notification;
+use local_cria\criabot;
 use local_cria\crud;
 use local_cria\criabot;
 use local_cria\criabdex;
@@ -550,7 +551,9 @@ class intent extends crud
     public function create_intent_on_bot_server($lang = 'en', $faculty = '', $program = '')
     {
         $bot_name = $this->bot_id . '-' . $this->id;
-        return criabot::bot_create((string)$bot_name, $this->get_bot_parameters_json());
+        $results = criabot::bot_create((string)$bot_name, $this->get_bot_parameters_json());
+        file_put_contents('/var/www/moodledata/temp/bot_server_intent_results.json', json_encode($results, JSON_PRETTY_PRINT));
+        return $results;
     }
 
     /**
