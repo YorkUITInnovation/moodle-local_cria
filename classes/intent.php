@@ -164,6 +164,7 @@ class intent extends crud
         if ($data->published) {
             $NEW_INTENT = new intent($new_intent_id);
             $result = $NEW_INTENT->create_intent_on_bot_server();
+            file_put_contents('/var/www/moodledata/temp/bot_server_intent.json', json_encode($result, JSON_PRETTY_PRINT));
             // Update intent bot_api_key
             $params = new \stdClass();
             $params->id = $new_intent_id;

@@ -914,6 +914,7 @@ class bot extends crud
             $params->published = 1;
             // Insert record. Bot will be created automatically on bot server.
             $intent_id = $INTENT->insert_record($params);
+
             return $intent_id;
         } else {
             // Update the bot on bot server
