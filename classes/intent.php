@@ -549,9 +549,10 @@ class intent extends crud
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public function create_intent_on_bot_server($lang = 'en', $faculty = '', $program = '')
+    public function create_intent_on_bot_server()
     {
         $bot_name = $this->bot_id . '-' . $this->id;
+        file_put_contents('/var/www/moodledata/temp/bot_name_create_intent.txt', $bot_name);
         file_put_contents('/var/www/moodledata/temp/get_bot_params.json', $this->get_bot_parameters_json());
         $result = criabot::bot_create((string)$bot_name, $this->get_bot_parameters_json());
         file_put_contents('/var/www/moodledata/temp/create_intent_bot_server.json', json_encode($result, JSON_PRETTY_PRINT));
