@@ -1,17 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
-
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 // Moodle is free software: you can redistribute it and/or modify
@@ -305,7 +304,7 @@ class local_cria_external_bot extends external_api
                     'en'
                 ),
                 'child_bots' => new external_value(
-                    PARAM_TEXT,
+                    PARAM_RAW,
                     'List of bot name',
                     false,
                     '#e31837'
@@ -393,7 +392,7 @@ class local_cria_external_bot extends external_api
         $subtitle = '',
         $embed_position = 1,
         $icon_url = '',
-        $bot_locale = 'en',
+        $bot_locale = 'en-US',
         $child_bots = '',
         $publish = 1
     )
@@ -439,6 +438,12 @@ class local_cria_external_bot extends external_api
             )
         );
 
+        // Convert child bots to array
+        if ($child_bots) {
+            $child_bots = json_decode($child_bots);
+        } else {
+            $child_bots = [];
+        }
         // Add extra fields to params
         $params['id'] = 0;
         $params['bot_id'] = 0;
@@ -451,7 +456,13 @@ class local_cria_external_bot extends external_api
         ];
         unset($params['description']);
         $params['available_child'] = 0;
+        $params['fine_tuning'] = 0;
+        $params['child_bots'] = $child_bots;
         $params['debugging'] = 0;
+        $params['system_reserved'] = 0;
+        $params['plugin_path'] = "";
+        $params['related_prompts'] = "";
+        $params['embed_enabled'] = 0;
 
 
         //Context validation
