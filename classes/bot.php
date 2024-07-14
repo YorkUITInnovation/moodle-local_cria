@@ -842,6 +842,7 @@ class bot extends crud
         //Set user
         $data->usermodified = $USER->id;
 
+        file_put_contents('/var/www/moodledata/temp/bot__create_params.json', json_encode($data, JSON_PRETTY_PRINT));
         $id = $DB->insert_record($this->table, $data);
 
         $NEW_BOT = new bot($id);
