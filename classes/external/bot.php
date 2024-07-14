@@ -439,6 +439,21 @@ class local_cria_external_bot extends external_api
             )
         );
 
+        // Add extra fields to params
+        $params['id'] = 0;
+        $params['bot_id'] = 0;
+        $params['bot_max_tokens'] = $max_context;
+        $params['tone'] = '';
+        $params['response_length'] = '';
+        $params['description_editor'] = [
+            'text' => $description,
+            'format' => 1
+        ];
+        unset($params['description']);
+        $params['available_child'] = 0;
+        $params['debugging'] = 0;
+
+
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = \context_system::instance();
