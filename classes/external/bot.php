@@ -310,6 +310,12 @@ class local_cria_external_bot extends external_api
                     false,
                     '#e31837'
                 ),
+                'published' => new external_value(
+                    PARAM_INT,
+                    'Make this bot available',
+                    false,
+                    1
+                ),
 
             )
         );
@@ -349,6 +355,7 @@ class local_cria_external_bot extends external_api
      * @param $icon_url
      * @param $bot_locale
      * @param $child_bots
+     * @param $published
      * @return int
      * @throws dml_exception
      * @throws invalid_parameter_exception
@@ -387,7 +394,8 @@ class local_cria_external_bot extends external_api
         $embed_position = 1,
         $icon_url = '',
         $bot_locale = 'en',
-        $child_bots = ''
+        $child_bots = '',
+        $published = 1
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -426,7 +434,8 @@ class local_cria_external_bot extends external_api
                 'embed_position' => $embed_position,
                 'icon_url' => $icon_url,
                 'bot_locale' => $bot_locale,
-                'child_bots' => $child_bots
+                'child_bots' => $child_bots,
+                'published' => $published
             )
         );
 
