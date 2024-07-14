@@ -805,6 +805,7 @@ class bot extends crud
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() .
             '}';
+        file_put_contents('/var/www/moodledata/temp/bot_parameters.json', $params);
         return $params;
     }
 
