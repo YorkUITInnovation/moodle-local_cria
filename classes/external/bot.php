@@ -437,10 +437,6 @@ class local_cria_external_bot extends external_api
         // Create bot
         $BOT = new bot();
         $id = $BOT->insert_record((object)$params);
-        $NEW_BOT = new bot($id);
-        if ($NEW_BOT->use_bot_server()) {
-            $NEW_BOT->create_bot_on_bot_server();
-        }
 
         unset($BOT);
         unset($NEW_BOT);

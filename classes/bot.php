@@ -849,6 +849,7 @@ class bot extends crud
         // Only if bot uses bot server
         // Otherwise, create bot on bot server
         if ($NEW_BOT->use_bot_server()) {
+            file_put_contents('/var/www/moodledata/use_bot_server.txt', 'use bot server' . PHP_EOL, FILE_APPEND);
             $intent_id = $this->create_default_intent($id);
             // Create embed server code
             criaembed::manage_insert($intent_id);
