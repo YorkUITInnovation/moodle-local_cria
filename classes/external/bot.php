@@ -310,7 +310,7 @@ class local_cria_external_bot extends external_api
                     false,
                     '#e31837'
                 ),
-                'published' => new external_value(
+                'publish' => new external_value(
                     PARAM_INT,
                     'Make this bot available',
                     false,
@@ -395,7 +395,7 @@ class local_cria_external_bot extends external_api
         $icon_url = '',
         $bot_locale = 'en',
         $child_bots = '',
-        $published = 1
+        $publish = 1
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -435,7 +435,7 @@ class local_cria_external_bot extends external_api
                 'icon_url' => $icon_url,
                 'bot_locale' => $bot_locale,
                 'child_bots' => $child_bots,
-                'published' => $published
+                'publish' => $publish
             )
         );
 
