@@ -304,7 +304,7 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
-    'cria_file_upload' => array(
+    'cria_content_upload' => array(
         'classname' => 'local_cria_external_content',
         'methodname' => 'upload_file',
         'classpath' => 'local/cria/classes/external/content.php',

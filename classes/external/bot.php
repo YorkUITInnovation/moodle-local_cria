@@ -311,9 +311,9 @@ class local_cria_external_bot extends external_api
                 ),
                 'publish' => new external_value(
                     PARAM_INT,
-                    'Make this bot available',
+                    'Make this bot available with Cria dashboard',
                     false,
-                    1
+                    0
                 ),
 
             )
@@ -394,7 +394,7 @@ class local_cria_external_bot extends external_api
         $icon_url = '',
         $bot_locale = 'en-US',
         $child_bots = '',
-        $publish = 1
+        $publish = 0
     )
     {
         global $CFG, $USER, $DB, $PAGE;
