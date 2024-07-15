@@ -27,6 +27,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use local_cria\base;
+use local_cria\bot;
+use local_cria\intent;
 use local_cria\file;
 use local_cria\files;
 use local_cria\criabot;
@@ -212,5 +215,113 @@ class local_cria_external_content extends external_api {
         return new external_value(PARAM_BOOL, 'True');
     }
 
+    //**************************** Upload a file **********************
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function upload_file_parameters()
+    {
+        return new external_function_parameters(
+            array(
+                'intentid' => new external_value(PARAM_INT, 'Intent id'),
+                'filename' => new external_value(PARAM_TEXT, 'name of the file'),
+                'filecontent' => new external_value(PARAM_RAW, 'Content of the file encoded in base64'),
+            )
+        );
+    }
 
+    /**
+     * @param $intent_id
+     * @param $filename
+     * @param $filecontent
+     * @return string
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function upload_file($intent_id, $filename, $filecontent)
+    {
+        global $CFG, $USER, $DB, $PAGE;
+
+        //Parameter validation
+        $params = self::validate_parameters(self::upload_file_parameters(), array(
+                'intentid' => $intent_id,
+                'filename' => $filename,
+                'filecontent' => $filecontent,
+            )
+        );
+
+        //Context validation
+        //OPTIONAL but in most web service it should present
+        $context = \context_system::instance();
+        self::validate_context($context);
+        $context = \context_system::instance();
+        $INTENT = new intent($intent_id);
+        $FILE = new file();
+        // Create temp directory
+        $path = $CFG->dataroot . '/temp/cria/';
+        base::create_directory_if_not_exists($path);
+        $path .= $intent_id . '/';
+        base::create_directory_if_not_exists($path);
+        $path .= 'uploads/';
+        base::create_directory_if_not_exists($path);
+        // Save file to temporary folder
+        $file = $path . $filename;
+        $file_content = base64_decode($filecontent);
+        file_put_contents($file, $file_content);
+
+        // Get moodle file storage
+        $fs = get_file_storage();
+        // save file to moodle file storage
+        $file_record = $fs->create_file_from_pathname([
+            'contextid' => $context->id,
+            'component' => 'local_cria',
+            'filearea' => 'content',
+            'itemid' => $intent_id,
+            'filepath' => '/',
+            'filename' => $filename,
+        ], $file);
+
+        // Get newly created file from moodle file storage
+        $moodle_file = $fs->get_file(
+            $context->id,
+            'local_cria',
+            'content',
+            $intent_id,
+            '/',
+            $filename
+        );
+        // Get file type
+        $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
+
+        // Get bot from intent
+        $BOT = new bot($INTENT->get_bot_id());
+        // Prepare file record paramters
+        $content_data = [
+            'intent_id' => $intent_id,
+            'name' => $filename,
+            'file_type' => $file_type,
+            'content' => '',
+            'indexed' => 0,
+            'parsingstrategy' => $BOT->get_parse_strategy(),
+            'usermodified' => $USER->id,
+            'timemodified' => time(),
+            'timecreated' => time(),
+        ];
+
+        $new_file_id = $DB->insert_record('local_cria_files', $content_data);
+        // Delete temporary file
+        unlink($file);
+        return $new_file_id;
+    }
+
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function upload_file_returns()
+    {
+        return new external_value(PARAM_INT, 'File id');
+    }
 }
