@@ -278,6 +278,7 @@ class local_cria_external_content extends external_api {
             'contextid' => $context->id,
             'component' => 'local_cria',
             'filearea' => 'content',
+            'keywords' => '',
             'itemid' => $intent_id,
             'filepath' => '/',
             'filename' => $filename,
