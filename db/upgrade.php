@@ -169,5 +169,26 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 20240701200, 'local', 'cria');
     }
 
+    if ($oldversion < 20240701600) {
+
+        // Changing precision of field top_k on table local_cria_bot to (4).
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('top_k', XMLDB_TYPE_INTEGER, '4', null, null, null, '50', 'top_p');
+
+        // Launch change of precision for field top_k.
+        $dbman->change_field_precision($table, $field);
+
+
+        // Changing the default of field top_k on table local_cria_bot to 50.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('top_k', XMLDB_TYPE_INTEGER, '4', null, null, null, '50', 'top_p');
+
+        // Launch change of default for field top_k.
+        $dbman->change_field_default($table, $field);
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 20240701600, 'local', 'cria');
+    }
+
     return true;
 }
