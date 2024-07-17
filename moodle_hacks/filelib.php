@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * HACK CAN BE FOUND AT LINE 5346. Part of the function file_pluginfile
 * This file is part of Cria.
 * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
@@ -5343,7 +5344,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
 
         // ========================================================================================================================
     }
-    // ADDE FOR LOCAL CRIA TO SERVE FILES WITHOUT LOGIN
+    // ADDED FOR LOCAL CRIA TO SERVE FILES WITHOUT LOGIN
     else if ($component === 'local_cria') {
         // all users may access it
         $filename = array_pop($args);
