@@ -743,9 +743,9 @@ class bot extends crud
 
     /**
      * Returns json array of related prompts
-     * @return string
+     * @return array
      */
-    public function get_related_prompts(): string
+    public function get_related_prompts(): array
     {
         if (empty($this->related_prompts)) {
             return [];
