@@ -27,7 +27,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use local_cria\bot;
-use local_cria\cria;
+use local_cria\base;
 
 /**
  * External Web Service Template
@@ -291,9 +291,15 @@ class local_cria_external_bot extends external_api
                     false,
                     '#e31837'
                 ),
-                'icon_url' => new external_value(
+                'icon_file_name' => new external_value(
                     PARAM_TEXT,
-                    'URL of the icon for the embedded bot',
+                    'Icon file name',
+                    false,
+                    ''
+                ),
+                'icon_file_content' => new external_value(
+                    PARAM_RAW,
+                    'Base64 of file content',
                     false,
                     ''
                 ),
@@ -351,7 +357,8 @@ class local_cria_external_bot extends external_api
      * @param $title
      * @param $subtitle
      * @param $embed_position
-     * @param $icon_url
+     * @param $icon_file_name
+     * @param $icon_file_content
      * @param $bot_locale
      * @param $child_bots
      * @param $published
@@ -391,7 +398,8 @@ class local_cria_external_bot extends external_api
         $title = '',
         $subtitle = '',
         $embed_position = 1,
-        $icon_url = '',
+        $icon_file_name = '',
+        $icon_file_content = '',
         $bot_locale = 'en-US',
         $child_bots = '',
         $publish = 0
@@ -431,7 +439,8 @@ class local_cria_external_bot extends external_api
                 'title' => $title,
                 'subtitle' => $subtitle,
                 'embed_position' => $embed_position,
-                'icon_url' => $icon_url,
+                'icon_file_name' => $icon_file_name,
+                'icon_file_content' => $icon_file_content,
                 'bot_locale' => $bot_locale,
                 'child_bots' => $child_bots,
                 'publish' => $publish
@@ -472,6 +481,26 @@ class local_cria_external_bot extends external_api
         // Create bot
         $BOT = new bot();
         $id = $BOT->insert_record((object)$params);
+        // Add icon file if there is one
+        if ($icon_file_name) {
+            // Create temporary folder
+            $tempdir = $CFG->dataroot . '/temp/cria';
+            base::create_directory_if_not_exists($tempdir);
+            $tempdir = $tempdir . '/' . $id;
+            base::create_directory_if_not_exists($tempdir);
+            file_put_contents($tempdir . '/' . $icon_file_name, base64_decode($icon_file_content));
+            // Create moodle file
+            $fs = get_file_storage();
+            $fileinfo = array(
+                'component' => 'local_cria',
+                'filearea' => 'bot_icon',
+                'itemid' => $id,
+                'contextid' => $context->id,
+                'filepath' => '/',
+                'filename' => $icon_file_name
+            );
+            $file = $fs->create_file_from_pathname($fileinfo, $tempdir . '/' . $icon_file_name);
+        }
 
         unset($BOT);
         unset($NEW_BOT);
