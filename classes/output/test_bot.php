@@ -73,7 +73,7 @@ class test_bot implements \renderable, \templatable
             $debug = true;
         }
 
-        $related_prompts = json_decode($BOT->get_related_prompts());
+        $related_prompts = $BOT->get_related_prompts();
 
         $data = [
             'bot_id' => $this->bot_id,
