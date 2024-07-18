@@ -271,6 +271,8 @@ $string['submit'] = 'Submit';
 $string['subtitle'] = 'Subtitle';
 $string['statistics'] = 'Statistics';
 $string['status'] = 'Status';
+$string['support_email'] = 'Support email';
+$string['support_email_help'] = 'Enter the email address of a person who shoudl be notified when an error is encountered during a chat.';
 $string['synonym'] = 'Synonym';
 $string['synonyms'] = 'Synonyms';
 $string['system_message'] = 'System message';
@@ -345,6 +347,13 @@ $string['cria:groups'] = 'groups';
 $string['cria:view_providers'] = 'groups';
 $string['cria:view_advanced_bot_options'] = 'View advanced bot options';
 $string['cria:view_conversation_styles'] = 'View conversation styles';
+
+// Error messages
+$string['default_error_message'] = 'I\'m not sure what happened, but I\'m unable to answer this question. I have let my administrator know. In the meantime, please ask another question.'; ;
+$string['error_message_body'] = 'The following error occurred to bot: {$a->bot_name}<br><br>Prompt: {$a->prompt}<br><br>Error: {
+{$a->error_message}';
+$string['error_message_subject'] = 'ERROR! Bot failed to respond';
+$string['openai_filter'] = 'Oops! It looks like you are trying to use a word that is not allowed. Please rephrase your question.';
 
 // Settings
 $string['criabot_url'] = 'CriaBot URL';

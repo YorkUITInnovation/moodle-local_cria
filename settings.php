@@ -102,6 +102,14 @@ if ($hassiteconfig) {
         '', PARAM_TEXT, 255
     ));
 
+    // Support email
+    $settings->add( new admin_setting_configtext(
+        'local_cria/support_email',
+        get_string('support_email', 'local_cria'),
+        get_string('support_email_help', 'local_cria'),
+        '', PARAM_TEXT, 255
+    ));
+
     $ADMIN->add('localplugins', $settings);
 
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf

@@ -1,16 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 /*
@@ -1354,6 +1354,47 @@ class bot extends crud
 
                 email_to_user($user, null, $subject, $message);
             }
+        }
+    }
+
+    /**
+     * Send an email to the bot owner
+     * @param $prompt
+     * @return string
+     * @throws \dml_exception
+     */
+    public function send_email_to_support($prompt = '', $message = '')
+    {
+        global $DB;
+        // Get config
+        $config = get_config('local_cria');
+
+        if (!empty($config->support_email)) {
+
+            // Get a user object
+            $user = $DB->get_record('user', ['id' => 1]);
+            // Loop through and send the message
+            // Replace user object with new values
+            $user->id = 99999999999;
+            $user->email = $config->support_email;
+            $user->username = $config->support_email;
+            $user->firstname = '';
+            $user->lastname = '';
+            $user->firstnamephonetic = '';
+            $user->lastnamephonetic = '';
+            $user->middlename = '';
+            $user->auth = 'manual';
+            $user->language = 'en';
+            $user->idnumber = '';
+            $user->suspended = 0;
+            // Prepare subject and message
+            $subject = get_string('error_message_subject', 'local_cria');
+            $message = get_string('error_message_body', 'local_cria',
+                ['bot_name' => $this->get_name(), 'prompt' => $prompt, 'error_message' => $message]
+            );
+
+            email_to_user($user, null, $subject, $message);
+
         }
     }
 

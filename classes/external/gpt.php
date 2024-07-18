@@ -140,35 +140,51 @@ class local_cria_external_gpt extends external_api
 
         if ($chat_id != 'none') {
             $result = criabot::chat_send($chat_id, $bot_name, $prompt, $filters);
-            // Get token usage
-            $token_usage = $result->reply->total_usage;
-            // Check if the context type is a question
-            if (empty($result->reply->context)) {
-                $content = nl2br($result->reply->content->content);
-                $file_name = "LLM Generated";
-                $BOT->send_no_context_email($prompt, $content);
-            } else if ($result->reply->context->context_type == "QUESTION") {
-                // Return llm_reply or DB reply
-                if ($result->reply->context->node->node->metadata->llm_reply == true) {
+            // If no errors have occured
+            if ($result->status == 200) {
+                // Get token usage
+                $token_usage = $result->reply->total_usage;
+                // Check if the context type is a question
+                if (empty($result->reply->context)) {
                     $content = nl2br($result->reply->content->content);
+                    $file_name = "LLM Generated";
+                    $BOT->send_no_context_email($prompt, $content);
+                } else if ($result->reply->context->context_type == "QUESTION") {
+                    // Return llm_reply or DB reply
+                    if ($result->reply->context->node->node->metadata->llm_reply == true) {
+                        $content = nl2br($result->reply->content->content);
+                    } else {
+                        include_once($CFG->dirroot . '/lib/filelib.php');
+                        $context = \context_system::instance();
+                        $question_id = $result->reply->context->node->node->metadata->question_id;
+                        $question = $DB->get_record('local_cria_question', ['id' => (int)$question_id]);
+                        $content = file_rewrite_pluginfile_urls(
+                            $question->answer,
+                            'pluginfile.php',
+                            $context->id,
+                            'local_cria',
+                            'answer',
+                            $question->id);
+                        $content = format_text($content, FORMAT_PLAIN, base::getEditorOptions($context), $context);
+                    }
+                    $file_name = $result->reply->context->node->node->metadata->file_name;
                 } else {
-                    include_once($CFG->dirroot . '/lib/filelib.php');
-                    $context = \context_system::instance();
-                    $question_id = $result->reply->context->node->node->metadata->question_id;
-                    $question = $DB->get_record('local_cria_question', ['id' => (int)$question_id]);
-                    $content = file_rewrite_pluginfile_urls(
-                        $question->answer,
-                        'pluginfile.php',
-                        $context->id,
-                        'local_cria',
-                        'answer',
-                        $question->id);
-                    $content = format_text($content, FORMAT_PLAIN, base::getEditorOptions($context), $context);
+                    $content = nl2br($result->reply->content->content);
+                    $file_name = $result->reply->context->nodes[0]->node->metadata->file_name;
                 }
-                $file_name = $result->reply->context->node->node->metadata->file_name;
             } else {
-                $content = nl2br($result->reply->content->content);
-                $file_name = $result->reply->context->nodes[0]->node->metadata->file_name;
+                switch($result->code) {
+                    case 'OPENAI_FILTER':
+                        $content = nl2br(get_string('openai_filter', 'local_cria'));
+                        $file_name = "LLM Generated";
+                        break;
+                    default :
+                        $content = nl2br(get_string('default_error_message', 'local_cria'));
+                        $file_name = "LLM Generated";
+                        break;
+                }
+                //  Send email to support
+                $BOT->send_email_to_support($prompt,json_encode($result, JSON_PRETTY_PRINT));
             }
             // Parse content with Markdown
 
