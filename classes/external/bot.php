@@ -299,7 +299,7 @@ class local_cria_external_bot extends external_api
                 ),
                 'icon_file_content' => new external_value(
                     PARAM_RAW,
-                    'Base64 of file content',
+                    'File content encoded in Base64',
                     false,
                     ''
                 ),
