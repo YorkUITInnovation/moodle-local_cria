@@ -65,13 +65,13 @@ if ($id) {
     $formdata->requires_content_prompt = 0;
     $formdata->temperature = 0.1;
     $formdata->top_p = 0.0;
-    $formdata->top_k = 50;
+    $formdata->top_k = 500;
     $formdata->top_n = 10;
-    $formdata->min_k = 0.6;
-    $formdata->min_relevance = 0.7; //min_n
+    $formdata->min_k = 0.0;
+    $formdata->min_relevance = 0.0; //min_n
     $formdata->theme_color = '#e31837';
     $formdata->fine_tuning = true;
-    $formdata->max_context = 1024; //max_input_tokens
+    $formdata->max_context = 120000; //max_input_tokens
     $formdata->no_context_message = get_string('default_no_context_message', 'local_cria');
     $formdata->no_context_use_message = 1;
     $formdata->no_context_llm_guess = 0;
