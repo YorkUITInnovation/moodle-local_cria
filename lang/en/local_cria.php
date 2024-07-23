@@ -127,6 +127,7 @@ $string['embedding_server_url_help'] = 'URL of the embedding server';
 $string['entities'] = 'Entities';
 $string['entity'] = 'Entity';
 $string['error_importfile'] = 'There was an error importing the file';
+$string['error_message'] = 'Error message';
 $string['examples'] = 'Examples';
 $string['existing_bots'] = 'Existing bots';
 $string['existing_bot_models'] = 'Existing models';
@@ -205,6 +206,7 @@ $string['no_context_email'] = 'No context notification email';
 $string['no_context_email_help'] = 'Enter the email address to receive notifications when the bot has no reply (context).';
 $string['no_context_llm_guess'] = 'Use LLM guess';
 $string['no_context_llm_guess_help'] = 'Select Yes if you want the bot to guess at an answer.';
+$string['nodes'] = 'Nodes';
 $string['parse_strategy'] = 'Preprocess strategy';
 $string['parse_strategy_help'] = 'Select the type of preprocessing you would like to use.';
 $string['paste_text'] = 'Paste your text here';
@@ -294,6 +296,7 @@ $string['use_bot_server'] = 'Requires uploading documents?';
 $string['use_bot_server_help'] = 'If you this type rqeuires uploading documents, select Yes.';
 $string['user_prompt'] = 'User prompt';
 $string['userid'] = 'User id';
+$string['view_parsing_data'] = 'View parsing data';
 $string['web_page_help'] = 'Enter web page addresses including http/https. Separate each address with a new line.<br>'
  . '<br>Please note that some web pages may not permit their content to be captured. '
  . 'If you encounter a \'no content\' message while testing your bot, consider downloading the generated document to '

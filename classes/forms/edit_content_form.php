@@ -121,17 +121,16 @@ class edit_content_form extends \moodleform
                 get_string('error_importfile', 'local_cria'),
                 'required'
             );
-            // Parsing strategy select menu
-            $strategies = base::get_parsing_strategies();
-            $mform->addElement(
-                'select',
-                'parsingstrategy',
-                get_string('parse_strategy', 'local_cria'),
-                $strategies
-            );
-
         }
 
+        // Parsing strategy select menu
+        $strategies = base::get_parsing_strategies();
+        $mform->addElement(
+            'select',
+            'parsingstrategy',
+            get_string('parse_strategy', 'local_cria'),
+            $strategies
+        );
 
 
         // Keywords multiselect element
@@ -143,6 +142,45 @@ class edit_content_form extends \moodleform
         );
         $keywords->setMultiple(true);
 
+        // add a header for viewing parsing data and errors
+        $mform->addElement(
+            'header',
+            'view_parsing_data',
+            get_string('view_parsing_data', 'local_cria')
+        );
+        // Close the fieldset on load
+        $mform->setExpanded('view_parsing_data', false);
+
+        // Add a disabled textarea for the nodes message
+        $mform->addElement(
+            'textarea',
+            'nodes',
+            get_string('nodes', 'local_cria') . ' <button type="button" id="cria-copy-nodes" class="btn btn-outline-primary btn-sm"><i id="cria-copy-nodes-icon" class="bi bi-clipboard"></i></button>',
+            [
+                'rows' => 10,
+                'cols' => 50,
+                'disabled' => 'disabled'
+            ]
+        );
+        $mform->setType(
+            'nodes',
+            PARAM_TEXT
+        );
+        // Add a disabled textarea for the error message
+        $mform->addElement(
+            'textarea',
+            'error_message',
+            get_string('error_message', 'local_cria') . ' <button type="button" id="cria-copy-error-message" class="btn btn-outline-primary btn-sm"><i id="cria-copy-error-message-icon" class="bi bi-clipboard"></i></button>',
+            [
+                'rows' => 10,
+                'cols' => 50,
+                'disabled' => 'disabled'
+            ]
+        );
+        $mform->setType(
+            'error_message',
+            PARAM_TEXT
+        );
 
         $this->add_action_buttons();
         $this->set_data($formdata);

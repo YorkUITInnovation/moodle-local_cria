@@ -46,7 +46,6 @@ if ($id != 0) {
     $formdata = $DB->get_record('local_cria_files', array('id' => $id));
     $formdata->bot_id = $INTENT->get_bot_id();
     $formdata->keywords = json_decode($formdata->keywords);
-    $formdata->parsingstrategy = $BOT->get_parse_strategy();;
 } else {
     $formdata = new stdClass();
 // Set bot id in formdata
@@ -97,8 +96,7 @@ if ($mform->is_cancelled()) {
     // If id, then simple upload the file using file picker
     if ($data->id) {
         $FILE = new file($id);
-//        $data->path = $path;
-//        $data->file_content = $mform->get_file_content('importedFile');
+
 
         $FILE->update_record($data);
         // Redirect to content page

@@ -50,7 +50,7 @@ class index_files extends \core\task\scheduled_task
             // Update the file to indexing pending
             $content_data = [
                 'id' => $file->id,
-                'indexed' => $FILE::INDEXING_PENDING,
+                'indexed' => $FILE::INDEXING_STARTED,
                 'timemodified' => time(),
                 'usermodified' => $USER->id,
             ];
@@ -76,6 +76,8 @@ class index_files extends \core\task\scheduled_task
             );
             // Get bot parameters to use proper model ids
             $bot_parameters = json_decode($BOT->get_bot_parameters_json());
+            mtrace('llm_model_id: ' . $bot_parameters->llm_model_id);
+            mtrace('embedding_model_id: ' . $bot_parameters->embedding_model_id);
 
             $results = $PARSER->execute(
                 $bot_parameters->llm_model_id,
@@ -85,13 +87,9 @@ class index_files extends \core\task\scheduled_task
             );
             if ($results['status'] != 200) {
                 // Update file record with error and move on to the next file
-                $content_data = [
-                    'id' => $file->id,
-                    'indexed' => $FILE::INDEXING_FAILED,
-                    'error_message' => $results['message'], // 'Error parsing file: ' . $results['message'],
-                    'timemodified' => time(),
-                    'usermodified' => $USER->id,
-                ];
+                $content_data['indexed'] = $FILE::INDEXING_FAILED;
+                $content_data['error_message'] = 'Error parsing file: ' . $results['message'];
+                $content_data['timemodified'] = time();
                 $DB->update_record('local_cria_files', $content_data);
                 // Move to next file
                 continue;
@@ -99,27 +97,19 @@ class index_files extends \core\task\scheduled_task
                 $nodes = $results['nodes'];
                 // Send nodes to indexing server
                 $upload = $FILE->upload_nodes_to_indexing_server($INTENT->get_bot_name(), $nodes, $file_name, $file_type, false);
+                $content_data['nodes'] = json_encode($nodes, JSON_PRETTY_PRINT);
+                $content_data['timemodified'] = time();
+
                 if ($upload->status != 200) {
                     // Update file record with error and move on to the next file
-                    $content_data = [
-                        'id' => $file->id,
-                        'indexed' => $FILE::INDEXING_FAILED,
-                        'error_message' => 'Error uploading file to indexing server: ' . $upload->message,
-                        'timemodified' => time(),
-                        'usermodified' => $USER->id,
-                    ];
+                    $content_data['indexed'] = $FILE::INDEXING_FAILED;
+                    $content_data['error_message'] = 'Error uploading file to indexing server: ' . json_encode($upload, JSON_PRETTY_PRINT);
                     $DB->update_record('local_cria_files', $content_data);
                     // Move to next file
                     continue;
                 } else {
                     // Update file record with completed
-                    $content_data = [
-                        'id' => $file->id,
-                        'indexed' => $FILE::INDEXING_COMPLETE,
-                        'error_message' => '',
-                        'timemodified' => time(),
-                        'usermodified' => $USER->id,
-                    ];
+                    $content_data['indexed'] = $FILE::INDEXING_COMPLETE;
                     $DB->update_record('local_cria_files', $content_data);
                 }
             }
