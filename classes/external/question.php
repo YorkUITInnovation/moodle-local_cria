@@ -27,6 +27,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use local_cria\intent;
+use local_cria\bot;
 use local_cria\criabot;
 use local_cria\questions;
 
@@ -162,7 +163,7 @@ class local_cria_external_question extends external_api
         self::validate_context($context);
 
         $INTENT = new intent($intentid);
-        $BOT = new criabot($INTENT->get_bot_id());
+        $BOT = new bot($INTENT->get_bot_id());
         $question = [
             'intent_id' => $intentid,
             'name' => $name,
