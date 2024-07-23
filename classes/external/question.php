@@ -300,10 +300,10 @@ class local_cria_external_question extends external_api
         $INTENT = new intent($question->intent_id);
         $publish = $INTENT->publish_question($id);
         // Update record
-        if ($publish) {
+        if ($publish == '200') {
             return true;
         } else {
-            return false;
+            return $publish;
         }
     }
 
@@ -313,7 +313,7 @@ class local_cria_external_question extends external_api
      */
     public static function publish_returns()
     {
-        return new external_value(PARAM_BOOL, 'return ture or false');
+        return new external_value(PARAM_TEXT, 'return 200 or the error message');
     }
 
     //*********************update example question*************************

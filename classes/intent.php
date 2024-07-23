@@ -388,7 +388,7 @@ class intent extends crud
 
     /**
      * Publish question to bot server
-     * @return array|false
+     * @return text
      * @throws \dml_exception
      */
     public function publish_question($question_id)
@@ -475,12 +475,12 @@ class intent extends crud
                     ['id' => $question_example->id]
                 );
             }
-            return true;
+            return 200;
         } else {
             \core\notification::error(
                 'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message
             );
-            return false;
+            return  'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message;
         }
     }
 
