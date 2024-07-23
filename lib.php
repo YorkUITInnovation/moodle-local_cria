@@ -14,7 +14,7 @@
 
 
 
-use theme_fakesmarts\navdrawer;
+use theme_cria\navdrawer;
 use local_cria\bot_role;
 use local_cria\bot_roles;
 use local_cria\bot_capability;
