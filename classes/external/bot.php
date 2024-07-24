@@ -321,6 +321,18 @@ class local_cria_external_bot extends external_api
                     false,
                     0
                 ),
+                'id' => new external_value(
+                    PARAM_INT,
+                    'bot id. If available, an update command will be executed',
+                    false,
+                    0
+                ),
+                'related_prompts' => new external_value(
+                    PARAM_RAW,
+                    'A JSON array of prompts in this format: [{"label":"A label","prompt":"A prompt"}]',
+                    false,
+                    ''
+                ),
 
             )
         );
@@ -362,6 +374,8 @@ class local_cria_external_bot extends external_api
      * @param $bot_locale
      * @param $child_bots
      * @param $published
+     * @param $id
+     * @param $related_prompts
      * @return int
      * @throws dml_exception
      * @throws invalid_parameter_exception
@@ -383,10 +397,10 @@ class local_cria_external_bot extends external_api
         $max_tokens = 4000,
         $temperature = 0.1,
         $top_p = 0.0,
-        $top_k = 30,
+        $top_k = 500,
         $top_n = 10,
-        $min_k = 0.6,
-        $min_relevance = 0.8,
+        $min_k = 0.0,
+        $min_relevance = 0.0,
         $max_context = 120000,
         $no_context_message = 'Nothing found',
         $no_context_use_message = 1,
@@ -402,7 +416,9 @@ class local_cria_external_bot extends external_api
         $icon_file_content = '',
         $bot_locale = 'en-US',
         $child_bots = '',
-        $publish = 0
+        $publish = 0,
+        $id = 0,
+        $related_prompts = ''
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -443,7 +459,9 @@ class local_cria_external_bot extends external_api
                 'icon_file_content' => $icon_file_content,
                 'bot_locale' => $bot_locale,
                 'child_bots' => $child_bots,
-                'publish' => $publish
+                'publish' => $publish,
+                'id' => $id,
+                'related_prompts' => $related_prompts
             )
         );
 
@@ -454,7 +472,6 @@ class local_cria_external_bot extends external_api
             $child_bots = [];
         }
         // Add extra fields to params
-        $params['id'] = 0;
         $params['bot_id'] = 0;
         $params['bot_max_tokens'] = $max_context;
         $params['tone'] = '';
@@ -464,13 +481,11 @@ class local_cria_external_bot extends external_api
             'format' => 1
         ];
         unset($params['description']);
-        $params['available_child'] = 0;
         $params['fine_tuning'] = 0;
         $params['child_bots'] = $child_bots;
         $params['debugging'] = 0;
         $params['system_reserved'] = 0;
         $params['plugin_path'] = "";
-        $params['related_prompts'] = "";
         $params['embed_enabled'] = 0;
 
 
@@ -479,8 +494,13 @@ class local_cria_external_bot extends external_api
         $context = \context_system::instance();
         self::validate_context($context);
         // Create bot
-        $BOT = new bot();
-        $id = $BOT->insert_record((object)$params);
+        $BOT = new bot($id);
+        if ($id) {
+            $BOT->update_record((object)$params);
+        } else {
+            $id = $BOT->insert_record((object)$params);
+        }
+
         // Add icon file if there is one
         if ($icon_file_name) {
             // Create temporary folder
@@ -491,6 +511,12 @@ class local_cria_external_bot extends external_api
             file_put_contents($tempdir . '/' . $icon_file_name, base64_decode($icon_file_content));
             // Create moodle file
             $fs = get_file_storage();
+            // Delete any existing files in thebot_icon filearea
+            $files = $fs->get_area_files($context->id, 'local_cria', 'bot_icon', $id);
+            foreach ($files as $file) {
+                $file->delete();
+            }
+            // Create new file
             $fileinfo = array(
                 'component' => 'local_cria',
                 'filearea' => 'bot_icon',
@@ -503,7 +529,6 @@ class local_cria_external_bot extends external_api
         }
 
         unset($BOT);
-        unset($NEW_BOT);
 
         return $id;
     }
