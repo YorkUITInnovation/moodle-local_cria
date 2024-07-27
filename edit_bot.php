@@ -64,6 +64,7 @@ if ($id) {
     $formdata->requires_user_prompt = 1;
     $formdata->requires_content_prompt = 0;
     $formdata->temperature = 0.1;
+    $formdata->max_tokens = 4000;
     $formdata->top_p = 0.0;
     $formdata->top_k = 500;
     $formdata->top_n = 10;

@@ -227,6 +227,11 @@ class edit_question_form extends \moodleform
             get_string('savechanges')
         );
         $buttonarray[] = $mform->createElement(
+            'submit',
+            'submitpublishbutton',
+            get_string('save_and_publish', 'local_cria')
+        );
+        $buttonarray[] = $mform->createElement(
             'cancel',
             'cancel',
             get_string('return', 'local_cria')

@@ -20,6 +20,7 @@ require_once($CFG->dirroot . "/local/cria/classes/forms/edit_question_form.php")
 
 use local_cria\base;
 use local_cria\intent;
+use local_cria\question;
 
 
 global $CFG, $OUTPUT, $USER, $PAGE, $DB, $SITE;
@@ -112,13 +113,21 @@ if ($mform->is_cancelled()) {
     // Update record
     $DB->set_field('local_cria_question', 'answer', $data->answer, array('id' => $data->id));
 
+    // If save and publish button is set, plublish the question
+    if (isset($data->submitpublishbutton)) {
+        $QUESTION = new question($data->id);
+        $status = $QUESTION->publish();
+        if ($status->status == 404) {
+            core\notification::error(get_string('error_publishing_question', 'local_cria'));
+        }
+        unset($QUESTION);
+    }
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/edit_question.php?id=' . $data->id . '&intent_id=' . $data->intent_id);
 } else {
     // Show form
     $mform->set_data($mform);
 }
-
 
 base::page(
     new moodle_url('/local/cria/edit_intent.php', ['bot_id' => $INTENT->get_bot_id(), 'id' => $id]),
