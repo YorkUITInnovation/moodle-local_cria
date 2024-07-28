@@ -31,7 +31,9 @@ namespace local_cria\output;
 
 use local_cria\bot;
 use local_cria\files;
+use local_cria\file;
 use local_cria\intents;
+use local_cria\intent;
 
 class content implements \renderable, \templatable
 {
@@ -45,10 +47,10 @@ class content implements \renderable, \templatable
      */
     private $active_intent_id;
 
-    public function __construct($bot_id, $activer_intent_id = 0)
+    public function __construct($bot_id, $active_intent_id = 0)
     {
         $this->bot_id = $bot_id;
-        $this->active_intent_id = $activer_intent_id;
+        $this->active_intent_id = $active_intent_id;
     }
 
 
@@ -72,6 +74,7 @@ class content implements \renderable, \templatable
 
         $INTENTS = new intents($this->bot_id);
         $intents = array_values($INTENTS->get_records_with_related_data($this->active_intent_id));
+        $INTENT = new intent($this->active_intent_id);
 
         $data = [
             'bot_id' => $this->bot_id,
@@ -79,7 +82,8 @@ class content implements \renderable, \templatable
             'intents' => $intents,
             'use_fine_tuning' => $BOT->get_fine_tuning(),
             'content_page' => true,
-            'return_url' => 'content'
+            'return_url' => 'content',
+            'file_state' => $INTENT->check_file_state()
         ];
 
         return $data;

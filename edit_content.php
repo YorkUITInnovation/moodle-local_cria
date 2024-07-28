@@ -254,10 +254,7 @@ if ($mform->is_cancelled()) {
         }
     }
 
-    // This is where this function ends. The rest will be performed by a scheduled task.
-
-    // Now, index the files
-
+    exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $data->intent_id .' > /dev/null 2>&1 &');
 
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/content.php?bot_id=' . $data->bot_id . '&intent_id=' . $data->intent_id);

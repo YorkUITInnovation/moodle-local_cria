@@ -36,6 +36,37 @@ $(document).ready(function () {
                         });
                     });
                 });
+                // Publish document. Stop intervale when all published
+                var fileState = $('#cria-file-state').val();
+                if (fileState !== '0') {
+                    let interval = setInterval(function () {
+                        table.ajax.reload();
+                        // Make ajax call to check_file_state.php
+                        $.ajax({
+                            url: wwwroot + '/local/cria/ajax/check_file_state.php',
+                            type: 'POST',
+                            data: {
+                                'intent_id': $('#intent_id').val()
+                            },
+                            success: function (results) {
+                                results = JSON.parse(results);
+                                if (results.count === '0') {
+                                    console.log('State equals 0')
+                                    $('#cria-file-state').val('0')
+                                    fileState = $('#cria-file-state').val();
+                                    clearInterval(interval);
+
+                                }
+                            }
+                        });
+                        fileState = $('#cria-file-state').val();
+                        if (fileState === '0') {
+                            clearInterval(interval);
+                        }
+                    }, 30000);
+                }
+
+
                 //
                 // // Edit entity
                 // $('.keyword-dt-edit').off();
