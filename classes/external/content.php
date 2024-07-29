@@ -314,6 +314,7 @@ class local_cria_external_content extends external_api {
         $new_file_id = $DB->insert_record('local_cria_files', $content_data);
         // Delete temporary file
         unlink($file);
+        exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $intent_id .' > /dev/null 2>&1 &');
         return $new_file_id;
     }
 
