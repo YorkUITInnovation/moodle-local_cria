@@ -695,7 +695,7 @@ class intent extends crud
             if ($results['status'] != 200) {
                 // Update file record with error and move on to the next file
                 $content_data['indexed'] = $FILE::INDEXING_FAILED;
-                $content_data['error_message'] = 'Error parsing file: ' . $results['message'];
+                $content_data['error_message'] = json_encode($results, JSON_PRETTY_PRINT);
                 $content_data['timemodified'] = time();
                 $DB->update_record('local_cria_files', $content_data);
                 // Move to next file
