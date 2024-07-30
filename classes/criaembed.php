@@ -48,6 +48,7 @@ class criaembed
             "botLocale" => $BOT->get_bot_locale(),
             "initialPrompts" => $BOT->get_related_prompts(),
         ];
+        file_put_contents('/var/www/moodledata/temp/criaembed.json', json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
