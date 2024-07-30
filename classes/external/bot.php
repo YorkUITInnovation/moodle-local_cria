@@ -497,10 +497,10 @@ class local_cria_external_bot extends external_api
         $BOT = new bot($id);
         if ($id) {
             $BOT->update_record((object)$params);
+            unset($BOT);
             // Create new bot object so that new parmaeters can be used.
             $UPDATED_BOT = new bot($id);
             if ($UPDATED_BOT->use_bot_server()) {
-                file_put_contents('/var/www/moodledata/temp/ws_bot_update.txt', 'Yep!');
                 $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
             }
         } else {
