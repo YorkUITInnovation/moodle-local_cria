@@ -533,7 +533,7 @@ class local_cria_external_bot extends external_api
             unset($BOT);
             // Create new bot object so that new parmaeters can be used.
             $UPDATED_BOT = new bot($id);
-            $this_bot = $DB->get_record('local_cria_bot', ['id' => $id, 'bot_id' => $id]);
+            $this_bot = $DB->get_record('local_cria_bot', ['id' => $id]);
             $UPDATED_BOT->update_record($this_bot);
             unset($UPDATED_BOT);
             $NEW_UPDATED_BOT = new bot($id);
