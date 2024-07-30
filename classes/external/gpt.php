@@ -172,12 +172,14 @@ class local_cria_external_gpt extends external_api
                     $content = nl2br($result->reply->content->content);
                     $nodes = $result->reply->context->nodes;
                     $file_name_array = [];
-                    foreach ($nodes as $node) {
-                        if (!in_array($node->metadata->filename, $file_name_array) ) {
-                            $file_name_array[] = $node->metadata->filename;
+                    $file_name = '';
+                    foreach ($nodes as $n) {
+                        if (!in_array($n->node->metadata->filename, $file_name_array) ) {
+                            $file_name_array[] = $n->node->metadata->filename;
+                            $file_name .= $n->node->metadata->filename . ', ';
                         }
                     }
-                    $file_name = implode(', ', $file_name_array);
+                    $file_name = rtrim($file_name, ', ');
                 }
             } else {
                 switch($result->code) {
