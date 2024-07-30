@@ -499,43 +499,45 @@ class local_cria_external_bot extends external_api
             $BOT->update_record((object)$params);
         } else {
             $id = $BOT->insert_record((object)$params);
-        }
 
-        // Add icon file if there is one
-        if ($icon_file_name) {
-            // Create temporary folder
-            $tempdir = $CFG->dataroot . '/temp/cria';
-            base::create_directory_if_not_exists($tempdir);
-            $tempdir = $tempdir . '/' . $id;
-            base::create_directory_if_not_exists($tempdir);
-            file_put_contents($tempdir . '/' . $icon_file_name, base64_decode($icon_file_content));
-            // Create moodle file
-            $fs = get_file_storage();
-            // Delete any existing files in thebot_icon filearea
-            $files = $fs->get_area_files($context->id, 'local_cria', 'bot_icon', $id);
-            foreach ($files as $file) {
-                $file->delete();
+            // Add icon file if there is one
+            if ($icon_file_name) {
+                // Create temporary folder
+                $tempdir = $CFG->dataroot . '/temp/cria';
+                base::create_directory_if_not_exists($tempdir);
+                $tempdir = $tempdir . '/' . $id;
+                base::create_directory_if_not_exists($tempdir);
+                file_put_contents($tempdir . '/' . $icon_file_name, base64_decode($icon_file_content));
+                // Create moodle file
+                $fs = get_file_storage();
+                // Delete any existing files in thebot_icon filearea
+                $files = $fs->get_area_files($context->id, 'local_cria', 'bot_icon', $id);
+                foreach ($files as $file) {
+                    $file->delete();
+                }
+                // Create new file
+                $fileinfo = array(
+                    'component' => 'local_cria',
+                    'filearea' => 'bot_icon',
+                    'itemid' => $id,
+                    'contextid' => $context->id,
+                    'filepath' => '/',
+                    'filename' => $icon_file_name
+                );
+                $file = $fs->create_file_from_pathname($fileinfo, $tempdir . '/' . $icon_file_name);
             }
-            // Create new file
-            $fileinfo = array(
-                'component' => 'local_cria',
-                'filearea' => 'bot_icon',
-                'itemid' => $id,
-                'contextid' => $context->id,
-                'filepath' => '/',
-                'filename' => $icon_file_name
-            );
-            $file = $fs->create_file_from_pathname($fileinfo, $tempdir . '/' . $icon_file_name);
-        }
 
-        // Create new bot object so that new parmaeters can be used.
-        $UPDATED_BOT = new bot($id);
-        if ($UPDATED_BOT->use_bot_server()) {
-            $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
+            // Create new bot object so that new parmaeters can be used.
+            $UPDATED_BOT = new bot($id);
+            if ($UPDATED_BOT->use_bot_server()) {
+                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
+            }
+
+            $this_bot = $DB->get_record('local_cria_bots', ['id' => $id]);
+            $UPDATED_BOT->update_record($this_bot);
         }
 
         unset($BOT);
-
         return $id;
     }
 
