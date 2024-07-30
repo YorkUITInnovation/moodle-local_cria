@@ -176,10 +176,13 @@ class files
                 $file->get_mimetype(),
                 $bot_parsing_strategy
             );
+
+            $MODEL = new model($BOT->get_model_id());
+            $EMBEDDING = new model($BOT->get_embedding_id());
             // Get parsed results
             $results = $PARSER->execute(
-                $BOT->get_model_id(),
-                $BOT->get_embedding_id(),
+                $MODEL->get_criadex_model_id(),
+                $EMBEDDING->get_criadex_model_id(),
                 $parsing_strategy,
                 $file_path . '/' . $file->get_filename()
             );
@@ -331,6 +334,8 @@ class files
                 $status->file = $file_name;
             }
         }
+        // Index all file sin the background
+        exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $this->intent_id .' > /dev/null 2>&1 &');
         return $status;
     }
 }
