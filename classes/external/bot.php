@@ -490,7 +490,7 @@ class local_cria_external_bot extends external_api
         $params['debugging'] = 0;
         $params['system_reserved'] = 0;
         $params['plugin_path'] = "";
-        $params['embed_enabled'] = 0;
+        $params['embed_enabled'] = 1;
 
 
         //Context validation
