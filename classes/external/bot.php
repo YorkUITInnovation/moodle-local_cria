@@ -471,12 +471,6 @@ class local_cria_external_bot extends external_api
         } else {
             $child_bots = [];
         }
-        // Add extra fields to params
-        if ($id) {
-            $params['bot_id'] = $id;
-        } else {
-            $params['bot_id'] = 0;
-        }
         $params['bot_max_tokens'] = $max_context;
         $params['tone'] = '';
         $params['response_length'] = '';
