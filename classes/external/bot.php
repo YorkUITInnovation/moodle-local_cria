@@ -533,7 +533,7 @@ class local_cria_external_bot extends external_api
                 $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
             }
 
-            $this_bot = $DB->get_record('local_cria_bots', ['id' => $id]);
+            $this_bot = $DB->get_record('local_cria_bot', ['id' => $id]);
             $UPDATED_BOT->update_record($this_bot);
         }
 
