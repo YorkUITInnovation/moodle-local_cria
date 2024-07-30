@@ -497,6 +497,11 @@ class local_cria_external_bot extends external_api
         $BOT = new bot($id);
         if ($id) {
             $BOT->update_record((object)$params);
+            // Create new bot object so that new parmaeters can be used.
+            $UPDATED_BOT = new bot($id);
+            if ($UPDATED_BOT->use_bot_server()) {
+                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
+            }
         } else {
             $id = $BOT->insert_record((object)$params);
 
@@ -526,18 +531,19 @@ class local_cria_external_bot extends external_api
                 );
                 $file = $fs->create_file_from_pathname($fileinfo, $tempdir . '/' . $icon_file_name);
             }
-
+            unset($BOT);
             // Create new bot object so that new parmaeters can be used.
             $UPDATED_BOT = new bot($id);
-            if ($UPDATED_BOT->use_bot_server()) {
-                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
-            }
 
             $this_bot = $DB->get_record('local_cria_bot', ['id' => $id]);
             $UPDATED_BOT->update_record($this_bot);
+
+            if ($UPDATED_BOT->use_bot_server()) {
+                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
+            }
         }
 
-        unset($BOT);
+
         return $id;
     }
 
