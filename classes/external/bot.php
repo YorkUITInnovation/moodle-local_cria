@@ -170,7 +170,7 @@ class local_cria_external_bot extends external_api
                     ''
                 ),
                 'welcome_message' => new external_value(
-                    PARAM_RAW,
+                    PARAM_TEXT,
                     'Welcome message for embedded bot',
                     false,
                     ''
