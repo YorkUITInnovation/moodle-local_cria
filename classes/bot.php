@@ -852,6 +852,18 @@ class bot extends crud
             $intent_id = $this->create_default_intent($id);
             // Create embed server code
             criaembed::manage_insert($intent_id);
+
+            $UPDATED_BOT = new bot($id);
+            // Update embed server code
+            $embed_bot = criaembed::manage_get_config($UPDATED_BOT->get_default_intent_id());
+            // If embed doesn't exist then create it
+
+            if ($embed_bot->status != 200) {
+                criaembed::manage_insert($UPDATED_BOT->get_default_intent_id());
+            } else {
+                // Update embed
+                criaembed::manage_update($UPDATED_BOT->get_default_intent_id());
+            }
         } else {
             $NEW_BOT->create_bot_on_bot_server(0);
         }
