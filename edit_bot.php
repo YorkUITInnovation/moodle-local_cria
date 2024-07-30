@@ -93,8 +93,6 @@ if ($mform->is_cancelled()) {
     unset($data->bot_api_key);
     unset($data->bot_name);
 
-print_object($data);
-die;
     if ($data->id) {
         $id = $data->id;
         $BOT = new bot($data->id);
