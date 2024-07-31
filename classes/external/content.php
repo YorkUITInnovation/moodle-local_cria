@@ -88,7 +88,7 @@ class local_cria_external_content extends external_api {
         // Delete file from indexing server
         $result = criabot::document_delete($FILE->get_bot_name(), $FILE->get_name());
         // Delete file from database
-        $DB->delete_records('local_cria_files', array('id' => $id));
+        $FILE->delete_record();
         if ($result->status == 200) {
             return $result->status;
         } else {
