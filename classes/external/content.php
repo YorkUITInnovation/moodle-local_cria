@@ -227,6 +227,7 @@ class local_cria_external_content extends external_api {
                 'intentid' => new external_value(PARAM_INT, 'Intent id'),
                 'filename' => new external_value(PARAM_TEXT, 'name of the file'),
                 'filecontent' => new external_value(PARAM_RAW, 'Content of the file encoded in base64'),
+                'parsingstrategy' => new external_value(PARAM_TEXT, 'Parsing strategy', false, '')
             )
         );
     }
@@ -240,7 +241,7 @@ class local_cria_external_content extends external_api {
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function upload_file($intent_id, $filename, $filecontent)
+    public static function upload_file($intent_id, $filename, $filecontent, $parsingstrategy = '')
     {
         global $CFG, $USER, $DB, $PAGE;
 
@@ -249,6 +250,7 @@ class local_cria_external_content extends external_api {
                 'intentid' => $intent_id,
                 'filename' => $filename,
                 'filecontent' => $filecontent,
+                'parsingstrategy' => $parsingstrategy
             )
         );
 
@@ -258,6 +260,7 @@ class local_cria_external_content extends external_api {
         self::validate_context($context);
         $context = \context_system::instance();
         $INTENT = new intent($intent_id);
+        $BOT = new bot($INTENT->get_bot_id());
         $FILE = new file();
         // Create temp directory
         $path = $CFG->dataroot . '/temp/cria/';
@@ -295,6 +298,10 @@ class local_cria_external_content extends external_api {
         );
         // Get file type
         $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
+        // Set parsing strategy
+        if (empty($parsingstrategy)) {
+            $parsingstrategy = $BOT->get_parse_strategy();
+        }
 
         // Get bot from intent
         $BOT = new bot($INTENT->get_bot_id());
@@ -305,7 +312,7 @@ class local_cria_external_content extends external_api {
             'file_type' => $file_type,
             'content' => '',
             'indexed' => 0,
-            'parsingstrategy' => $BOT->get_parse_strategy(),
+            'parsingstrategy' => $parsingstrategy,
             'usermodified' => $USER->id,
             'timemodified' => time(),
             'timecreated' => time(),
