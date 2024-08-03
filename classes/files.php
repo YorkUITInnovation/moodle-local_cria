@@ -257,7 +257,6 @@ class files
             // Get the content of the url using curl
             $results = scraper::execute($url);
             $content = $results->content;
-
             // Save into an html file with filename based on the url while removing thhp:// or https://
             $file_name = str_replace(['http://', 'https://'], '', $url);
             $file_name = preg_replace('/[^a-zA-Z0-9]/', ' ', $file_name);
@@ -272,14 +271,17 @@ class files
             $path = $CFG->dataroot . '/temp/cria/' . $this->intent_id . '/';
             $file_name = $file_name . '.html';
 
+            // Save the content to a file
+            file_put_contents($path . $file_name, $content);
+
             // Parse the file
             $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
                 $file_type,
                 $bot_parsing_strategy
             );
             $content_data['parsingstrategy'] = $parsing_strategy;
-
             $content_data['name'] = $file_name;
+
 
             // Save  file to moodle
             $fileinfo = [
@@ -304,9 +306,9 @@ class files
                 'name' => $file_name,
                 'intent_id' => $this->intent_id
             ];
-            $record = $DB->get_record('local_cria_files', $content_verification);
+
             // insert or update fiel info in DB
-            if (!$record) {
+            if (!$record = $DB->get_record('local_cria_files', $content_verification)) {
                 $record = new \stdClass();
                 // Insert the content into the database
                 $content_data['content'] = $url;
@@ -318,7 +320,6 @@ class files
                 $content_data['content'] = $url;
                 $DB->update_record('local_cria_files', $content_data);
             }
-
 
             // Delete temp files
             unlink($path . $file_name);

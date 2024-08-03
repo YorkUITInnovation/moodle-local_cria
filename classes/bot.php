@@ -809,6 +809,36 @@ class bot extends crud
     }
 
     /**
+     * Returns Criadex model id
+     * @return int
+     */
+    public function get_criadex_model_id(): int
+    {
+        $MODEL = new \local_cria\model($this->model_id);
+        return $MODEL->get_criadex_model_id();
+    }
+
+    /**
+     * Returns Criadex embedding model id
+     * @return int
+     */
+    public function get_criadex_embedding_model_id(): int
+    {
+        $MODEL = new \local_cria\model($this->embedding_id);
+        return $MODEL->get_criadex_model_id();
+    }
+
+    /**
+     * Returns Criadex rerank model id
+     * @return int
+     */
+    public function get_criadex_rerank_model_id(): int
+    {
+        $MODEL = new \local_cria\model($this->rerank_model_id);
+        return $MODEL->get_criadex_model_id();
+    }
+
+    /**
      * @return int
      * @throws \dml_exception
      */
@@ -878,7 +908,6 @@ class bot extends crud
             // Update embed server code
             $embed_bot = criaembed::manage_get_config($this->get_default_intent_id());
             // If embed doesn't exist then create it
-
             if ($embed_bot->status != 200) {
                 criaembed::manage_insert($this->get_default_intent_id());
             } else {
@@ -1304,7 +1333,7 @@ class bot extends crud
                     unset($FILE);
                 }
                 $questions = $INTENT->get_questions();
-                foreach($questions as $question) {
+                foreach ($questions as $question) {
                     $QUESTION = new question($question->id);
                     $QUESTION->delete_record();
                     unset($QUESTION);

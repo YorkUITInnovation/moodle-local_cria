@@ -106,41 +106,45 @@ class intents
             // format questions;
             $languages = [];
             $i = 0;
-            foreach ($related_questions as $rq) {
-                // Remove description
-                unset($rq->description);
-                $rq->show_linked = false;
-                $rq->can_translate = false;
-                $config = get_config('local_cria');
-                $config_languages = explode("\n", $config->languages);
-                // Only show for top level
-                if ($rq->parent_id == $rq->id) {
-                    foreach ($config_languages as $lang) {
-                        $available_languages = explode('|', $lang);
-                        if ($available_languages[0] != $rq->lang) {
-                            // Make sure that the language is not already translated
-                            $parent_record_exists = $DB->get_record('local_cria_question', ['parent_id' => $rq->id, 'lang' => $available_languages[0]]);
-                            if ($parent_record_exists == false) {
-                                $languages[$i]['code'] = $available_languages[0];
-                                $languages[$i]['name'] = $available_languages[1];
-                                $i++;
-                            }
-
-                        }
-                    }
-                    if (count($languages) > 0) {
-                        $rq->can_translate = true;
-                    }
-                    $rq->available_languages = $languages;
-                } else {
-                    if ($rq->parent_id != 0) {
-                        $linked_question = $DB->get_record('local_cria_question', ['id' => $rq->parent_id]);
-                        $rq->show_linked = true;
-                        $rq->can_translate = false;
-                        $rq->link_text = 'Translation of question: ' . $linked_question->value;
-                    }
-                }
-            }
+            /**
+             * Languages is no longer used. It was used to determine if a question could be translated
+             */
+//            foreach ($related_questions as $rq) {
+//                // Remove description
+//                unset($rq->description);
+//                $rq->show_linked = false;
+//                $rq->can_translate = false;
+//                $config = get_config('local_cria');
+//                print_object($config);
+//                $config_languages = explode("\n", $config->languages);
+//                // Only show for top level
+//                if ($rq->parent_id == $rq->id) {
+//                    foreach ($config_languages as $lang) {
+//                        $available_languages = explode('|', $lang);
+//                        if ($available_languages[0] != $rq->lang) {
+//                            // Make sure that the language is not already translated
+//                            $parent_record_exists = $DB->get_record('local_cria_question', ['parent_id' => $rq->id, 'lang' => $available_languages[0]]);
+//                            if ($parent_record_exists == false) {
+//                                $languages[$i]['code'] = $available_languages[0];
+//                                $languages[$i]['name'] = $available_languages[1];
+//                                $i++;
+//                            }
+//
+//                        }
+//                    }
+//                    if (count($languages) > 0) {
+//                        $rq->can_translate = true;
+//                    }
+//                    $rq->available_languages = $languages;
+//                } else {
+//                    if ($rq->parent_id != 0) {
+//                        $linked_question = $DB->get_record('local_cria_question', ['id' => $rq->parent_id]);
+//                        $rq->show_linked = true;
+//                        $rq->can_translate = false;
+//                        $rq->link_text = 'Translation of question: ' . $linked_question->value;
+//                    }
+//                }
+//            }
             // Get rlated documents and format theme for display
             $files = $DB->get_records('local_cria_files', ['intent_id' => $r->id], 'name');
             $documents = [];
