@@ -1303,6 +1303,12 @@ class bot extends crud
                     $FILE->delete_record();
                     unset($FILE);
                 }
+                $questions = $INTENT->get_questions();
+                foreach($questions as $question) {
+                    $QUESTION = new question($question->id);
+                    $QUESTION->delete_record();
+                    unset($QUESTION);
+                }
                 $INTENT->delete_record();
                 unset($INTENT);
             }
