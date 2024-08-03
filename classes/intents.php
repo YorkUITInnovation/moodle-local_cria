@@ -133,10 +133,12 @@ class intents
                     }
                     $rq->available_languages = $languages;
                 } else {
-                    $linked_question = $DB->get_record('local_cria_question', ['id' => $rq->parent_id]);
-                    $rq->show_linked = true;
-                    $rq->can_translate = false;
-                    $rq->link_text = 'Translation of question: ' . $linked_question->value;
+                    if ($rq->parent_id != 0) {
+                        $linked_question = $DB->get_record('local_cria_question', ['id' => $rq->parent_id]);
+                        $rq->show_linked = true;
+                        $rq->can_translate = false;
+                        $rq->link_text = 'Translation of question: ' . $linked_question->value;
+                    }
                 }
             }
             // Get rlated documents and format theme for display
