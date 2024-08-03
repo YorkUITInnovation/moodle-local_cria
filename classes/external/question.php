@@ -171,7 +171,7 @@ class local_cria_external_question extends external_api
             'answer' => $answer,
             'relatedquestions' => $relatedquestions,
             'lang' => $lang,
-            'generateanswer' => $generateanswer,
+            'generate_answer' => $generateanswer,
             'document_name' => $BOT->get_name(),
             'timecreated' => time(),
             'timemodified' => time(),
