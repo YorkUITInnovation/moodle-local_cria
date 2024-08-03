@@ -29,7 +29,7 @@
 use local_cria\intent;
 use local_cria\bot;
 use local_cria\criabot;
-use local_cria\questions;
+use local_cria\question;
 
 /**
  * External Web Service Template
@@ -296,14 +296,13 @@ class local_cria_external_question extends external_api
         self::validate_context($context);
 
         // Get the question based on id
-        $question = $DB->get_record('local_cria_question', ['id' => $id]);
-        $INTENT = new intent($question->intent_id);
-        $publish = $INTENT->publish_question($id);
+        $QUESTION = new question($id);
+        $publish = $QUESTION->publish();
         // Update record
-        if ($publish == '200') {
+        if ($publish->status == 200) {
             return true;
         } else {
-            return $publish;
+            return json_encode($publish);
         }
     }
 
