@@ -172,7 +172,6 @@ class local_cria_external_question extends external_api
             'relatedquestions' => $relatedquestions,
             'lang' => $lang,
             'generate_answer' => $generateanswer,
-            'document_name' => $BOT->get_name(),
             'timecreated' => time(),
             'timemodified' => time(),
             'usermodified' => $USER->id
