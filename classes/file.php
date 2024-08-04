@@ -449,7 +449,9 @@ class file extends crud
             $DB->delete_records($this->table, array('id' => $this->get_id()));
             return true;
         } else {
-            $file->delete();
+            if ($file) {
+                $file->delete();
+            }
             $DB->delete_records($this->table, array('id' => $this->get_id()));
             return false;
         }
