@@ -441,3 +441,252 @@ $string['top_right'] = 'Top right';
 // Tasks
 $string['update_url_content'] = 'Update URL content';
 
+// Small talk settings
+$string['small_talk_json'] = '[
+    {
+        "name": "Small talk - Hello",
+        "value": "Hello",
+        "answer": "Hello! How can I help you today?",
+        "examples": [
+            {
+                "value": "Hi"
+            },
+            {
+                "value": "Hey"
+            },
+            {
+                "value": "Greetings"
+            },
+            {
+                "value": "Good morning"
+            },
+            {
+                "value": "Good afternoon"
+            },
+            {
+                "value": "Good evening"
+            }
+        ]
+    },
+    {
+        "name": "Smalltalk - How are you?",
+        "value": "How are you?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "How are you?"
+            },
+            {
+                "value": "How are you doing?"
+            },
+            {
+                "value": "How do you do?"
+            },
+            {
+                "value": "How are you feeling?"
+            },
+            {
+                "value": "How are you today?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - Good bye",
+        "value": "Good bye",
+        "answer": "Good bye! Have a great day! If you need help, feel free to ask.",
+        "examples": [
+            {
+                "value": "Bye"
+            },
+            {
+                "value": "Goodbye"
+            },
+            {
+                "value": "See you later"
+            },
+            {
+                "value": "See you soon"
+            },
+            {
+                "value": "Take care"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - Thank you",
+        "value": "Thank you",
+        "answer": "You are welcome! If you need help, feel free to ask.",
+        "examples": [
+            {
+                "value": "Thanks"
+            },
+            {
+                "value": "Thank you very much"
+            },
+            {
+                "value": "Thank you so much"
+            },
+            {
+                "value": "Gracias"
+            },
+            {
+                "value": "Merci"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - Who are you?",
+        "value": "Who are you?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "Who are you?"
+            },
+            {
+                "value": "What are you?"
+            },
+            {
+                "value": "What is your name?"
+            },
+            {
+                "value": "What do you do?"
+            },
+            {
+                "value": "What can you do?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - Where are you from?",
+        "value": "Where are you from?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "Where are you from?"
+            },
+            {
+                "value": "Where do you come from?"
+            },
+            {
+                "value": "Where were you born?"
+            },
+            {
+                "value": "Where do you live?"
+            },
+            {
+                "value": "Where do you reside?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - What is your name?",
+        "value": "What is your name?",
+        "answer": "My name is  . How can I help you today?",
+        "examples": [
+            {
+                "value": "What is your name?"
+            },
+            {
+                "value": "What do you call yourself?"
+            },
+            {
+                "value": "What should I call you?"
+            },
+            {
+                "value": "What are you called?"
+            },
+            {
+                "value": "What is your title?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - What do you do?",
+        "value": "What do you do?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "What do you do?"
+            },
+            {
+                "value": "What is your job?"
+            },
+            {
+                "value": "What is your role?"
+            },
+            {
+                "value": "What is your function?"
+            },
+            {
+                "value": "What is your purpose?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - What can you do?",
+        "value": "What can you do?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "What can you do?"
+            },
+            {
+                "value": "What are your capabilities?"
+            },
+            {
+                "value": "What are your functions?"
+            },
+            {
+                "value": "What are your features?"
+            },
+            {
+                "value": "What are your abilities?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - What are you doing?",
+        "value": "What are you doing?",
+        "answer": "I am an AI assistant. How can I help you today?",
+        "examples": [
+            {
+                "value": "What are you doing?"
+            },
+            {
+                "value": "What are you up to?"
+            },
+            {
+                "value": "What are you working on?"
+            },
+            {
+                "value": "What are you busy with?"
+            },
+            {
+                "value": "What are you occupied with?"
+            }
+        ]
+    },
+    {
+        "name": "Small talk - Are you dumb?",
+        "value": "Are you dumb?",
+        "answer": "I am an AI assistant trained on specific information based on the syllbus the instructor provided. How can I help you today?",
+        "examples": [
+            {
+                "value": "Hey dummy!"
+            },
+            {
+                "value": "Are you stupid?"
+            },
+            {
+                "value": "Are you intelligent?"
+            },
+            {
+                "value": "Are you smart?"
+            },
+            {
+                "value": "Are you clever?"
+            }
+        ]
+    }
+]';
+
