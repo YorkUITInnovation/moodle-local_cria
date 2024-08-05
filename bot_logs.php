@@ -42,11 +42,12 @@ $PAGE->requires->js(new moodle_url('/local/cria/js/bot_logs.js'));
 //*** DISPLAY HEADER ***
 //**********************
 echo $OUTPUT->header();
-
+raise_memory_limit(MEMORY_EXTRA);
 $output = $PAGE->get_renderer('local_cria');
 $logs = new \local_cria\output\bot_logs($bot_id, $date_range);
 echo $output->render_bot_logs($logs);
 //**********************
 //*** DISPLAY FOOTER ***
 //**********************
+raise_memory_limit(MEMORY_STANDARD);
 echo $OUTPUT->footer();
