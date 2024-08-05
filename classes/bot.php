@@ -692,7 +692,7 @@ class bot extends crud
         if ($this->embed_enabled == 1) {
             return true;
         } else {
-            return false;
+            return null;
         }
     }
 
