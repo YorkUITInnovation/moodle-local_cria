@@ -93,6 +93,7 @@ $string['create_example_questions'] = 'Have AI create 5 example questions?';
 $string['create_meeting_notes'] = 'MinutesMaster';
 $string['create_meeting_notes_help'] = 'Use this tool to create meeting notes based on a transcription';
 $string['cria_suite'] = 'Cria Suite';
+$string['criadex_model_id'] = 'Criax model id';
 $string['date_range'] = 'Date range';
 $string['debugging'] = 'Debugging';
 $string['default_no_context_message'] = "I'm sorry, I don't have an answer for that question. Please try asking another question.";

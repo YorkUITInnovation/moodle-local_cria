@@ -59,6 +59,7 @@ class models {
             $models[$i]['id'] = $MODEL->get_id();
             $models[$i]['name'] = $MODEL->get_name();
             $models[$i]['value'] = $MODEL->get_value();
+            $models[$i]['criadex_model_id'] = $MODEL->get_criadex_model_id();
             $models[$i]['provider_idnumber'] = $MODEL->get_provider_idnumber();
             $models[$i]['provider_name'] = $MODEL->get_provider_name();
             $models[$i]['usermodified'] = $MODEL->get_usermodified();
