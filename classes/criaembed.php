@@ -53,7 +53,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             json_encode($data),
-            '/manage/'. $INTENT->get_bot_name()  . '/insert',
+            '/manage/'. $INTENT->get_bot_id()  . '/insert',
             'POST'
         );
     }
@@ -73,7 +73,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             '',
-            '/manage/'. $INTENT->get_bot_name()  . '/delete',
+            '/manage/'. $INTENT->get_bot_id()  . '/delete',
             'DELETE'
         );
     }
@@ -108,7 +108,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             json_encode($data),
-            '/manage/'. $INTENT->get_bot_name() . '/config',
+            '/manage/'. $INTENT->get_bot_id() . '/config',
             'PATCH'
         );
     }
@@ -128,7 +128,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             '',
-            '/manage/'. $INTENT->get_bot_name() . '/config',
+            '/manage/'. $INTENT->get_bot_id() . '/config',
             'GET'
         );
     }
