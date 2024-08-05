@@ -11,6 +11,7 @@
                     <thead>
                         <tr>
                             <th>{{#str}}name, local_cria{{/str}}</th>
+                            <th>{{#str}}criadex_model_id, local_cria{{/str}}</th>
                             <th>{{#str}}actions, local_cria{{/str}}</th>
                         </tr>
                     </thead>
@@ -18,6 +19,7 @@
                         {{#bot_models}}
                         <tr>
                             <td>{{name}}</td>
+                            <td>{{criadex_model_id}}</td>
                             <td>
                                 <a href="{{config.wwwroot}}/local/cria/providers/{{provider_idnumber}}/model.php?id={{id}}" class="btn btn-outline-primary">
                                     {{#str}}edit, local_cria{{/str}}
