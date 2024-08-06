@@ -126,9 +126,9 @@ abstract class crud
         //Set user
         $data->usermodified = $USER->id;
 
-        $id = $DB->update_record($this->table, $data);
+        $DB->update_record($this->table, $data);
 
-        return $id;
+        return $data->id;
     }
 
     /**

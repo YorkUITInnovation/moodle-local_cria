@@ -543,7 +543,6 @@ class local_cria_external_bot extends external_api
             unset($NEW_UPDATED_BOT);
         }
 
-
         return $id;
     }
 
