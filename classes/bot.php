@@ -918,7 +918,7 @@ class bot extends crud
             return $default_intent;
         }
 
-        return true;
+        return $data->id;
     }
 
     /**
