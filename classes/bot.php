@@ -489,7 +489,10 @@ class bot extends crud
      */
     public function get_user_prompt(): string
     {
-        return $this->user_prompt;
+        // Set date for user prompt
+        $prompt = $this->user_prompt;
+        $prompt = str_replace('{date}', date('Y-m-d'), $prompt);
+        return $prompt;
     }
 
     /**
