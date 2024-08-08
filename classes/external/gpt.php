@@ -213,6 +213,7 @@ class local_cria_external_gpt extends external_api
             $message->file_name = $file_name;
             $file_name_for_logs = 'file name: ' . $file_name . "<br>\n";
 
+            $message->criabot_response = strip_tags(json_encode($result));
             $message->stacktrace = strip_tags(json_encode($result));
             $message->cost = gpt::_get_cost($bot_id, $token_usage->prompt_tokens, $token_usage->completion_tokens);
 
@@ -263,6 +264,7 @@ class local_cria_external_gpt extends external_api
             'cost' => new external_value(PARAM_FLOAT, 'Cost of GTP call', true),
             'file_name' => new external_value(PARAM_TEXT, 'File name from which response was generated', true),
             'message' => new external_value(PARAM_RAW, 'ID Number', true),
+            'criabot_response' => new external_value(PARAM_RAW, 'Criabot Response', false),
             'stacktrace' => new external_value(PARAM_RAW, 'Stacktrace data', false)
         );
         return new external_single_structure($fields);
