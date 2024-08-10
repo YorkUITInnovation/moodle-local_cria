@@ -333,7 +333,7 @@ class bot extends crud
     private $integrations_first_email_only;
 
     /**
-     * @var bool
+     * @var int
      */
     private $llm_generate_related_prompts;
 
