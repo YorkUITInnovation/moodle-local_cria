@@ -323,17 +323,17 @@ class bot extends crud
     private $integrations_disclaimer_text;
 
     /**
-     * @var int
+     * @var bool
      */
     private $integrations_no_context_reply;
 
     /**
-     * @var int
+     * @var bool
      */
     private $integrations_first_email_only;
 
     /**
-     * @var int
+     * @var bool
      */
     private $llm_generate_related_prompts;
 
@@ -801,25 +801,38 @@ class bot extends crud
     /**
      * @return int
      */
-    public function get_integrations_no_context_reply(): int
+    public function get_integrations_no_context_reply(): bool
     {
-        return $this->integrations_no_context_reply;
+        if ($this->integrations_no_context_reply == 1) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     /**
      * @return int
      */
-    public function get_integrations_first_email_only(): int
+    public function get_integrations_first_email_only(): bool
     {
-        return $this->integrations_first_email_only;
+        if ($this->integrations_first_email_only == 1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
      * @return int
      */
-    public function get_llm_generate_related_prompts(): int
+    public function get_llm_generate_related_prompts(): bool
     {
-        return $this->llm_generate_related_prompts;
+        if ($this->llm_generate_related_prompts == 1) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
