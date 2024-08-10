@@ -1049,9 +1049,11 @@ class bot extends crud
             // If embed doesn't exist then create it
             if ($embed_bot->status != 200) {
                 criaembed::manage_insert($this->get_default_intent_id());
+                return $data->id;
             } else {
                 // Update embed
                 criaembed::manage_update($this->get_default_intent_id());
+                return $data->id;
             }
 
             return $default_intent;
