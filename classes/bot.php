@@ -941,9 +941,7 @@ class bot extends crud
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() . ',' .
             '"llm_generate_related_prompts":' . $this->get_llm_generate_related_prompts()  .
             '}';
-        print_object($params);
-        die;
-        file_put_contents('/var/www/moodledata/temp/bot_params.json', $params);
+
         return $params;
     }
 
