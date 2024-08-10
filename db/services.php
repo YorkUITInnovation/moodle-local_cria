@@ -41,6 +41,15 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'cria_content_get_training_status' => array(
+        'classname' => 'local_cria_external_content',
+        'methodname' => 'training_status',
+        'classpath' => 'local/cria/classes/external/content.php',
+        'description' => 'Returns the content training status: Pending, Training, Trained, Error',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
     'cria_bot_delete' => array(
         'classname' => 'local_cria_external_bot',
         'methodname' => 'delete',

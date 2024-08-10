@@ -114,6 +114,12 @@ class file extends crud
 
     /**
      *
+     * @var int
+     */
+    private $indexed;
+
+    /**
+     *
      * @var string
      */
     private $table;
@@ -150,6 +156,7 @@ class file extends crud
         $this->intent_id = $result->intent_id ?? 0;
         $this->name = $result->name ?? '';
         $this->content = $result->content ?? '';
+        $this->indexed = $result->indexed ?? 0;
         $this->file_type = $result->file_type ?? '';
         $this->lang = $result->lang ?? '';
         $this->faculty = $result->faculty ?? '';
@@ -200,6 +207,36 @@ class file extends crud
     public function get_content(): string
     {
         return $this->content;
+    }
+
+    /**
+     * @return indexed - int (1)
+     */
+    public function get_indexed(): int
+    {
+        return $this->indexed;
+    }
+
+    /**
+     * Returns string for indexing status
+     * @return \lang_string|string|void
+     * @throws \coding_exception
+     */
+    public function get_training_status() {
+        switch ($this->get_indexed()) {
+            case self::INDEXING_PENDING:
+                return get_string('indexing_pending', 'local_cria');
+                break;
+            case self::INDEXING_COMPLETE:
+                return get_string('indexing_success', 'local_cria');
+                break;
+            case self::INDEXING_FAILED:
+                return get_string('error_message', 'local_cria');
+                break;
+            case self::INDEXING_STARTED:
+                return get_string('indexing_started', 'local_cria');
+                break;
+        }
     }
 
     /**

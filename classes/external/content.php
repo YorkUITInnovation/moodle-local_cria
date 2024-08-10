@@ -333,4 +333,51 @@ class local_cria_external_content extends external_api {
     {
         return new external_value(PARAM_INT, 'File id');
     }
+
+    /*********************************** Training Status ***********************************/
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function training_status_parameters() {
+        return new external_function_parameters(
+            array(
+                'id' => new external_value(PARAM_INT, 'Content id', false, 0)
+            )
+        );
+    }
+
+    /**
+     * @param $id
+     * @return true
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function training_status($id) {
+        global $CFG, $USER, $DB, $PAGE;
+
+        //Parameter validation
+        $params = self::validate_parameters(self::training_status_parameters(), array(
+                'id' => $id
+            )
+        );
+
+        //Context validation
+        //OPTIONAL but in most web service it should present
+        $context = \context_system::instance();
+        self::validate_context($context);
+
+        $FILE = new file($id);
+        return $FILE->get_training_status();
+    }
+
+
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function training_status_returns() {
+        return new external_value(PARAM_TEXT, 'Return string for training status');
+    }
 }
