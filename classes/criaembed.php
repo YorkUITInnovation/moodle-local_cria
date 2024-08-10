@@ -49,8 +49,8 @@ class criaembed
             "initialPrompts" => $BOT->get_related_prompts(),
             'microsoftAppId' => $BOT->get_ms_app_id(),
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
-            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
-            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
+            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply_text(),
+            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only_text(),
             'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
         ];
         // Create model
@@ -109,8 +109,8 @@ class criaembed
             "initialPrompts" => $BOT->get_related_prompts(),
             'microsoftAppId' => $BOT->get_ms_app_id(),
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
-            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
-            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
+            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply_text(),
+            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only_text(),
             'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
         ];
         // Create model
