@@ -942,8 +942,8 @@ class bot extends crud
             '"system_message": "' . str_replace('"', '\"', $this->get_bot_system_message()) . '",' .
             '"llm_model_id": ' . $MODEL->get_criadex_model_id() . ',' .
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
-            '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() .
-            '"llm_generate_related_prompts": ' . $this->get_llm_generate_related_prompts_text() . ',' .
+            '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() . ',' .
+            '"llm_generate_related_prompts": ' . $this->get_llm_generate_related_prompts_text() .
             '}';
         return $params;
     }
