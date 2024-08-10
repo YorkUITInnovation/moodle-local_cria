@@ -381,7 +381,7 @@ class edit_bot_form extends \moodleform
         $mform->addElement(
             'text',
             'max_tokens',
-            get_string('max_tokens', 'local_cria'),
+            get_string('response_size', 'local_cria'),
             ['style' => 'width: 100px;']
         );
 

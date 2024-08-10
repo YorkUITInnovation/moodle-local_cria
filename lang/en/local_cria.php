@@ -259,6 +259,7 @@ $string['requires_user_prompt_help'] = 'Select Yes if you want a text area to en
 $string['rerank_model_id'] = 'Rerank model';
 $string['response'] = 'Response';
 $string['response_length'] = 'Response length';
+$string['response_size'] = 'Response size (in tokens)';
 $string['retrieved_from'] = 'Retrieved from';
 $string['return'] = 'Return';
 $string['role'] = 'Role';
