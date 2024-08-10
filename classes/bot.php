@@ -939,8 +939,9 @@ class bot extends crud
             '"llm_model_id": ' . $MODEL->get_criadex_model_id() . ',' .
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() . ',' .
-            '"llm_generate_related_prompts":"' . $this->get_llm_generate_related_prompts_text() . '"' .
+            '"llm_generate_related_prompts":' . $this->get_llm_generate_related_prompts()  .
             '}';
+        file_put_contents('/var/www/moodledata/temp/bot_params.json', $params);
         return $params;
     }
 
