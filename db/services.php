@@ -45,7 +45,7 @@ $functions = array(
         'classname' => 'local_cria_external_content',
         'methodname' => 'training_status',
         'classpath' => 'local/cria/classes/external/content.php',
-        'description' => 'Returns the content training status: Pending, Training, Trained, Error',
+        'description' => 'Returns the integer value for training status: 0 = Pending, 2 = Training, 1= Trained,3 = Error',
         'type' => 'read',
         'capabilities' => '',
         'ajax' => true

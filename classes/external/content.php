@@ -369,7 +369,7 @@ class local_cria_external_content extends external_api {
         self::validate_context($context);
 
         $FILE = new file($id);
-        return $FILE->get_training_status();
+        return $FILE->get_indexed();
     }
 
 
@@ -378,6 +378,6 @@ class local_cria_external_content extends external_api {
      * @return external_description
      */
     public static function training_status_returns() {
-        return new external_value(PARAM_TEXT, 'Return string for training status');
+        return new external_value(PARAM_INT, 'Return integer for training status');
     }
 }
