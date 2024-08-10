@@ -939,7 +939,7 @@ class bot extends crud
             '"llm_model_id": ' . $MODEL->get_criadex_model_id() . ',' .
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() . ',' .
-            '"llm_generate_related_prompts":' . $this->get_llm_generate_related_prompts()  .
+            '"llm_generate_related_prompts":"' . $this->get_llm_generate_related_prompts_text() . '"' .
             '}';
         return $params;
     }
