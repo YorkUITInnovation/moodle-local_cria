@@ -11,12 +11,12 @@ export const init = () => {
     });
     // Add a few classes to the select2 element
     $('.select2-selection__choice__remove').addClass('btn btn-sm btn-danger mr-1');
-    set_tone_button();
-    set_length_button();
+    // set_tone_button();
+    // set_length_button();
     get_bot_type_message();
-    get_model_max_tokens();
-    set_tone_parameters();
-    set_length_parameters();
+    // get_model_max_tokens();
+    // set_tone_parameters();
+    // set_length_parameters();
 };
 
 /**

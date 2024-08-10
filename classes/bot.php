@@ -307,6 +307,38 @@ class bot extends crud
      */
     private $related_prompts;
 
+    /**
+     * @var string
+     */
+    private $ms_app_id;
+
+    /**
+     * @var string
+     */
+    private $ms_app_password;
+
+    /**
+     * @var string
+     */
+    private $integrations_disclaimer_text;
+
+    /**
+     * @var int
+     */
+    private $integrations_no_context_reply;
+
+    /**
+     * @var int
+     */
+    private $integrations_first_email_only;
+
+    /**
+     * @var int
+     */
+    private $llm_generate_related_prompts;
+
+
+
 
     /**
      *
@@ -375,6 +407,12 @@ class bot extends crud
         $this->bot_locale = $result->bot_locale ?? 'en-US';
         $this->debugging = $result->debugging ?? 0;
         $this->related_prompts = $result->related_prompts ?? '';
+        $this->ms_app_id = $result->ms_app_id ?? '';
+        $this->ms_app_password = $result->ms_app_password ?? '';
+        $this->integrations_disclaimer_text = $result->integrations_disclaimer_text ?? '';
+        $this->integrations_no_context_reply = $result->integrations_no_context_reply ?? 0;
+        $this->integrations_first_email_only = $result->integrations_first_email_only ?? 0;
+        $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
     }
 
     /**
@@ -737,6 +775,54 @@ class bot extends crud
     }
 
     /**
+     * @return string
+     */
+    public function get_ms_app_id(): string
+    {
+        return $this->ms_app_id;
+    }
+
+    /**
+     * @return string
+     */
+    public function get_ms_app_password(): string
+    {
+        return $this->ms_app_password;
+    }
+
+    /**
+     * @return string
+     */
+    public function get_integrations_disclaimer_text(): string
+    {
+        return $this->integrations_disclaimer_text;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_integrations_no_context_reply(): int
+    {
+        return $this->integrations_no_context_reply;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_integrations_first_email_only(): int
+    {
+        return $this->integrations_first_email_only;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_llm_generate_related_prompts(): int
+    {
+        return $this->llm_generate_related_prompts;
+    }
+
+    /**
      * @return int
      */
     public function get_debugging(): int
@@ -807,6 +893,7 @@ class bot extends crud
             '"llm_model_id": ' . $MODEL->get_criadex_model_id() . ',' .
             '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
             '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() .
+            '"llm_generate_related_prompts": ' . $this->get_llm_generate_related_prompts() . ',' .
             '}';
         return $params;
     }

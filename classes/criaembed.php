@@ -47,6 +47,11 @@ class criaembed
             "botWatermark" => $BOT->get_bot_watermark_string_bool(),
             "botLocale" => $BOT->get_bot_locale(),
             "initialPrompts" => $BOT->get_related_prompts(),
+            'microsoftAppId' => $BOT->get_ms_app_id(),
+            'microsoftAppPassword' => $BOT->get_ms_app_password(),
+            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
+            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
+            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
         ];
         // Create model
         return gpt::_make_call(
@@ -101,7 +106,12 @@ class criaembed
             "botEmbedPosition" => $BOT->get_embed_position(),
             "botWatermark" => $BOT->get_bot_watermark_string_bool(),
             "botLocale" => $BOT->get_bot_locale(),
-            "initialPrompts" => $BOT->get_related_prompts()
+            "initialPrompts" => $BOT->get_related_prompts(),
+            'microsoftAppId' => $BOT->get_ms_app_id(),
+            'microsoftAppPassword' => $BOT->get_ms_app_password(),
+            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
+            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
+            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
         ];
         // Create model
         return gpt::_make_call(

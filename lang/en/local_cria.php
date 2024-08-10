@@ -37,6 +37,7 @@ $string['automated_tasks'] = 'Automated tasks';
 $string['assign_users'] = 'Assign users';
 $string['ask_a_question'] = 'Ask a question';
 $string['azure_api_version'] = 'Azure OpenAI api version';
+$string['azure_bot_settings'] = 'Azure Bot Settings';
 $string['azure_deployment_name'] = 'Azure Deployment Name';
 $string['azure_endpoint'] = 'Azure Endpoint';
 $string['azure_endpoint_help'] = 'URL of the Azure endpoint';
@@ -96,6 +97,7 @@ $string['cria_suite'] = 'Cria Suite';
 $string['criadex_model_id'] = 'Criax model id';
 $string['date_range'] = 'Date range';
 $string['debugging'] = 'Debugging';
+$string['default_disclaimer_text'] = "The answer is provided by an AI and may not be accurate.";
 $string['default_no_context_message'] = "I'm sorry, I don't have an answer for that question. Please try asking another question.";
 $string['default_user_prompt'] = 'Default user prompt';
 $string['default_user_prompt_help'] = 'If your but has a default prompt, enter it here. If the requires user prompt ' .
@@ -170,6 +172,12 @@ $string['indexing_started'] = 'Training';
 $string['indexing_success'] = 'Trained';
 $string['ip'] = 'IP';
 $string['is_embedding'] = 'This is an embedding model';
+$string['integrations_disclaimer_text'] = 'Disclaimer text';
+$string['integrations_disclaimer_text_help'] = 'Enter the disclaimer text for the bot. The disclaimer text will be shown in the embedded bot.';
+$string['integrations_first_email_only'] = 'Reply to first email only';
+$string['integrations_first_email_only_help'] = 'Select Yes if you want the bot to only reply to the first email. This is useful for email bots.';
+$string['integrations_no_context_reply'] = 'No context reply enabled for Email and Teams bots';
+$string['integrations_no_context_reply_help'] = 'Select Yes if you want the bot to use historical context when replying to emails and Teams messages. This is especially important for Teams and if first email only is set to no.';
 $string['intent'] = 'Intent';
 $string['intents'] = 'Intents';
 $string['keyword'] = 'Keyword';
@@ -179,6 +187,8 @@ $string['languages_help'] = 'One line per language. Each line must be in the fol
     '<b>Language code</b> pipe (|) <b>Language name</b> <br><br>' .
     'Example:<br>' .
     'en|English';
+$string['llm_generate_related_prompts'] = 'LLM generate related prompts';
+$string['llm_generate_related_prompts_help'] = 'Select Yes if you want the LLM to generate related prompts. If you have defined related prompts, this will be ignored.';
 $string['llm_models'] = 'LLM models';
 $string['logs'] = 'Logs';
 $string['logs_for'] = 'Logs for';
@@ -193,6 +203,10 @@ $string['model_max_tokens_help'] = 'Maximum number of tokens this model can gene
     '<br> For GPT-4: 8192.' .
     '<br> For GPT-4-32k: 32768.';
 $string['model_name'] = 'Model name';
+$string['ms_app_id'] = 'Microsoft App ID';
+$string['ms_app_id_help'] = 'Enter the Microsoft App ID';
+$string['ms_app_password'] = 'Microsoft App Password';
+$string['ms_app_password_help'] = 'Enter the Microsoft App Password';
 $string['name'] = 'Name';
 $string['new_category'] = 'New category';
 $string['new_role'] = 'New role';

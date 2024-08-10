@@ -701,6 +701,23 @@ class edit_bot_form extends \moodleform
             PARAM_RAW
         );
 
+        // Element llm_generate_related_prompts
+        $mform->addElement(
+            'selectyesno',
+            'llm_generate_related_prompts',
+            get_string('llm_generate_related_prompts', 'local_cria')
+        );
+        $mform->setType(
+            'llm_generate_related_prompts',
+            PARAM_INT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'llm_generate_related_prompts',
+            'llm_generate_related_prompts',
+            'local_cria'
+        );
+
         // Add textare element for related_prompts
         $mform->addElement(
             'textarea',
@@ -822,6 +839,96 @@ class edit_bot_form extends \moodleform
         $mform->addHelpButton(
             'bot_locale',
             'bot_locale',
+            'local_cria'
+        );
+
+        // Add element integrations_disclaimer_text
+        $mform->addElement(
+            'textarea',
+            'integrations_disclaimer_text',
+            get_string('integrations_disclaimer_text', 'local_cria')
+        );
+        $mform->setType(
+            'integrations_disclaimer_text',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'integrations_disclaimer_text',
+            'integrations_disclaimer_text',
+            'local_cria'
+        );
+
+        // Add a header for Azure bot configurations
+        $mform->addElement(
+            'html',
+            '<h3>' . get_string('azure_bot_settings', 'local_cria') . '</h3><hr>'
+        );
+        // Add element for ms_app_id
+        $mform->addElement(
+            'text',
+            'ms_app_id',
+            get_string('ms_app_id', 'local_cria')
+        );
+        $mform->setType(
+            'ms_app_id',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'ms_app_id',
+            'ms_app_id',
+            'local_cria'
+        );
+
+        // Add element for ms_app_password
+        $mform->addElement(
+            'passwordunmask',
+            'ms_app_password',
+            get_string('ms_app_password', 'local_cria')
+        );
+        $mform->setType(
+            'ms_app_password',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'ms_app_password',
+            'ms_app_password',
+            'local_cria'
+        );
+
+        // Add elemnet integrations_no_context_reply
+        $mform->addElement(
+            'selectyesno',
+            'integrations_no_context_reply',
+            get_string('integrations_no_context_reply', 'local_cria')
+        );
+        $mform->setType(
+            'integrations_no_context_reply',
+            PARAM_INT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'integrations_no_context_reply',
+            'integrations_no_context_reply',
+            'local_cria'
+        );
+
+        // Add element for integrations_first_email_only
+        $mform->addElement(
+            'selectyesno',
+            'integrations_first_email_only',
+            get_string('integrations_first_email_only', 'local_cria')
+        );
+        $mform->setType(
+            'integrations_first_email_only',
+            PARAM_INT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'integrations_first_email_only',
+            'integrations_first_email_only',
             'local_cria'
         );
 

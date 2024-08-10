@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/cria/db" VERSION="20240727" COMMENT="XMLDB file for Moodle local/cria"
+<XMLDB PATH="local/cria/db" VERSION="20240809" COMMENT="XMLDB file for Moodle local/cria"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -50,6 +50,12 @@
         <FIELD NAME="theme_color" TYPE="char" LENGTH="7" NOTNULL="false" DEFAULT="#e31837" SEQUENCE="false" COMMENT="Hex color values only"/>
         <FIELD NAME="bot_locale" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="en-US" SEQUENCE="false"/>
         <FIELD NAME="related_prompts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="llm_generate_related_prompts" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="ms_app_id" TYPE="char" LENGTH="1333" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="ms_app_password" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="integrations_no_context_reply" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="integration_first_email_only" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="integrations_disclaimer_text" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="debugging" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
