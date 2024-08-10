@@ -808,7 +808,6 @@ class bot extends crud
         } else {
             return false;
         }
-
     }
 
     /**
@@ -853,11 +852,8 @@ class bot extends crud
      */
     public function get_llm_generate_related_prompts(): bool
     {
-        if ($this->llm_generate_related_prompts == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->llm_generate_related_prompts;
+
     }
 
     /**
