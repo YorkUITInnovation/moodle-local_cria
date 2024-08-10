@@ -133,9 +133,15 @@ class local_cria_external_gpt extends external_api
                 $bot_name = $BOT->get_bot_name();
             }
         }
+        $prompt = trim($prompt);
         // Always get user prompt if there is one.
         if ($BOT->get_user_prompt()) {
             $prompt = $BOT->get_user_prompt() . ' ' . $prompt;
+        }
+
+        // Check to see if the prompt ends with a question mark. If not add a question mark at the end
+        if (substr($prompt, -1) != '?') {
+            $prompt = $prompt . '?';
         }
 
         if ($chat_id != 'none') {
