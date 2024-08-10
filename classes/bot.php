@@ -1403,7 +1403,6 @@ class bot extends crud
             // Create bot
             $result = $this->create_bot_on_bot_server($intent_id);
         } else {
-            print_object($this->get_bot_parameters_json());
             $result = criabot::bot_update($bot_name, $this->get_bot_parameters_json());
             $update = true;
         }
