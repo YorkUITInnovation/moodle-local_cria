@@ -393,5 +393,35 @@ class gpt
         return $comparison_result;
     }
 
+    /**
+     * @param $prompt
+     * @return string
+     */
+    public static function pre_process_prompt($prompt): string
+    {
+        // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
+        // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
+        if (strpos($prompt, 'What is this course about') !== false) {
+            $prompt =rtrim($prompt, '?');
+            $prompt = str_replace('What is this course about', 'Describe this course.', $prompt);
+        }
+
+        // LLM has difficulty answering questions that start with "I don't know", so it needs to be modified.
+        if (str_starts_with($prompt, "I don't know") || str_starts_with($prompt, "I dont know")) {
+            $prompt = str_replace(["I don't know", "I dont know"], "I would like to know", $prompt);
+        }
+
+        // Add a question mark if the query doesn't end in a question mark and starts with a question word
+        $question_start = ["what", "how", "why", "when", "who", "whom", "whose", "which", "where", "does", "is", "are",
+            "can", "could", "will", "would", "should", "may", "might", "have", "must"];
+        if (!str_ends_with($prompt, "?")) {
+            $first_word = strtolower(strtok($prompt, " "));
+            if (in_array($first_word, $question_start)) {
+                $prompt = rtrim($prompt) . "?";
+            }
+        }
+
+        return $prompt;
+    }
 
 }

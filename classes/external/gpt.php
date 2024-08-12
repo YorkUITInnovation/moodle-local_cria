@@ -105,12 +105,9 @@ class local_cria_external_gpt extends external_api
         if (!empty($filters)) {
             $filters = json_decode($filters);
         }
-        // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
-        // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
-        if (strpos($prompt, 'What is this course about') !== false) {
-            $prompt =rtrim($prompt, '?');
-            $prompt = str_replace('What is this course about', 'Describe this course.', $prompt);
-        }
+        // Preprocess the prompt
+        $prompt = gpt::pre_process_prompt($prompt);
+
         // Does this bot use criabot server?
         if ($BOT->use_bot_server() && $chat_id != 'none') {
             // Find out how many intents the bot has
