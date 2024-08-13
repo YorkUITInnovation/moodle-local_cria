@@ -24,8 +24,8 @@ $context = context_system::instance();
 $bot_id = required_param('bot_id', PARAM_INT);
 $date_range = optional_param('daterange', '', PARAM_TEXT);
 if (!$date_range) {
-    $start_date = date('m/d/Y', strtotime('first day of this month'));
-    $end_date = date('m/d/Y',strtotime('last day of this month'));
+    $start_date = date('m/d/Y', strtotime('first day of this week'));
+    $end_date = date('m/d/Y',strtotime('last day of this week'));
     $date_range = $start_date . ' - ' . $end_date;
 
 }
@@ -42,7 +42,7 @@ $PAGE->requires->js(new moodle_url('/local/cria/js/bot_logs.js'));
 //*** DISPLAY HEADER ***
 //**********************
 echo $OUTPUT->header();
-raise_memory_limit(MEMORY_EXTRA);
+raise_memory_limit(MEMORY_UNLIMITED);
 $output = $PAGE->get_renderer('local_cria');
 $logs = new \local_cria\output\bot_logs($bot_id, $date_range);
 echo $output->render_bot_logs($logs);
