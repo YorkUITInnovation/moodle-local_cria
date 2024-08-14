@@ -379,7 +379,7 @@ class criabot
         ];
 
         print_object($data);
-        print_object(json_encode($data, JSON_PRETTY_PRINT));
+        file_put_contents('/var/www/moodledata/bot_send.json', json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criabot_url,
