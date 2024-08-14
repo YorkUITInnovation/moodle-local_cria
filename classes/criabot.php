@@ -378,6 +378,8 @@ class criabot
             'metadata_filter' => $filters
         ];
 
+        print_object($data);
+        print_object(json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criabot_url,
