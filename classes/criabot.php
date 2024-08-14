@@ -323,7 +323,7 @@ class criabot
         // Get child bots
         $bot_array = explode('-', $bot_name);
         $BOT = new bot($bot_array[0]);
-        $child_bots = $BOT->get_child_bots();
+        $child_bots = json_decode($BOT->get_child_bots());
         if (empty($child_bots)) {
             $child_bots = [];
         }
@@ -366,7 +366,7 @@ class criabot
         // Get child bots
         $bot_array = explode('-', $bot_name);
         $BOT = new bot($bot_array[0]);
-        $child_bots = $BOT->get_child_bots();
+        $child_bots = json_decode($BOT->get_child_bots());
         if (empty($child_bots)) {
             $child_bots = [];
         }
