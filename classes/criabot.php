@@ -366,9 +366,14 @@ class criabot
         // Get child bots
         $bot_array = explode('-', $bot_name);
         $BOT = new bot($bot_array[0]);
-        $child_bots = json_decode($BOT->get_child_bots());
-        if (empty($child_bots)) {
-            $child_bots = [];
+        $bot_child_bots = json_decode($BOT->get_child_bots());
+        $child_bots = [];
+        if (!empty($bot_child_bots)) {
+            foreach ($bot_child_bots as $key => $child_bot) {
+                $CHILDBOT = new bot($child_bot);
+                $child_bots[] = $CHILDBOT->get_bot_name();
+                unset($CHILDBOT);
+            }
         }
 
         $data = [
@@ -377,7 +382,7 @@ class criabot
             'extra_bots' => $child_bots,
             'metadata_filter' => $filters
         ];
-        file_put_contents('/var/www/moodledata/bot_send.json', json_encode($data, JSON_PRETTY_PRINT));
+        file_put_contents('/var/www/moodledata/temp/bot_send.json', json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criabot_url,
