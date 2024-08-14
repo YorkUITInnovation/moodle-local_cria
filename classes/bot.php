@@ -337,6 +337,11 @@ class bot extends crud
      */
     private $llm_generate_related_prompts;
 
+    /**
+     * @var int
+     */
+    private $bot_trust_warning;
+
 
 
 
@@ -413,6 +418,7 @@ class bot extends crud
         $this->integrations_no_context_reply = $result->integrations_no_context_reply ?? 0;
         $this->integrations_first_email_only = $result->integrations_first_email_only ?? 0;
         $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
+        $this->bot_trust_warning = $result->bot_trust_warning ?? 0;
     }
 
     /**
@@ -636,18 +642,18 @@ class bot extends crud
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_no_context_use_message(): int
+    public function get_no_context_use_message(): bool
     {
         return $this->no_context_use_message;
     }
 
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_no_context_llm_guess(): int
+    public function get_no_context_llm_guess(): bool
     {
         return $this->no_context_llm_guess;
     }
@@ -801,13 +807,9 @@ class bot extends crud
     /**
      * @return int
      */
-    public function get_integrations_no_context_reply(): bool
+    public function get_integrations_no_context_reply(): int
     {
-        if ($this->integrations_no_context_reply == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->integrations_no_context_reply;
     }
 
     /**
@@ -826,13 +828,9 @@ class bot extends crud
     /**
      * @return int
      */
-    public function get_integrations_first_email_only(): bool
+    public function get_integrations_first_email_only(): int
     {
-        if ($this->integrations_first_email_only == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->integrations_first_email_only;
     }
 
     /**
@@ -848,24 +846,20 @@ class bot extends crud
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_llm_generate_related_prompts(): int
+    public function get_llm_generate_related_prompts(): bool
     {
         return $this->llm_generate_related_prompts;
 
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function get_llm_generate_related_prompts_text(): string
+    public function get_bot_trust_warning(): int
     {
-        if ($this->llm_generate_related_prompts == 1) {
-            return "true";
-        } else {
-            return "false";
-        }
+        return $this->bot_trust_warning;
     }
 
     /**
@@ -923,24 +917,26 @@ class bot extends crud
         $MODEL = new \local_cria\model($this->model_id);
         $EMBEDDING_MODEL = new \local_cria\model($this->embedding_id);
         $RERANK_MODEL = new \local_cria\model($this->rerank_model_id);
-        $params = '{' .
-            '"max_reply_tokens": ' . $this->get_max_tokens() . ',' .
-            '"temperature": ' . $this->get_temperature() . ',' .
-            '"top_p": ' . $this->get_top_p() . ',' .
-            '"top_k": ' . $this->get_top_k() . ',' .
-            '"top_n": ' . $this->get_top_n() . ',' .
-            '"min_n": ' . $this->get_min_n() . ',' .
-            '"min_k": ' . $this->get_min_k() . ',' .
-            '"max_input_tokens": ' . $this->get_max_context() . ',' .
-            '"no_context_message": "' . str_replace('"', '\"', $this->get_no_context_message()) . '",' .
-            '"no_context_use_message": ' . $this->get_no_context_use_message() . ',' .
-            '"no_context_llm_guess": ' . $this->get_no_context_llm_guess() . ',' .
-            '"system_message": "' . str_replace('"', '\"', $this->get_bot_system_message()) . '",' .
-            '"llm_model_id": ' . $MODEL->get_criadex_model_id() . ',' .
-            '"embedding_model_id": ' . $EMBEDDING_MODEL->get_criadex_model_id() . ',' .
-            '"rerank_model_id": ' . $RERANK_MODEL->get_criadex_model_id() . ',' .
-            '"llm_generate_related_prompts":' . $this->get_llm_generate_related_prompts()  .
-            '}';
+
+        $params = new \stdClass();
+        $params->max_reply_tokens = $this->get_max_tokens();
+        $params->temperature = $this->get_temperature();
+        $params->top_p = $this->get_top_p();
+        $params->top_k = $this->get_top_k();
+        $params->top_n = $this->get_top_n();
+        $params->min_n = $this->get_min_n();
+        $params->min_k = $this->get_min_k();
+        $params->max_input_tokens = $this->get_max_context();
+        $params->no_context_message = $this->get_no_context_message();
+        $params->no_context_use_message = $this->get_no_context_use_message();
+        $params->no_context_llm_guess = $this->get_no_context_llm_guess();
+        $params->system_message = $this->get_bot_system_message();
+        $params->llm_model_id = $MODEL->get_criadex_model_id();
+        $params->embedding_model_id = $EMBEDDING_MODEL->get_criadex_model_id();
+        $params->rerank_model_id = $RERANK_MODEL->get_criadex_model_id();
+        $params->llm_generate_related_prompts = $this->get_llm_generate_related_prompts();
+
+        $params = json_encode($params);
 
         return $params;
     }
@@ -1043,6 +1039,9 @@ class bot extends crud
             $default_intent = $this->create_default_intent($this->id);
             // Update embed server code
             $embed_bot = criaembed::manage_get_config($this->get_default_intent_id());
+
+            print_object($embed_bot);
+            die;
             // If embed doesn't exist then create it
             if ($embed_bot->status != 200) {
                 criaembed::manage_insert($this->get_default_intent_id());

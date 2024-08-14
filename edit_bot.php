@@ -80,6 +80,7 @@ if ($id) {
     $formdata->botwatermark = 0;
     $formdata->parse_strategy = 'GENERIC';
     $formdata->integrations_disclaimer_text = get_string('default_disclaimer_text', 'local_cria');
+    $formdata->bot_trust_warnig = true;
 }
 $formdata->return = $return;
 

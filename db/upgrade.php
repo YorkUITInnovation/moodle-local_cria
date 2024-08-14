@@ -283,5 +283,22 @@ function xmldb_local_cria_upgrade($oldversion)
         // Cria savepoint reached.
         upgrade_plugin_savepoint(true, 2024080901, 'local', 'cria');
     }
+
+    if ($oldversion < 2024081002) {
+
+        // Define field bot_trust_warning to be added to local_cria_bot.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('bot_trust_warning', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'integrations_disclaimer_text');
+
+        // Conditionally launch add field bot_trust_warning.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024081002, 'local', 'cria');
+    }
+
+
     return true;
 }

@@ -49,9 +49,10 @@ class criaembed
             "initialPrompts" => $BOT->get_related_prompts(),
             'microsoftAppId' => $BOT->get_ms_app_id(),
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
-            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply_text(),
-            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only_text(),
-            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
+            'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
+            'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
+            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text(),
+            'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
         // Create model
         return gpt::_make_call(
@@ -111,7 +112,7 @@ class criaembed
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
             'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
             'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
-            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text()
+            'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
         // Create model
         return gpt::_make_call(
