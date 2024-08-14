@@ -54,6 +54,7 @@ class criaembed
             'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text(),
             'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
+
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,

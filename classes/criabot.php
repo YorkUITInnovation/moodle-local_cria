@@ -319,9 +319,20 @@ class criabot
     public static function chat_query($bot_name, $prompt) {
         // Get Config
         $config = get_config('local_cria');
+
+        // Get child bots
+        $bot_array = explode('-', $bot_name);
+        $BOT = new bot($bot_array[0]);
+        $child_bots = $BOT->get_child_bots();
+        if (empty($child_bots)) {
+            $child_bots = [];
+        }
+
         $data = [
-            'prompt' => $prompt
+            'prompt' => $prompt,
+            'extra_bots' => $child_bots
         ];
+
         // Create model
         return gpt::_make_call(
             $config->criabot_url,
@@ -352,9 +363,18 @@ class criabot
             ];
         }
 
+        // Get child bots
+        $bot_array = explode('-', $bot_name);
+        $BOT = new bot($bot_array[0]);
+        $child_bots = $BOT->get_child_bots();
+        if (empty($child_bots)) {
+            $child_bots = [];
+        }
+
         $data = [
             'prompt' => $prompt,
             'bot_name' => $bot_name,
+            'extra_bots' => $child_bots,
             'metadata_filter' => $filters
         ];
 

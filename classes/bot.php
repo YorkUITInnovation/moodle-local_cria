@@ -805,9 +805,9 @@ class bot extends crud
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_integrations_no_context_reply(): int
+    public function get_integrations_no_context_reply(): bool
     {
         return $this->integrations_no_context_reply;
     }
@@ -826,9 +826,9 @@ class bot extends crud
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_integrations_first_email_only(): int
+    public function get_integrations_first_email_only(): bool
     {
         return $this->integrations_first_email_only;
     }
@@ -855,9 +855,9 @@ class bot extends crud
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function get_bot_trust_warning(): int
+    public function get_bot_trust_warning(): bool
     {
         return $this->bot_trust_warning;
     }
@@ -1014,7 +1014,7 @@ class bot extends crud
         if ($NEW_BOT->use_bot_server()) {
             $intent_id = $this->create_default_intent($id);
             // Create embed server code
-            criaembed::manage_insert($intent_id);
+            $cria_embed = criaembed::manage_insert($intent_id);
         } else {
             $NEW_BOT->create_bot_on_bot_server(0);
         }
