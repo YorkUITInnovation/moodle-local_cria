@@ -157,13 +157,14 @@ $(document).ready(function () {
                             'questions': selected
                         },
                         success: function (results) {
-                            document.getElementById('cria-loader').style.display = 'none';
-                            question_table.ajax.reload();
+
                         }
                     });
                 });
             }
         }
+        document.getElementById('cria-loader').style.display = 'none';
+        question_table.ajax.reload();
     });
 });
 
