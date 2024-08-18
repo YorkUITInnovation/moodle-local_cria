@@ -154,17 +154,17 @@ $(document).ready(function () {
                         url: wwwroot + '/local/cria/ajax/delete_question.php',
                         type: 'POST',
                         data: {
+                            'question_id': 0,
                             'questions': selected
                         },
                         success: function (results) {
-
+                            document.getElementById('cria-loader').style.display = 'none';
+                            question_table.ajax.reload();
                         }
                     });
                 });
             }
         }
-        document.getElementById('cria-loader').style.display = 'none';
-        question_table.ajax.reload();
     });
 });
 

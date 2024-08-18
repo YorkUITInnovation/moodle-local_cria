@@ -42,12 +42,12 @@ if ($question_id != 0) {
         //Delete entity
         $status = $QUESTION->delete_record();
         unset($QUESTION);
-        if ($status->status == 200) {
-            $status = array('Updatedstatus' => 200, 'message' => 'Question deleted successfully');
-        } else {
-            $status = array('status' => 404, 'message' => $status->message);
-            break;
-        }
+//        if ($status->status == 200) {
+//            $status = array('Updatedstatus' => 200, 'message' => 'Question deleted successfully');
+//        } else {
+//            $status = array('status' => 404, 'message' => $status->message);
+//            break;
+//        }
     }
 }
 
