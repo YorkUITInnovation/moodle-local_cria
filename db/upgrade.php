@@ -259,7 +259,7 @@ function xmldb_local_cria_upgrade($oldversion)
 
         // Define field integration_first_email_only to be added to local_cria_bot.
         $table = new xmldb_table('local_cria_bot');
-        $field = new xmldb_field('integration_first_email_only', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'integrations_no_context_reply');
+        $field = new xmldb_field('integrations_first_email_only', XMLDB_TYPE_INTEGER, '1', null, null, null, '1', 'integrations_no_context_reply');
 
         // Conditionally launch add field integration_first_email_only.
         if (!$dbman->field_exists($table, $field)) {
