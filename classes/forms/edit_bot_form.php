@@ -842,23 +842,6 @@ class edit_bot_form extends \moodleform
             'local_cria'
         );
 
-        // Add element bot_trust_warning
-        $mform->addElement(
-            'selectyesno',
-            'bot_trust_warning',
-            get_string('bot_trust_warning', 'local_cria')
-        );
-        $mform->setType(
-            'bot_trust_warning',
-            PARAM_INT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'bot_trust_warning',
-            'bot_trust_warning',
-            'local_cria'
-        );
-
         // Add element integrations_disclaimer_text
         $mform->addElement(
             'textarea',
