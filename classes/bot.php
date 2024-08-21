@@ -789,16 +789,11 @@ class bot extends crud
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function get_integrations_no_context_reply_text(): string
+    public function get_integrations_no_context_reply(): bool
     {
-        if ($this->integrations_no_context_reply == 1) {
-            return "true";
-        } else {
-            return "false";
-        }
-
+        return $this->integrations_no_context_reply;
     }
 
     /**
