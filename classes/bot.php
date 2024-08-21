@@ -338,8 +338,6 @@ class bot extends crud
     private $bot_trust_warning;
 
 
-
-
     /**
      *
      *
@@ -833,11 +831,15 @@ class bot extends crud
     }
 
     /**
-     * @return string
+     * @return string/null
      */
-    public function get_bot_trust_warning(): string
+    public function get_bot_trust_warning()
     {
-        return $this->bot_trust_warning;
+        if ($this->bot_trust_warning) {
+            return $this->bot_trust_warning;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1025,7 +1027,7 @@ class bot extends crud
                 return $data->id;
             } else {
                 // Update embed
-               $embed =  criaembed::manage_update($this->get_default_intent_id());
+                $embed = criaembed::manage_update($this->get_default_intent_id());
                 file_put_contents('/var/www/moodledata/temp/embed.json', json_encode($embed, JSON_PRETTY_PRINT));
                 return $data->id;
             }
