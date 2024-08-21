@@ -34,7 +34,6 @@ class criaembed
         $config = get_config('local_cria');
         $INTENT = new intent($intent_id);
         $BOT = new bot($INTENT->get_bot_id());
-        file_put_contents('/var/www/moodledata/temp/bot_trust.json', json_encode($BOT->get_bot_trust_warning(), JSON_PRETTY_PRINT));
         $data = [
             'botAuthKey' => $INTENT->get_bot_api_key(),
             'botTitle' => $BOT->get_title(),
@@ -53,7 +52,6 @@ class criaembed
             'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
             'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
-        file_put_contents('/var/www/moodledata/temp/insert_embed.json', json_encode($data, JSON_PRETTY_PRINT));
 
         // Create model
         return gpt::_make_call(
@@ -116,7 +114,6 @@ class criaembed
             'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
 
-        file_put_contents('/var/www/moodledata/temp/update_embed.json', json_encode($data, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
