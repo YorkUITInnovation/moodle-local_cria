@@ -1,17 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
-
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 namespace local_cria;
@@ -40,6 +39,7 @@ class logs
         $total_tokens,
         $cost,
         $context = '',
+        $other = '',
         $ip = '',
         $user_id = 0
     )
@@ -71,6 +71,7 @@ class logs
             'cost' => $cost,
             'index_context' => $context,
             'ip' => $ip,
+            'other' => $other,
             'timecreated' => time()
         ];
 
@@ -113,6 +114,7 @@ class logs
                     cl.completion_tokens,
                     cl.total_tokens,
                     cl.cost,
+                    cl.other,
                     cl.ip,
                     DATE_FORMAT(FROM_UNIXTIME(cl.timecreated), '%m/%d/%Y %h:%i') as timecreated
                 From
@@ -167,9 +169,14 @@ class logs
                 WHERE
                     timecreated BETWEEN ? AND ? AND
                     bot_id = ?";
-        $logs = $DB->get_records_sql($sql, [$start_date, $end_date, $bot_id]);
         $fmt = new \NumberFormatter('en_CA', \NumberFormatter::CURRENCY);
-        $value = $fmt->formatCurrency(array_values($logs)[0]->total_cost, $currency);
+        $logs = $DB->get_record_sql($sql, [$start_date, $end_date, $bot_id]);
+        if (!empty($logs->total_cost)) {
+            $value = $fmt->formatCurrency($logs->total_cost, $currency);
+        } else {
+            echo 'here';
+            $value = $fmt->formatCurrency(0.00, $currency);
+        }
 
         return $value;
     }

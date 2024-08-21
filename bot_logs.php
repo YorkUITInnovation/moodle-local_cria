@@ -24,8 +24,8 @@ $context = context_system::instance();
 $bot_id = required_param('bot_id', PARAM_INT);
 $date_range = optional_param('daterange', '', PARAM_TEXT);
 if (!$date_range) {
-    $start_date = date('m/d/Y 00:00:00', time());
-    $end_date = date('m/d/Y 23:59:59',time());
+    $start_date = date('m/d/Y', strtotime('First day of this month'));
+    $end_date = date('m/d/Y', strtotime('Last day of this month'));
     $date_range = $start_date . ' - ' . $end_date;
 
 }

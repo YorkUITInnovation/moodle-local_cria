@@ -64,6 +64,7 @@ class local_cria_external_logs extends external_api
                 'total_tokens' => new external_value(PARAM_INT, 'Total tokens', false, 0),
                 'ip' => new external_value(PARAM_TEXT, 'Total tokens', false, ''),
                 'user_id' => new external_value(PARAM_INT, 'User ID from within Cria server', false, 0),
+                'other' => new external_value(PARAM_RAW, 'Other data in JSON format', false, ''),
                 'index_context' => new external_value(PARAM_RAW, 'Context from index server', false, '')
             )
         );
@@ -78,8 +79,8 @@ class local_cria_external_logs extends external_api
      * @param $total_tokens
      * @param $ip
      * @param $user_id
+     * @param $other
      * @param $index_context
-     * @param $confidence
      * @return false|string
      * @throws dml_exception
      * @throws invalid_parameter_exception
@@ -94,7 +95,8 @@ class local_cria_external_logs extends external_api
         $total_tokens,
         $ip,
         $user_id = 0,
-        $index_context = ''
+        $index_context = '',
+        $other = ''
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -109,7 +111,8 @@ class local_cria_external_logs extends external_api
                 'total_tokens' => $total_tokens,
                 'ip' => $ip,
                 'user_id' => $user_id,
-                'index_context' => $index_context
+                'index_context' => $index_context,
+                'other' => $other
             )
         );
         //Context validation
@@ -128,6 +131,7 @@ class local_cria_external_logs extends external_api
             $total_tokens,
             $cost,
             $index_context,
+            $other,
             $ip,
             $user_id
         );

@@ -38,12 +38,12 @@
                     <table id="bot-logs-table" class="table table-striped table-responsive">
                         <thead>
                         <tr>
+                            <th></th>
                             <th>{{#str}}userid, local_cria{{/str}}</th>
                             <th>{{#str}}firstname{{/str}}</th>
                             <th>{{#str}}lastname{{/str}}</th>
                             <th>{{#str}}prompt, local_cria{{/str}}</th>
                             <th>{{#str}}response, local_cria{{/str}}</th>
-                            <th>{{#str}}index_context, local_cria{{/str}}</th>
                             <th>{{#str}}prompt_tokens, local_cria{{/str}}</th>
                             <th>{{#str}}completion_tokens, local_cria{{/str}}</th>
                             <th>{{#str}}total_tokens, local_cria{{/str}}</th>
@@ -55,12 +55,15 @@
                         <tbody>
                         {{#logs}}
                             <tr>
+                                <td><a
+                                        href="{{config.wwwroot}}/local/cria/bot_log_details.php?id={{id}}"
+                                    title="{{#str}}details, local_cria{{/str}}">{{#str}}details, local_cria{{/str}}</a>
+                                </td>
                                 <td>{{{userid}}}</td>
                                 <td>{{{firstname}}}</td>
                                 <td>{{{lastname}}}</td>
                                 <td>{{prompt}}</td>
                                 <td>{{{message}}}</td>
-                                <td>{{index_context}}</td>
                                 <td>{{{prompt_tokens}}}</td>
                                 <td>{{{completion_tokens}}}</td>
                                 <td>{{{total_tokens}}}</td>

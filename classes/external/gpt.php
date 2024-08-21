@@ -66,7 +66,8 @@ class local_cria_external_gpt extends external_api
                 'content' => new external_value(PARAM_RAW, 'User content', false, ''),
                 'filters' => new external_value(PARAM_RAW,
                     'Filters as a JSON object containing the following keys {"must":[], "must_not": [], "should": []}',
-                    false, '')
+                    false, ''),
+                'log_other' => new external_value(PARAM_RAW, 'Other data to log in JSON format', false, '')
             )
         );
     }
@@ -77,12 +78,13 @@ class local_cria_external_gpt extends external_api
      * @param $prompt
      * @param $content
      * @param $filters
+     * @param $log_other
      * @return string
      * @throws dml_exception
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */
-    public static function response($bot_id, $chat_id, $prompt, $content, $filters)
+    public static function response($bot_id, $chat_id, $prompt, $content, $filters, $log_other = '')
     {
         global $CFG, $USER, $DB, $PAGE, $OUTPUT;
         require_once($CFG->dirroot . '/local/cria/classes/Michelf/Markdown.inc.php');
@@ -92,7 +94,8 @@ class local_cria_external_gpt extends external_api
                 'chat_id' => $chat_id,
                 'prompt' => $prompt,
                 'content' => $content,
-                'filters' => $filters
+                'filters' => $filters,
+                'log_other' => $log_other
             )
         );
         //Context validation
@@ -130,7 +133,7 @@ class local_cria_external_gpt extends external_api
                     $intents_result->agent_response->usage[0]->prompt_tokens,
                     $intents_result->agent_response->usage[0]->completion_tokens,
                     $intents_result->agent_response->usage[0]->total_tokens,
-                    $cost
+                    $cost,
                 );
             } else {
                 $bot_name = $BOT->get_bot_name();
@@ -236,7 +239,8 @@ class local_cria_external_gpt extends external_api
                 $token_usage->completion_tokens,
                 $token_usage->total_tokens,
                 $message->cost,
-                json_encode($result)
+                json_encode($result),
+                $log_other
             );
         } else {
             $message = gpt::get_response($bot_id, $prompt, $content, false);

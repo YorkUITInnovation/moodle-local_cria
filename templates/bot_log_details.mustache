@@ -1,0 +1,52 @@
+{{> local_cria/bot_nav_buttons}}
+
+<div class="row mt-2">
+    <div class="col">
+        <div class="card">
+            <h3 class="card-header">
+                {{#userdate}} {{timecreated}}, {{#str}} strftimedate, core_langconfig {{/str}} {{/userdate}}
+            </h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <table class="table table-striped">
+                        <tbody>
+                        <tr>
+                            <td><strong>{{#str}}userid, local_cria{{/str}}:</strong> {{userid}}</td>
+                            <td><strong>{{#str}}prompt_tokens, local_cria{{/str}}</strong> {{prompt_tokens}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{#str}}firstname{{/str}}:</strong> {{firstname}}</td>
+                            <td><strong>{{#str}}completion_tokens, local_cria{{/str}}</strong> {{completion_tokens}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>{{#str}}lastname{{/str}}:</strong> {{lastname}}</td>
+                            <td><strong>{{#str}}total_tokens, local_cria{{/str}}</strong> {{total_tokens}}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><strong>{{#str}}cost, local_cria{{/str}}</strong> {{cost}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </li>
+                <li class="list-group-item">
+                    <strong>{{#str}}prompt, local_cria{{/str}}:</strong> {{prompt}}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{#str}}response, local_cria{{/str}}:</strong> {{{message}}}
+                </li>
+                <li class="list-group-item">
+                    <strong>{{#str}}context, local_cria{{/str}}:</strong><br>
+                    <textarea cols="10" rows="25" style="width: 100%; box-sizing: border-box;">{{index_context}}</textarea>
+                </li>
+                <li class="list-group-item">
+                    <strong>{{#str}}other, local_cria{{/str}}:</strong><br>
+                    <textarea cols="10" rows="25" style="width: 100%; box-sizing: border-box;">{{other}}</textarea>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</div>
