@@ -31,8 +31,10 @@ $sql = "SELECT l.*, u.firstname, u.lastname
 $log = $DB->get_record_sql($sql, [$id]);
 $index_context = json_decode($log->index_context);
 $log->index_context = json_encode($index_context, JSON_PRETTY_PRINT);
-$other = json_decode($log->other);
-$log->other = json_encode($other, JSON_PRETTY_PRINT);
+if ($log->other) {
+    $other = json_decode($log->other);
+    $log->other = json_encode($other, JSON_PRETTY_PRINT);
+}
 
 $BOT = new \local_cria\bot($log->bot_id);
 
