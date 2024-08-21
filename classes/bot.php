@@ -318,11 +318,6 @@ class bot extends crud
     private $ms_app_password;
 
     /**
-     * @var string
-     */
-    private $integrations_disclaimer_text;
-
-    /**
      * @var bool
      */
     private $integrations_no_context_reply;
@@ -338,7 +333,7 @@ class bot extends crud
     private $llm_generate_related_prompts;
 
     /**
-     * @var int
+     * @var string
      */
     private $bot_trust_warning;
 
@@ -414,11 +409,10 @@ class bot extends crud
         $this->related_prompts = $result->related_prompts ?? '';
         $this->ms_app_id = $result->ms_app_id ?? '';
         $this->ms_app_password = $result->ms_app_password ?? '';
-        $this->integrations_disclaimer_text = $result->integrations_disclaimer_text ?? '';
         $this->integrations_no_context_reply = $result->integrations_no_context_reply ?? 0;
         $this->integrations_first_email_only = $result->integrations_first_email_only ?? 0;
         $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
-        $this->bot_trust_warning = $result->bot_trust_warning ?? 0;
+        $this->bot_trust_warning = $result->bot_trust_warning ?? '';
     }
 
     /**
@@ -799,22 +793,6 @@ class bot extends crud
     /**
      * @return string
      */
-    public function get_integrations_disclaimer_text(): string
-    {
-        return $this->integrations_disclaimer_text;
-    }
-
-    /**
-     * @return bool
-     */
-    public function get_integrations_no_context_reply(): bool
-    {
-        return $this->integrations_no_context_reply;
-    }
-
-    /**
-     * @return string
-     */
     public function get_integrations_no_context_reply_text(): string
     {
         if ($this->integrations_no_context_reply == 1) {
@@ -855,9 +833,9 @@ class bot extends crud
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function get_bot_trust_warning(): bool
+    public function get_bot_trust_warning(): string
     {
         return $this->bot_trust_warning;
     }

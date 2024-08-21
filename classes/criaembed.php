@@ -51,7 +51,6 @@ class criaembed
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
             'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
             'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
-            'integrationsDisclaimerText' => $BOT->get_integrations_disclaimer_text(),
             'botTrustWarning' => $BOT->get_bot_trust_warning()
         ];
         file_put_contents('/var/www/moodledata/temp/insert_embed.json', json_encode($data, JSON_PRETTY_PRINT));

@@ -862,16 +862,16 @@ class edit_bot_form extends \moodleform
         // Add element integrations_disclaimer_text
         $mform->addElement(
             'textarea',
-            'integrations_disclaimer_text',
+            'bot_trust_warning',
             get_string('integrations_disclaimer_text', 'local_cria')
         );
         $mform->setType(
-            'integrations_disclaimer_text',
+            'bot_trust_warning',
             PARAM_TEXT
         );
         // Add help button
         $mform->addHelpButton(
-            'integrations_disclaimer_text',
+            'bot_trust_warning',
             'integrations_disclaimer_text',
             'local_cria'
         );

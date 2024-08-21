@@ -314,6 +314,28 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2024082100, 'local', 'cria');
     }
 
+    if ($oldversion < 2024082101) {
+
+        // Define field integrations_disclaimer_text to be dropped from local_cria_bot.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('integrations_disclaimer_text');
+
+        // Conditionally launch drop field integrations_disclaimer_text.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Changing type of field bot_trust_warning on table local_cria_bot to char.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('bot_trust_warning', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'integrations_first_email_only');
+
+        // Launch change of type for field bot_trust_warning.
+        $dbman->change_field_type($table, $field);
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024082101, 'local', 'cria');
+    }
+
 
     return true;
 }
