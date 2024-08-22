@@ -292,245 +292,247 @@ class edit_bot_form extends \moodleform
             'local_cria'
         );
 
-
-        // Model id form element
-        $mform->addElement(
-            'select', 'model_id',
-            get_string('chatbot_framework', 'local_cria'),
-            $MODELS->get_select_array()
-        );
-
-        // Add rule required for model id
-        $mform->addRule(
-            'model_id',
-            get_string('required'),
-            'required',
-            null,
-            'client'
-        );
-
-        // Bot type form element
-        $mform->addElement(
-            'select',
-            'embedding_id',
-            get_string('bot_content_training_framework', 'local_cria'),
-            $MODELS->get_select_array(true)
-        );
-
-        // Add rule required for embedding id
-        $mform->addRule(
-            'embedding_id',
-            get_string('required'),
-            'required',
-            null,
-            'client'
-        );
-
-        // Add rerank model is
-        $mform->addElement(
-            'select',
-            'rerank_model_id',
-            get_string('rerank_model_id', 'local_cria'),
-            $MODELS->get_select_array(false, true)
-        );
-        // Add rule required for rerank model id
-        $mform->addRule(
-            'rerank_model_id',
-            get_string('required'),
-            'required',
-            null,
-            'client'
-        );
+        if (has_capability('local/cria:view_advanced_bot_options', $context)) {
 
 
-        $mform->setType(
-            'model_id',
-            PARAM_INT
-        );
+            // Model id form element
+            $mform->addElement(
+                'select', 'model_id',
+                get_string('chatbot_framework', 'local_cria'),
+                $MODELS->get_select_array()
+            );
 
-        $mform->setType(
-            'embedding_id',
-            PARAM_INT
-        );
+            // Add rule required for model id
+            $mform->addRule(
+                'model_id',
+                get_string('required'),
+                'required',
+                null,
+                'client'
+            );
 
-        $mform->setType(
-            'rerank_model_id',
-            PARAM_INT
-        );
+            // Bot type form element
+            $mform->addElement(
+                'select',
+                'embedding_id',
+                get_string('bot_content_training_framework', 'local_cria'),
+                $MODELS->get_select_array(true)
+            );
 
+            // Add rule required for embedding id
+            $mform->addRule(
+                'embedding_id',
+                get_string('required'),
+                'required',
+                null,
+                'client'
+            );
 
-        // Add fine_tuning element
-        $mform->addElement(
-            'selectyesno',
-            'fine_tuning',
-            get_string('fine_tuning', 'local_cria')
-        );
-        $mform->setType(
-            'fine_tuning',
-            PARAM_INT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'fine_tuning',
-            'fine_tuning',
-            'local_cria'
-        );
-
-
-        // Max tokens form element
-        $mform->addElement(
-            'text',
-            'max_tokens',
-            get_string('response_size', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-
-        // Add help button
-        $mform->addHelpButton(
-            'max_tokens',
-            'max_tokens',
-            'local_cria'
-        );
-
-
-        // temperature form element
-        $mform->addElement(
-            'text',
-            'temperature',
-            get_string('temperature', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-
-        // Add help button
-        $mform->addHelpButton(
-            'temperature',
-            'temperature',
-            'local_cria'
-        );
+            // Add rerank model is
+            $mform->addElement(
+                'select',
+                'rerank_model_id',
+                get_string('rerank_model_id', 'local_cria'),
+                $MODELS->get_select_array(false, true)
+            );
+            // Add rule required for rerank model id
+            $mform->addRule(
+                'rerank_model_id',
+                get_string('required'),
+                'required',
+                null,
+                'client'
+            );
 
 
-        // top_p form element
-        $mform->addElement(
-            'text',
-            'top_p',
-            get_string('top_p', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
+            $mform->setType(
+                'model_id',
+                PARAM_INT
+            );
 
-        // Add help button
-        $mform->addHelpButton(
-            'top_p',
-            'top_p',
-            'local_cria'
-        );
+            $mform->setType(
+                'embedding_id',
+                PARAM_INT
+            );
 
-        // top_k form element
-        $mform->addElement(
-            'text',
-            'top_k',
-            get_string('top_k', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-        // Set type
-        $mform->setType(
-            'top_k',
-            PARAM_INT
-        );
-
-        // Add help button
-        $mform->addHelpButton(
-            'top_k',
-            'top_k',
-            'local_cria'
-        );
-
-        // add element for top_n
-        $mform->addElement(
-            'text',
-            'top_n',
-            get_string('top_n', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-        // Set type
-        $mform->setType(
-            'top_n',
-            PARAM_INT
-        );
-
-        // Add elemnet for min_k
-        $mform->addElement(
-            'text',
-            'min_k',
-            get_string('min_k', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-        // Set type
-        $mform->setType(
-            'min_k',
-            PARAM_FLOAT
-        );
-
-        // Minimum relevance form element
-        $mform->addElement(
-            'text',
-            'min_relevance',
-            get_string('min_relevance', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-
-        // Add help button
-        $mform->addHelpButton(
-            'min_relevance',
-            'min_relevance',
-            'local_cria'
-        );
-
-        // Max context form element
-        $mform->addElement(
-            'text',
-            'max_context',
-            get_string('max_context', 'local_cria'),
-            ['style' => 'width: 100px;']
-        );
-
-        // Add help button
-        $mform->addHelpButton(
-            'max_context',
-            'max_context',
-            'local_cria'
-        );
+            $mform->setType(
+                'rerank_model_id',
+                PARAM_INT
+            );
 
 
-        $mform->setType(
-            'max_context',
-            PARAM_INT
-        );
+            // Add fine_tuning element
+            $mform->addElement(
+                'selectyesno',
+                'fine_tuning',
+                get_string('fine_tuning', 'local_cria')
+            );
+            $mform->setType(
+                'fine_tuning',
+                PARAM_INT
+            );
+            // Add help button
+            $mform->addHelpButton(
+                'fine_tuning',
+                'fine_tuning',
+                'local_cria'
+            );
 
-        $mform->setType(
-            'min_relevance',
-            PARAM_FLOAT
-        );
 
-        $mform->setType(
-            'min_rel',
-            PARAM_INT
-        );
+            // Max tokens form element
+            $mform->addElement(
+                'text',
+                'max_tokens',
+                get_string('response_size', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
 
-        $mform->setType(
-            'top_p',
-            PARAM_FLOAT
-        );
+            // Add help button
+            $mform->addHelpButton(
+                'max_tokens',
+                'max_tokens',
+                'local_cria'
+            );
 
-        $mform->setType(
-            'temperature',
-            PARAM_FLOAT
-        );
 
-        $mform->setType(
-            'max_tokens',
-            PARAM_INT
-        );
+            // temperature form element
+            $mform->addElement(
+                'text',
+                'temperature',
+                get_string('temperature', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
 
+            // Add help button
+            $mform->addHelpButton(
+                'temperature',
+                'temperature',
+                'local_cria'
+            );
+
+
+            // top_p form element
+            $mform->addElement(
+                'text',
+                'top_p',
+                get_string('top_p', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+
+            // Add help button
+            $mform->addHelpButton(
+                'top_p',
+                'top_p',
+                'local_cria'
+            );
+
+            // top_k form element
+            $mform->addElement(
+                'text',
+                'top_k',
+                get_string('top_k', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+            // Set type
+            $mform->setType(
+                'top_k',
+                PARAM_INT
+            );
+
+            // Add help button
+            $mform->addHelpButton(
+                'top_k',
+                'top_k',
+                'local_cria'
+            );
+
+            // add element for top_n
+            $mform->addElement(
+                'text',
+                'top_n',
+                get_string('top_n', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+            // Set type
+            $mform->setType(
+                'top_n',
+                PARAM_INT
+            );
+
+            // Add elemnet for min_k
+            $mform->addElement(
+                'text',
+                'min_k',
+                get_string('min_k', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+            // Set type
+            $mform->setType(
+                'min_k',
+                PARAM_FLOAT
+            );
+
+            // Minimum relevance form element
+            $mform->addElement(
+                'text',
+                'min_relevance',
+                get_string('min_relevance', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+
+            // Add help button
+            $mform->addHelpButton(
+                'min_relevance',
+                'min_relevance',
+                'local_cria'
+            );
+
+            // Max context form element
+            $mform->addElement(
+                'text',
+                'max_context',
+                get_string('max_context', 'local_cria'),
+                ['style' => 'width: 100px;']
+            );
+
+            // Add help button
+            $mform->addHelpButton(
+                'max_context',
+                'max_context',
+                'local_cria'
+            );
+
+
+            $mform->setType(
+                'max_context',
+                PARAM_INT
+            );
+
+            $mform->setType(
+                'min_relevance',
+                PARAM_FLOAT
+            );
+
+            $mform->setType(
+                'min_rel',
+                PARAM_INT
+            );
+
+            $mform->setType(
+                'top_p',
+                PARAM_FLOAT
+            );
+
+            $mform->setType(
+                'temperature',
+                PARAM_FLOAT
+            );
+
+            $mform->setType(
+                'max_tokens',
+                PARAM_INT
+            );
+        }
         // Add multi select element for child_bots
         $child_bots = $mform->addElement(
             'select',
@@ -594,23 +596,25 @@ class edit_bot_form extends \moodleform
         );
 
 
-        // Requires content prompt form element
-        $mform->addElement(
-            'selectyesno',
-            'requires_content_prompt',
-            get_string('requires_content_prompt', 'local_cria')
-        );
+        if (has_capability('local/cria:view_advanced_bot_options', $context)) {
+            // Requires content prompt form element
+            $mform->addElement(
+                'selectyesno',
+                'requires_content_prompt',
+                get_string('requires_content_prompt', 'local_cria')
+            );
 
-        $mform->addHelpButton(
-            'requires_content_prompt',
-            'requires_content_prompt',
-            'local_cria'
-        );
+            $mform->addHelpButton(
+                'requires_content_prompt',
+                'requires_content_prompt',
+                'local_cria'
+            );
 
-        $mform->setType(
-            'requires_content_prompt',
-            PARAM_INT
-        );
+            $mform->setType(
+                'requires_content_prompt',
+                PARAM_INT
+            );
+        }
 
         // Requires user prompt form element
         $mform->addElement(
@@ -865,80 +869,80 @@ class edit_bot_form extends \moodleform
             'integrations_disclaimer_text',
             'local_cria'
         );
+        if (has_capability('local/cria:view_advanced_bot_options', $context)) {
+            // Add a header for Azure bot configurations
+            $mform->addElement(
+                'html',
+                '<h3>' . get_string('azure_bot_settings', 'local_cria') . '</h3><hr>'
+            );
+            // Add element for ms_app_id
+            $mform->addElement(
+                'text',
+                'ms_app_id',
+                get_string('ms_app_id', 'local_cria')
+            );
+            $mform->setType(
+                'ms_app_id',
+                PARAM_TEXT
+            );
+            // Add help button
+            $mform->addHelpButton(
+                'ms_app_id',
+                'ms_app_id',
+                'local_cria'
+            );
 
-        // Add a header for Azure bot configurations
-        $mform->addElement(
-            'html',
-            '<h3>' . get_string('azure_bot_settings', 'local_cria') . '</h3><hr>'
-        );
-        // Add element for ms_app_id
-        $mform->addElement(
-            'text',
-            'ms_app_id',
-            get_string('ms_app_id', 'local_cria')
-        );
-        $mform->setType(
-            'ms_app_id',
-            PARAM_TEXT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'ms_app_id',
-            'ms_app_id',
-            'local_cria'
-        );
+            // Add element for ms_app_password
+            $mform->addElement(
+                'passwordunmask',
+                'ms_app_password',
+                get_string('ms_app_password', 'local_cria')
+            );
+            $mform->setType(
+                'ms_app_password',
+                PARAM_TEXT
+            );
+            // Add help button
+            $mform->addHelpButton(
+                'ms_app_password',
+                'ms_app_password',
+                'local_cria'
+            );
 
-        // Add element for ms_app_password
-        $mform->addElement(
-            'passwordunmask',
-            'ms_app_password',
-            get_string('ms_app_password', 'local_cria')
-        );
-        $mform->setType(
-            'ms_app_password',
-            PARAM_TEXT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'ms_app_password',
-            'ms_app_password',
-            'local_cria'
-        );
+            // Add elemnet integrations_no_context_reply
+            $mform->addElement(
+                'selectyesno',
+                'integrations_no_context_reply',
+                get_string('integrations_no_context_reply', 'local_cria')
+            );
+            $mform->setType(
+                'integrations_no_context_reply',
+                PARAM_INT
+            );
+            // Add help button
+            $mform->addHelpButton(
+                'integrations_no_context_reply',
+                'integrations_no_context_reply',
+                'local_cria'
+            );
 
-        // Add elemnet integrations_no_context_reply
-        $mform->addElement(
-            'selectyesno',
-            'integrations_no_context_reply',
-            get_string('integrations_no_context_reply', 'local_cria')
-        );
-        $mform->setType(
-            'integrations_no_context_reply',
-            PARAM_INT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'integrations_no_context_reply',
-            'integrations_no_context_reply',
-            'local_cria'
-        );
-
-        // Add element for integrations_first_email_only
-        $mform->addElement(
-            'selectyesno',
-            'integrations_first_email_only',
-            get_string('integrations_first_email_only', 'local_cria')
-        );
-        $mform->setType(
-            'integrations_first_email_only',
-            PARAM_INT
-        );
-        // Add help button
-        $mform->addHelpButton(
-            'integrations_first_email_only',
-            'integrations_first_email_only',
-            'local_cria'
-        );
-
+            // Add element for integrations_first_email_only
+            $mform->addElement(
+                'selectyesno',
+                'integrations_first_email_only',
+                get_string('integrations_first_email_only', 'local_cria')
+            );
+            $mform->setType(
+                'integrations_first_email_only',
+                PARAM_INT
+            );
+            // Add help button
+            $mform->addHelpButton(
+                'integrations_first_email_only',
+                'integrations_first_email_only',
+                'local_cria'
+            );
+        }
         // Add a header for development
         $mform->addElement(
             'html',
