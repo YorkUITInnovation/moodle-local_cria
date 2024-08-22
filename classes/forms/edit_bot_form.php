@@ -718,12 +718,13 @@ class edit_bot_form extends \moodleform
             'local_cria'
         );
 
+
         // Add textare element for related_prompts
         $mform->addElement(
             'textarea',
             'related_prompts',
             get_string('related_prompts', 'local_cria'),
-            ['rows' => 8]
+            ['rows' => 8, 'style' => 'display: none;']
         );
         $mform->setType(
             'related_prompts',
@@ -734,6 +735,12 @@ class edit_bot_form extends \moodleform
             'related_prompts',
             'related_prompts',
             'local_cria'
+        );
+
+        // Add hteml element for related prompts
+        $mform->addElement(
+            'html',
+            $OUTPUT->render_from_template('local_cria/related_prompts', ['bot_id' => $formdata->id])
         );
 
         // Add icon url element

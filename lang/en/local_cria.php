@@ -25,6 +25,7 @@ $string['add_keyword'] = 'Add keyword';
 $string['add_model'] = 'Add model';
 $string['add_provider'] = 'Add provider';
 $string['add_question'] = 'Add question';
+$string['add_start_up_question'] = 'Add Start-up Question';
 $string['add_type'] = 'Add type';
 $string['available_child'] = 'Make this bot available to other bots';
 $string['available_child_help'] = 'Select Yes if you want this bot to be available to other bots as a child bot. This is useful if you want to create a bot that uses the content of another bot.';
@@ -187,6 +188,7 @@ $string['intent'] = 'Intent';
 $string['intents'] = 'Intents';
 $string['keyword'] = 'Keyword';
 $string['keywords'] = 'Keywords';
+$string['label'] = 'Display Label';
 $string['languages'] = 'Languages';
 $string['languages_help'] = 'One line per language. Each line must be in the following format:<br>' .
     '<b>Language code</b> pipe (|) <b>Language name</b> <br><br>' .

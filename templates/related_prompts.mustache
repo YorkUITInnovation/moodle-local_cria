@@ -1,0 +1,108 @@
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <div id="local-cria-related-prompts-container">
+                            <table id="local-cria-related-prompts-table" class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>{{#str}}label, local_cria{{/str}}</th>
+                                    <th>{{#str}}prompt, local_cria{{/str}}</th>
+                                    <th>{{#str}}actions, local_cria{{/str}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button
+                        type="button"
+                        id="btn-local-cria-add-related-prompt"
+                        class="btn btn-primary"
+                        data-toggle="modal"
+                        data-target="#local-cria-add-related-prompt-modal">
+                    {{#str}}add_start_up_question, local_cria{{/str}}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="local-cria-add-related-prompt-modal" tabindex="-1" aria-labelledby="local-cria-add-related-prompt-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="local-cria-add-related-prompt-modal-label">{{#str}}add_start_up_question, local_cria{{/str}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="local-cria-add-related-prompt-form">
+                    <div class="form-group">
+                        <label for="local-cria-label">{{#str}}label, local_cria{{/str}}</label>
+                        <input type="text" class="form-control" id="local-cria-label" name="label">
+                    </div>
+                    <div class="form-group">
+                        <label for="local-cria-prompt">{{#str}}prompt, local_cria{{/str}}</label>
+                        <input type="text" class="form-control" id="local-cria-prompt" name="prompt">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{#str}}close, local_cria{{/str}}</button>
+                <button type="button" id="btn-local-cria-save-related-prompt" data-dismiss="modal"  class="btn btn-primary">{{#str}}save, local_cria{{/str}}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to add a row to the table
+    function addRowToTable(relatedPrompt) {
+        var table = document.getElementById('local-cria-related-prompts-table').getElementsByTagName('tbody')[0];
+        var row = table.insertRow();
+        var labelCell = row.insertCell(0);
+        var promptCell = row.insertCell(1);
+        labelCell.innerHTML = relatedPrompt.label;
+        promptCell.innerHTML = relatedPrompt.prompt;
+
+        // Add a delete button to the row
+        var deleteButton = document.createElement('button');
+        deleteButton.innerHTML = 'Delete';
+        deleteButton.classList.add('btn', 'btn-danger');
+        var actionCell = row.insertCell(2);
+        actionCell.appendChild(deleteButton);
+
+        deleteButton.addEventListener('click', function() {
+            var index = relatedPrompts.indexOf(relatedPrompt);
+            relatedPrompts.splice(index, 1);
+            updateRelatedPrompts();
+            table.deleteRow(row.rowIndex - 1);
+        });
+    }
+
+    // Function to update the relatedPrompts array and hidden input field
+    function updateRelatedPrompts() {
+        document.getElementById('id_related_prompts').value = JSON.stringify(relatedPrompts);
+    }
+
+    // When the page loads, add all rows to the table based on the relatedPrompts array
+    var relatedPrompts = document.getElementById('id_related_prompts').value;
+    relatedPrompts = relatedPrompts === "" ? [] : JSON.parse(relatedPrompts);
+    relatedPrompts.forEach(addRowToTable);
+
+    document.getElementById('btn-local-cria-save-related-prompt').addEventListener('click', function() {
+        var label = document.getElementById('local-cria-label').value;
+        var prompt = document.getElementById('local-cria-prompt').value;
+        relatedPrompts.push({label: label, prompt: prompt});
+        updateRelatedPrompts();
+        addRowToTable({label: label, prompt: prompt});
+    });
+</script>
