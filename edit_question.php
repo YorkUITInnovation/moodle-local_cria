@@ -42,6 +42,7 @@ if ($id != 0) {
     $formdata->examples = array_values($examples);
     $formdata->create_example_questions = false;
     $formdata->keywords = json_decode($formdata->keywords);
+    $formdata->related_prompts = $formdata->related_questions;
 
     $draftid = file_get_submitted_draft_itemid('answereditor');
     $currentText = file_prepare_draft_area($draftid, $context->id, 'local_cria', 'answer', $formdata->id, base::getEditorOptions($context), $formdata->answer);
@@ -76,8 +77,10 @@ if ($mform->is_cancelled()) {
         $keywords = '';
     }
 
-
     unset($data->keywords);
+
+    $data->related_questions = $data->related_prompts;
+    unset($data->related_prompts);
     $data->keywords = $keywords;
     $data->usermodified = $USER->id;
     $data->timemodified = time();

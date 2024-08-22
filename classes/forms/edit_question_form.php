@@ -168,20 +168,31 @@ class edit_question_form extends \moodleform
             'html',
             '<h3>' . get_string('related_questions', 'local_cria') . '</h3>'
         );
+
         // Add a related question textarea element
         $mform->addElement(
             'textarea',
-            'related_questions',
-            get_string('related_questions', 'local_cria')
+            'related_prompts',
+            get_string('related_questions', 'local_cria'),
+            ['rows' => 8, 'style' => 'display: none;']
         );
         $mform->setType(
-            'related_questions',
+            'related_prompts',
             PARAM_RAW
         );
         $mform->addHelpButton(
-            'related_questions',
+            'related_prompts',
             'related_questions',
             'local_cria'
+        );
+
+        // Add html element for relat4ed prompt
+        $mform->addElement(
+            'html',
+            $OUTPUT->render_from_template(
+                'local_cria/related_prompts',
+                []
+            )
         );
 
         $mform->addElement(

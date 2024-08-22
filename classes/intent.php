@@ -407,13 +407,13 @@ class intent extends crud
         // Get all related questions
         $related_prompts =  [];
         if (!empty($question->related_questions)) {
-            $related_questions = explode("\n", $question->related_questions);
+            $related_questions = json_decode($question->related_questions);
             foreach ($related_questions as $related_question) {
                 // Explode on pipe
-                $related_question = explode('|', $related_question);
+                ;
                 $related_prompts[] = [
-                    'label' => $related_question[0],
-                    'prompt' => $related_question[1]
+                    'label' => $related_question->label,
+                    'prompt' => $related_question->prompt
                     ];
             }
         }
