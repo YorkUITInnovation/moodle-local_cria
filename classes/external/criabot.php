@@ -151,6 +151,6 @@ class local_cria_external_criabot extends external_api
      */
     public static function bot_exists_returns()
     {
-        return new external_value(PARAM_INT, 'boolean');
+        return new external_value(PARAM_INT, 'Int');
     }
 }

@@ -772,12 +772,17 @@ class bot extends crud
         return $this->bot_locale;
     }
 
-    /**
+   /**
      * @return string
      */
-    public function get_ms_app_id(): string
+    public function get_ms_app_id()
     {
-        return $this->ms_app_id;
+        if ($this->ms_app_id) {
+            return $this->ms_app_id;
+        } else {
+            return null;
+        }
+
     }
 
     /**
