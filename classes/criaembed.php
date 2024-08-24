@@ -50,7 +50,7 @@ class criaembed
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
             'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
             'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
-            'botTrustWarning' => $BOT->get_bot_trust_warning(),
+            'botTrustWarning' => $BOT->get_bot_trust_warning()
 //            'botHelptext' => $BOT->get_bot_help_text()
         ];
 
@@ -112,7 +112,7 @@ class criaembed
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
             'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),
             'integrationsFirstEmailOnly' => $BOT->get_integrations_first_email_only(),
-            'botTrustWarning' => $BOT->get_bot_trust_warning(),
+            'botTrustWarning' => $BOT->get_bot_trust_warning()
 //            'botHelptext' => $BOT->get_bot_help_text()
         ];
 
