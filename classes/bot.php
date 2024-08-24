@@ -337,6 +337,11 @@ class bot extends crud
      */
     private $bot_trust_warning;
 
+    /**
+     * @var string
+     */
+    private $bot_help_text;
+
 
     /**
      *
@@ -411,6 +416,7 @@ class bot extends crud
         $this->integrations_first_email_only = $result->integrations_first_email_only ?? 0;
         $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
         $this->bot_trust_warning = $result->bot_trust_warning ?? '';
+        $this->bot_help_text = $result->bot_help_text ?? '';
     }
 
     /**
@@ -713,6 +719,14 @@ class bot extends crud
     public function get_subtitle(): string
     {
         return $this->subtitle;
+    }
+
+    /**
+     * @return string
+     */
+    public function get_bot_help_text(): string
+    {
+        return $this->bot_help_text;
     }
 
     /**

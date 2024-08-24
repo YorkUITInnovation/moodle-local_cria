@@ -336,6 +336,21 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2024082101, 'local', 'cria');
     }
 
+    if ($oldversion < 2024082400) {
+
+        // Define field bot_help_text to be added to local_cria_bot.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('bot_help_text', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'bot_trust_warning');
+
+        // Conditionally launch add field bot_help_text.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024082400, 'local', 'cria');
+    }
+
 
     return true;
 }

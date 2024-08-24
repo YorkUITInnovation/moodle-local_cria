@@ -694,6 +694,23 @@ class edit_bot_form extends \moodleform
             PARAM_TEXT
         );
 
+        // Add bot_help_text element
+        $mform->addElement(
+            'text',
+            'bot_help_text',
+            get_string('bot_help_text', 'local_cria')
+        );
+        $mform->setType(
+            'bot_help_text',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'bot_help_text',
+            'bot_help_text',
+            'local_cria'
+        );
+
         // Welcome message element
         $mform->addElement(
             'textarea',
