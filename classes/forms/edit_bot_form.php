@@ -711,6 +711,23 @@ class edit_bot_form extends \moodleform
             'local_cria'
         );
 
+        // Add bot_contact element
+        $mform->addElement(
+            'text',
+            'bot_contact',
+            get_string('bot_contact', 'local_cria')
+        );
+        $mform->setType(
+            'bot_contact',
+            PARAM_TEXT
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'bot_contact',
+            'bot_contact',
+            'local_cria'
+        );
+
         // Welcome message element
         $mform->addElement(
             'textarea',

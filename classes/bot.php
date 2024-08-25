@@ -342,6 +342,11 @@ class bot extends crud
      */
     private $bot_help_text;
 
+    /**
+     * @var string
+     */
+    private $bot_contact;
+
 
     /**
      *
@@ -417,6 +422,7 @@ class bot extends crud
         $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
         $this->bot_trust_warning = $result->bot_trust_warning ?? '';
         $this->bot_help_text = $result->bot_help_text ?? '';
+        $this->bot_contact = $result->bot_contact ?? '';
     }
 
     /**
@@ -724,9 +730,25 @@ class bot extends crud
     /**
      * @return string
      */
-    public function get_bot_help_text(): string
+    public function get_bot_help_text()
     {
-        return $this->bot_help_text;
+        if ($this->bot_help_text) {
+            return $this->bot_help_text;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function get_bot_contact()
+    {
+        if ($this->bot_contact) {
+            return $this->bot_contact;
+        } else {
+            return null;
+        }
     }
 
     /**
