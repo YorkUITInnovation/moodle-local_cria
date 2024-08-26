@@ -333,6 +333,24 @@ class local_cria_external_bot extends external_api
                     false,
                     ''
                 ),
+                'bot_help_text' => new external_value(
+                    PARAM_TEXT,
+                    'Text used for the hover tooltip and alt parameter for the embed',
+                    false,
+                    ''
+                ),
+                'bot_contact' => new external_value(
+                    PARAM_TEXT,
+                    'An email and/or phone number for the bot contact. This will show up in the contact information for the embed bot',
+                    false,
+                    ''
+                ),
+                'bot_trust_warning' => new external_value(
+                    PARAM_TEXT,
+                    'A disclaimer message that will show up in the embed bot',
+                    false,
+                    ''
+                ),
 
             )
         );
@@ -376,6 +394,9 @@ class local_cria_external_bot extends external_api
      * @param $published
      * @param $id
      * @param $related_prompts
+     * @param $bot_help_text
+     * @param $bot_contact
+     * @param $bot_trust_warning
      * @return int
      * @throws dml_exception
      * @throws invalid_parameter_exception
@@ -418,7 +439,10 @@ class local_cria_external_bot extends external_api
         $child_bots = '',
         $publish = 0,
         $id = 0,
-        $related_prompts = ''
+        $related_prompts = '',
+        $bot_help_text = '',
+        $bot_contact = '',
+        $bot_trust_warning = ''
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -461,7 +485,10 @@ class local_cria_external_bot extends external_api
                 'child_bots' => $child_bots,
                 'publish' => $publish,
                 'id' => $id,
-                'related_prompts' => $related_prompts
+                'related_prompts' => $related_prompts,
+                'bot_help_text' => $bot_help_text,
+                'bot_contact' => $bot_contact,
+                'bot_trust_warning' => $bot_trust_warning
             )
         );
 
