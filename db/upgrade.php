@@ -366,5 +366,18 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2024082500, 'local', 'cria');
     }
 
+    if ($oldversion < 2024082600) {
+
+        // Changing type of field email on table local_cria_bot to text.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('email', XMLDB_TYPE_TEXT, null, null, null, null, null, 'requires_user_prompt');
+
+        // Launch change of type for field email.
+        $dbman->change_field_type($table, $field);
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024082600, 'local', 'cria');
+    }
+
     return true;
 }
