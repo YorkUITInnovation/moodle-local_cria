@@ -564,6 +564,13 @@ class local_cria_external_bot extends external_api
                 $NEW_UPDATED_BOT->update_bot_on_bot_server($NEW_UPDATED_BOT->get_default_intent_id());
             }
             unset($NEW_UPDATED_BOT);
+            // Perform a second time to make sure the settigns are updated.
+            $UPDATED_BOT = new bot($id);
+            if ($UPDATED_BOT->use_bot_server()) {
+                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
+            }
+            unset($NEW_UPDATED_BOT);
+
         }
 
 
