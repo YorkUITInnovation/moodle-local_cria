@@ -566,7 +566,7 @@ class local_cria_external_bot extends external_api
             unset($NEW_UPDATED_BOT);
             // Perform a second time to make sure the settigns are updated.
             // get bot record
-            $new_bot = $DB->get_record('local_cria_bots', ['id' => $id]);
+            $new_bot = $DB->get_record('local_cria_bot', ['id' => $id]);
             $UPDATED_BOT = new bot($new_bot->id);
             $UPDATED_BOT->update_record($new_bot);
         }
