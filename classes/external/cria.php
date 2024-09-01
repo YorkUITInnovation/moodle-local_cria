@@ -158,7 +158,7 @@ class local_cria_external_cria extends external_api
      */
     public static function get_cria_availability_details() {
         $fields = array(
-            'status' => new external_value(PARAM_TEXT, 'Status: 200 or 404', false),
+            'status' => new external_value(PARAM_INT, 'Status: 200 or 404', true),
             'message' => new external_value(PARAM_RAW, 'Message provided by maintenance mode', true),
         );
         return new external_single_structure($fields);
