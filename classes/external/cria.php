@@ -146,7 +146,7 @@ class local_cria_external_cria extends external_api
         $maintenance = $DB->get_record('config', array('name' => 'maintenance_enabled'));
         if ($maintenance->value == 1) {
             $maintenance_message = $DB->get_record('config', array('name' => 'maintenance_message'));
-            $availability[0]['status'] = 404;
+            $availability[0]['status'] = 503;
             $availability[0]['message'] = $maintenance_message->value;
         }
 
@@ -158,7 +158,7 @@ class local_cria_external_cria extends external_api
      */
     public static function get_cria_availability_details() {
         $fields = array(
-            'status' => new external_value(PARAM_INT, 'Status: 200 or 404', true),
+            'status' => new external_value(PARAM_INT, 'Status: 200 or 503', true),
             'message' => new external_value(PARAM_RAW, 'Message provided by maintenance mode', true),
         );
         return new external_single_structure($fields);
