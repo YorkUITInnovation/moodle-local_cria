@@ -138,10 +138,10 @@ class local_cria_external_cria extends external_api
         $context = \context_system::instance();
         self::validate_context($context);
 
-        $availability = new \stdClass();
-        $availability->exception = 'success';
-        $availability->errorcode = '';
-        $availability->message = '';
+        $availability[0] = new \stdClass();
+        $availability[0]->exception = 'success';
+        $availability[0]->errorcode = '';
+        $availability[0]->message = '';
 
         return $availability;
     }
