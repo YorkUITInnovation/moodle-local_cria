@@ -139,16 +139,9 @@ class local_cria_external_cria extends external_api
         self::validate_context($context);
 
         $availability = [];
-        $availability[0]['status'] = 200;
-        $availability[0]['message'] = '';
-
-        // Check to see if we are in maintenance mode
-//        $maintenance = $DB->get_record('config', array('name' => 'maintenance_enabled'));
-//        if ($maintenance->value == 1) {
-//            $maintenance_message = $DB->get_record('config', array('name' => 'maintenance_message'));
-//            $availability[0]['status'] = 503;
-//            $availability[0]['message'] = $maintenance_message->value;
-//        }
+        $availability['exception'] = 'success';
+        $availability['errorcode'] = '';
+        $availability['message'] = '';
 
         return $availability;
     }
@@ -158,7 +151,8 @@ class local_cria_external_cria extends external_api
      */
     public static function get_cria_availability_details() {
         $fields = array(
-            'status' => new external_value(PARAM_INT, 'Status: 200 OR Moodle exception', true),
+            'exception' => new external_value(PARAM_TEXT, 'Exception code in text', true),
+            'errorcode' => new external_value(PARAM_TEXT, 'Error type', true),
             'message' => new external_value(PARAM_RAW, 'Message provided by maintenance mode', true),
         );
         return new external_single_structure($fields);
