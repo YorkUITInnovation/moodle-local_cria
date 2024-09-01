@@ -326,7 +326,7 @@ $functions = array(
         'classname' => 'local_cria_external_cria',
         'methodname' => 'get_cria_availability',
         'classpath' => 'local/cria/classes/external/cria.php',
-        'description' => 'Check to see if Cria is available',
+        'description' => 'Check to see if Cria is available based on maintenance mode',
         'type' => 'write',
         'ajax' => true
     ),
