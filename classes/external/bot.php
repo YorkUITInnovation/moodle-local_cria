@@ -491,6 +491,16 @@ class local_cria_external_bot extends external_api
                 'bot_trust_warning' => $bot_trust_warning
             )
         );
+        // Get IP address from where the action is being requested from
+        $ip = $_SERVER['REMOTE_ADDR'];
+        // add ip to params
+        $params['ip'] = $ip;
+        $params['timecreated'] = date('Y-m-d h:i:s', time());
+        // Add to file. File name ust have the date in it.
+        file_put_contents($CFG->dataroot . '/temp/bot_creation_' . date('Y-m-d') . 'json', json_encode($params, JSON_PRETTY_PRINT));
+        // unset $params['ip'] and ['timecreated'] so that they are not saved in the database
+        unset($params['ip']);
+        unset($params['timecreated']);
 
         // Convert child bots to array
         if ($child_bots) {
