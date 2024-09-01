@@ -104,4 +104,72 @@ class local_cria_external_cria extends external_api
     {
         return new external_multiple_structure(self::get_config_details());
     }
+
+    /***** Get cria configuration
+
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function get_cria_availability_parameters()
+    {
+        return new external_function_parameters(
+            array()
+        );
+    }
+
+    /**
+     * @param $id
+     * @return true
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws restricted_context_exception
+     */
+    public static function get_cria_availability()
+    {
+        global $CFG, $USER, $DB, $PAGE;
+
+        //Parameter validation
+        $params = self::validate_parameters(self::get_cria_availability_parameters(), array()
+        );
+
+        //Context validation
+        //OPTIONAL but in most web service it should present
+        $context = \context_system::instance();
+        self::validate_context($context);
+
+        $availability = [];
+        $availability[0]['status'] = 200;
+        $availability[0]['message'] = '';
+
+        // Check to see if we are in maintenance mode
+        $maintenance = $DB->get_record('config', array('name' => 'maintenance_enabled'));
+        if ($maintenance->value == 1) {
+            $maintenance_message = $DB->get_record('config', array('name' => 'maintenance_message'));
+            $availability[0]['status'] = 404;
+            $availability[0]['message'] = $maintenance_message->value;
+        }
+
+        return $availability;
+    }
+
+    /**
+     * @return external_single_structure
+     */
+    public static function get_cria_availability_details() {
+        $fields = array(
+            'status' => new external_value(PARAM_TEXT, 'Status: 200 or 404', false),
+            'message' => new external_value(PARAM_RAW, 'Message provided by maintenance mode', true),
+        );
+        return new external_single_structure($fields);
+    }
+
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function get_cria_availability_returns()
+    {
+        return new external_multiple_structure(self::get_cria_availability_details());
+    }
 }

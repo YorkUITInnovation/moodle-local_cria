@@ -322,4 +322,12 @@ $functions = array(
         'capabilities' => 'local/cria:edit_bot_content',
         'ajax' => true
     ),
+    'cria_get_availability' => array(
+        'classname' => 'local_cria_external_cria',
+        'methodname' => 'get_cria_availability',
+        'classpath' => 'local/cria/classes/external/cria.php',
+        'description' => 'Check to see if Cria is available',
+        'type' => 'write',
+        'ajax' => true
+    ),
 );
