@@ -156,7 +156,7 @@ class criaembed
      * @throws \dml_exception
      */
     public static function sessions_load($intent_id, $payload) {
-        $CFG
+        global $CFG;
         // Get Config
         $config = get_config('local_cria');
         $INTENT = new intent($intent_id);
