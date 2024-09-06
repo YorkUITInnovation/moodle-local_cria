@@ -55,7 +55,7 @@ class local_cria_external_embed extends external_api
         return new external_function_parameters(
             array(
                 'intentid' => new external_value(PARAM_INT, 'Intent id', VALUE_REQUIRED, 0),
-                'payload' => new external_value(PARAM_RAW, 'A json string (not an array) of data', VALUE_OPTIONAL, "{}"),
+                'payload' => new external_value(PARAM_TEXT, 'A json string (not an array) of data', VALUE_OPTIONAL, "{}"),
 
             )
         );
@@ -93,6 +93,6 @@ class local_cria_external_embed extends external_api
      */
     public static function load_session_returns()
     {
-        return new external_value(PARAM_RAW, 'Call for the session');
+        return new external_value(PARAM_TEXT, 'Call for the session');
     }
 }
