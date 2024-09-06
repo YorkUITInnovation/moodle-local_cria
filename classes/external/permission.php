@@ -56,7 +56,7 @@ class local_cria_external_permission extends external_api
     {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'assigned id', false, 0)
+                'id' => new external_value(PARAM_INT, 'assigned id', VALUE_REQUIRED, 0)
             )
         );
     }
@@ -109,8 +109,8 @@ class local_cria_external_permission extends external_api
     {
         return new external_function_parameters(
             array(
-                'role_id' => new external_value(PARAM_INT, 'Role id', false, 0),
-                'user_id' => new external_value(PARAM_INT, 'User id', false, 0)
+                'role_id' => new external_value(PARAM_INT, 'Role id', VALUE_REQUIRED, 0),
+                'user_id' => new external_value(PARAM_INT, 'User id', VALUE_REQUIRED, 0)
             )
         );
     }
@@ -167,9 +167,9 @@ class local_cria_external_permission extends external_api
     public static function get_users_parameters() {
         return new external_function_parameters(
             array(
-                'role_id' => new external_value(PARAM_INT, 'Role id', true),
-                'id' => new external_value(PARAM_INT, 'User id', false, -1),
-                'name' => new external_value(PARAM_TEXT, 'User first or last name', false, '')
+                'role_id' => new external_value(PARAM_INT, 'Role id', VALUE_REQUIRED),
+                'id' => new external_value(PARAM_INT, 'User id', VALUE_OPTIONAL, -1),
+                'name' => new external_value(PARAM_TEXT, 'User first or last name', VALUE_OPTIONAL, '')
             )
         );
     }
@@ -235,11 +235,11 @@ class local_cria_external_permission extends external_api
      */
     public static function user_details() {
         $fields = array(
-            'id' => new external_value(PARAM_INT, 'Record id', false, 0),
-            'firstname' => new external_value(PARAM_TEXT, 'User first name', true),
-            'lastname' => new external_value(PARAM_TEXT, 'User last name', true),
-            'email' => new external_value(PARAM_TEXT, 'email', true),
-            'idnumber' => new external_value(PARAM_TEXT, 'ID Number', true)
+            'id' => new external_value(PARAM_INT, 'Record id', VALUE_OPTIONAL, 0),
+            'firstname' => new external_value(PARAM_TEXT, 'User first name', VALUE_REQUIRED),
+            'lastname' => new external_value(PARAM_TEXT, 'User last name', VALUE_REQUIRED),
+            'email' => new external_value(PARAM_TEXT, 'email', VALUE_REQUIRED),
+            'idnumber' => new external_value(PARAM_TEXT, 'ID Number', VALUE_REQUIRED)
         );
         return new external_single_structure($fields);
     }
@@ -260,7 +260,7 @@ class local_cria_external_permission extends external_api
     public static function get_assigned_users_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Role id', false, -1)
+                'id' => new external_value(PARAM_INT, 'Role id', VALUE_OPTIONAL, -1)
             )
         );
     }
@@ -314,12 +314,12 @@ class local_cria_external_permission extends external_api
      */
     public static function get_assigned_users_details() {
         $fields = array(
-            'id' => new external_value(PARAM_INT, 'Record id', false, 0),
-            'firstname' => new external_value(PARAM_TEXT, 'User first name', true),
-            'lastname' => new external_value(PARAM_TEXT, 'User last name', true),
-            'email' => new external_value(PARAM_TEXT, 'email', true),
-            'idnumber' => new external_value(PARAM_TEXT, 'ID Number', true),
-            'userid' => new external_value(PARAM_TEXT, 'USER ID', true),
+            'id' => new external_value(PARAM_INT, 'Record id', VALUE_OPTIONAL, 0),
+            'firstname' => new external_value(PARAM_TEXT, 'User first name', VALUE_REQUIRED),
+            'lastname' => new external_value(PARAM_TEXT, 'User last name', VALUE_REQUIRED),
+            'email' => new external_value(PARAM_TEXT, 'email', VALUE_REQUIRED),
+            'idnumber' => new external_value(PARAM_TEXT, 'ID Number', VALUE_REQUIRED),
+            'userid' => new external_value(PARAM_TEXT, 'USER ID', VALUE_REQUIRED),
         );
         return new external_single_structure($fields);
     }

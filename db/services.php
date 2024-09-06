@@ -330,4 +330,12 @@ $functions = array(
         'type' => 'write',
         'ajax' => true
     ),
+    'cria_load_session' => array(
+        'classname' => 'local_cria_external_embed',
+        'methodname' => 'load_session',
+        'classpath' => 'local/cria/classes/external/embed.php',
+        'description' => 'Returns the embed code for the session. But you must create a payload',
+        'type' => 'write',
+        'ajax' => true
+    ),
 );

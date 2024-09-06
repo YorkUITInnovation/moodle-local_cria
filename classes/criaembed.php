@@ -147,4 +147,46 @@ class criaembed
             'GET'
         );
     }
+
+    /**
+     * Start a session with a payload
+     * @param $intent_id
+     * @param $data
+     * @return mixed
+     * @throws \dml_exception
+     */
+    public static function sessions_load($intent_id, $payload) {
+        // Get Config
+        $config = get_config('local_cria');
+        $INTENT = new intent($intent_id);
+        // Create model
+        return gpt::_make_call(
+            $config->criaembed_url,
+            $INTENT->get_bot_api_key(),
+            json_encode($payload),
+            '/embed/'. $INTENT->get_bot_id() . '/load',
+            'POST'
+        );
+    }
+
+    /**
+     * Get session data, including payload
+     * @param $intent_id
+     * @param $chat_id
+     * @return mixed
+     * @throws \dml_exception
+     */
+    public static function sessions_get_data($intent_id, $chat_id) {
+        // Get Config
+        $config = get_config('local_cria');
+        $INTENT = new intent($intent_id);
+        // Create model
+        return gpt::_make_call(
+            $config->criaembed_url,
+            $INTENT->get_bot_api_key(),
+            '',
+            '/embed/'. $INTENT->get_bot_id() . '/session_data?chatId=' . $chat_id,
+            'GET'
+        );
+    }
 }
