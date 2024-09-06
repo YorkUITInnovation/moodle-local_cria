@@ -156,11 +156,12 @@ class criaembed
      * @throws \dml_exception
      */
     public static function sessions_load($intent_id, $payload) {
+        $CFG
         // Get Config
         $config = get_config('local_cria');
         $INTENT = new intent($intent_id);
-        file_put_contents($config->dataroot . '/temp/criaembed_id.json', $intent_id);
-        file_put_contents($config->dataroot . '/temp/criaembed_data.json', json_encode($payload, JSON_PRETTY_PRINT));
+        file_put_contents($CFG->dataroot . '/temp/criaembed_id.json', $intent_id);
+        file_put_contents($CFG->dataroot . '/temp/criaembed_data.json', json_encode($payload, JSON_PRETTY_PRINT));
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
