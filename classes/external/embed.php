@@ -39,6 +39,8 @@ use local_cria\cria;
 require_once($CFG->libdir . "/externallib.php");
 require_once("$CFG->dirroot/config.php");
 
+use local_cria\criaembed;
+
 class local_cria_external_embed extends external_api
 {
 
@@ -79,7 +81,9 @@ class local_cria_external_embed extends external_api
         );
 
 
-        return $cria_config;
+
+
+        return criaembed::sessions_load($intent_id, $payload);
     }
 
     /**
