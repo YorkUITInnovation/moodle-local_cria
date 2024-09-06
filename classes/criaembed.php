@@ -164,7 +164,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             $payload,
-            '/embed/'. $INTENT->get_bot_id() . '/load',
+            '/embed/'. $INTENT->get_bot_name() . '/load',
             'POST'
         );
     }
