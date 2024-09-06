@@ -155,20 +155,21 @@ class criaembed
      * @return mixed
      * @throws \dml_exception
      */
-    public static function sessions_load($intent_id, $payload) {
+    public static function sessions_load($bot_id, $payload) {
         global $CFG;
         // Get Config
         $config = get_config('local_cria');
-        $BOT = new bot($intent_id);
-        file_put_contents($CFG->dataroot . '/temp/criaembed_id.json', $intent_id);
+        $BOT = new bot($bot_id);
+        file_put_contents($CFG->dataroot . '/temp/criaembed_id.json', $bot_id);
         file_put_contents($CFG->dataroot . '/temp/criaembed_data.json', $payload);
         file_put_contents($CFG->dataroot . '/temp/apikey.json', $payload);
+        file_put_contents($CFG->dataroot . '/temp/criaembed)url.json', $config->criaembed_url);
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
             $BOT->get_bot_api_key(),
             $payload,
-            '/embed/'. $intent_id . '/load',
+            '/embed/'. $bot_id . '/load',
             'POST'
         );
     }
@@ -180,16 +181,16 @@ class criaembed
      * @return mixed
      * @throws \dml_exception
      */
-    public static function sessions_get_data($intent_id, $chat_id) {
+    public static function sessions_get_data($bot_id, $chat_id) {
         // Get Config
         $config = get_config('local_cria');
-        $INTENT = new intent($intent_id);
+        $BOT = new bot($bot_id);
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
-            $INTENT->get_bot_api_key(),
+            $BOT->get_bot_api_key(),
             '',
-            '/embed/'. $intent_id . '/session_data?chatId=' . $chat_id,
+            '/embed/'. $bot_id . '/session_data?chatId=' . $chat_id,
             'GET'
         );
     }

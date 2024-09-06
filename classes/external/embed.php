@@ -93,6 +93,6 @@ class local_cria_external_embed extends external_api
      */
     public static function load_session_returns()
     {
-        return new external_value(PARAM_TEXT, 'Call for the session');
+        return new external_value(PARAM_RAW, 'Call for the session');
     }
 }
