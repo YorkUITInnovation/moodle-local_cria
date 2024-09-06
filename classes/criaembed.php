@@ -164,7 +164,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             $payload,
-            '/embed/'. $INTENT->get_bot_name() . '/load',
+            '/embed/'. $intent_id . '/load',
             'POST'
         );
     }
@@ -185,7 +185,7 @@ class criaembed
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
             '',
-            '/embed/'. $INTENT->get_bot_id() . '/session_data?chatId=' . $chat_id,
+            '/embed/'. $intent_id . '/session_data?chatId=' . $chat_id,
             'GET'
         );
     }
