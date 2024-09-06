@@ -159,13 +159,14 @@ class criaembed
         global $CFG;
         // Get Config
         $config = get_config('local_cria');
-        $INTENT = new intent($intent_id);
+        $BOT = new bot($intent_id);
         file_put_contents($CFG->dataroot . '/temp/criaembed_id.json', $intent_id);
         file_put_contents($CFG->dataroot . '/temp/criaembed_data.json', $payload);
+        file_put_contents($CFG->dataroot . '/temp/apikey.json', $payload);
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,
-            $INTENT->get_bot_api_key(),
+            $BOT->get_bot_api_key(),
             $payload,
             '/embed/'. $intent_id . '/load',
             'POST'
