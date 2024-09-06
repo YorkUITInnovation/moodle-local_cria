@@ -81,9 +81,10 @@ class local_cria_external_embed extends external_api
         );
 
 
+        $session = criaembed::sessions_load($intent_id, $payload);
+        file_put_contents($CFG->dataroot . '/temp/criaembed.json', json_encode($session, JSON_PRETTY_PRINT));
 
-
-        return criaembed::sessions_load($intent_id, $payload);
+        return $session;
     }
 
     /**
