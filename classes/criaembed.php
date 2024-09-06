@@ -163,7 +163,7 @@ class criaembed
         return gpt::_make_call(
             $config->criaembed_url,
             $INTENT->get_bot_api_key(),
-            json_encode($payload),
+            $payload,
             '/embed/'. $INTENT->get_bot_id() . '/load',
             'POST'
         );
