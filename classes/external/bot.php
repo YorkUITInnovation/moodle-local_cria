@@ -736,6 +736,6 @@ class local_cria_external_bot extends external_api
      */
     public static function get_api_key_returns()
     {
-        return new external_value(PARAM_RAW, 'Returns the API KEY for this bot');
+        return new external_value(PARAM_TEXT, 'Returns the API KEY for this bot');
     }
 }
