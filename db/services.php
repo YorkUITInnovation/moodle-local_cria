@@ -162,7 +162,16 @@ $functions = array(
         'classname' => 'local_cria_external_bot',
         'methodname' => 'get_bot_name',
         'classpath' => 'local/cria/classes/external/bot.php',
-        'description' => 'Retunrs bot name',
+        'description' => 'Returns bot name',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+    'cria_get_bot_api_key' => array(
+        'classname' => 'local_cria_external_bot',
+        'methodname' => 'get_api_key',
+        'classpath' => 'local/cria/classes/external/bot.php',
+        'description' => 'Returns the bots api key',
         'type' => 'read',
         'capabilities' => '',
         'ajax' => true
@@ -327,14 +336,6 @@ $functions = array(
         'methodname' => 'get_cria_availability',
         'classpath' => 'local/cria/classes/external/cria.php',
         'description' => 'Check to see if Cria is available based on maintenance mode',
-        'type' => 'write',
-        'ajax' => true
-    ),
-    'cria_load_session' => array(
-        'classname' => 'local_cria_external_embed',
-        'methodname' => 'load_session',
-        'classpath' => 'local/cria/classes/external/embed.php',
-        'description' => 'Returns the embed code for the session. But you must create a payload',
         'type' => 'write',
         'ajax' => true
     ),
