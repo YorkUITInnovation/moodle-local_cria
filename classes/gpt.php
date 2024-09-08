@@ -397,8 +397,9 @@ class gpt
      * @param $prompt
      * @return string
      */
-    public static function pre_process_prompt($prompt): string
+    public static function pre_process_prompt($prompt, $payload = false): string
     {
+        global $CFG;
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
         // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
         if (strpos($prompt, 'What is this course about') !== false) {
@@ -418,6 +419,16 @@ class gpt
             $first_word = strtolower(strtok($prompt, " "));
             if (in_array($first_word, $question_start)) {
                 $prompt = rtrim($prompt) . "?";
+            }
+        }
+
+        if ($payload) {
+            file_put_contents($CFG->dataroot . '/temp/prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
+            if (isset($payload->idNumber)) {
+                $prompt = $prompt . " My idnumber, also know as an employee id or student id, is: " . $payload->idNumber;
+            }
+            if (isset($payload->firstName)) {
+                $prompt = $prompt . " My first name is: " . $payload->firstName;
             }
         }
 

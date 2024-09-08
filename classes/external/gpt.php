@@ -99,8 +99,6 @@ class local_cria_external_gpt extends external_api
                 'log_other' => $log_other
             )
         );
-        file_put_contents($CFG->dataroot . '/temp/chatid.txt', $chat_id);
-        file_put_contents($CFG->dataroot . '/temp/gpt_response.json', json_encode($params, JSON_PRETTY_PRINT));
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = \context_system::instance();
@@ -109,14 +107,16 @@ class local_cria_external_gpt extends external_api
 
         // Lets get a payload
         $payload = criaembed::sessions_get_data($bot_id, $chat_id);
-        file_put_contents($CFG->dataroot . '/temp/payload.json', json_encode($payload, JSON_PRETTY_PRINT));
+        if ($payload->status != 200) {
+            $payload = false;
+        }
 
         //If $filters is not empty then convert into array
         if (!empty($filters)) {
             $filters = json_decode($filters);
         }
         // Preprocess the prompt
-        $prompt = gpt::pre_process_prompt($prompt);
+        $prompt = gpt::pre_process_prompt($prompt, $payload);
 
         // Does this bot use criabot server?
         if ($BOT->use_bot_server() && $chat_id != 'none') {
