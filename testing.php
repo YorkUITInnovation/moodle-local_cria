@@ -54,14 +54,20 @@ $prompt = optional_param('prompt', '', PARAM_TEXT);
 //*** DISPLAY HEADER ***
 //**********************
 echo $OUTPUT->header();
+$json = '{
+    "status": 200,
+    "timestamp": "1725838728517",
+    "code": "SUCCESS",
+    "message": "Successfully retrieved session data!",
+    "sessionData": {
+        "idNumber": "102345765",
+        "firstName": "Admin",
+        "ip": "192.168.65.1",
+        "grade": null
+    }
+}';
 
-$urls = [
-    'https://openai.com/index/hello-gpt-4o/'
-];
-
-$FILES = new files(75);
-
-$FILES->publish_urls($urls);
+print_object(json_decode($json));
 
 //**********************
 //*** DISPLAY FOOTER ***
