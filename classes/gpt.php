@@ -421,7 +421,7 @@ class gpt
                 $prompt = rtrim($prompt) . "?";
             }
         }
-        file_put_contents($CFG->dataroot . '/temp/prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
+        file_put_contents($CFG->dataroot . '/temp/before_prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
         if ($payload) {
             file_put_contents($CFG->dataroot . '/temp/prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
             if (isset($payload->idNumber)) {
