@@ -146,7 +146,7 @@ class local_cria_external_gpt extends external_api
 
         // Always get user prompt if there is one.
         if ($BOT->get_user_prompt()) {
-            $prompt = $BOT->get_user_prompt() ;
+            $prompt = $BOT->get_user_prompt() . ' ' . $prompt ;
         }
         // Preprocess the prompt
         $prompt = gpt::pre_process_prompt($prompt, $payload). ' ' . $prompt;
