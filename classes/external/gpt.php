@@ -110,7 +110,7 @@ class local_cria_external_gpt extends external_api
         if ($payload->status != 200) {
             $payload = false;
         }
-
+        file_put_contents($CFG->dataroot . '/temp/payload.json', json_encode($payload, JSON_PRETTY_PRINT));
         //If $filters is not empty then convert into array
         if (!empty($filters)) {
             $filters = json_decode($filters);
