@@ -114,8 +114,6 @@ class local_cria_external_gpt extends external_api
         if (!empty($filters)) {
             $filters = json_decode($filters);
         }
-        // Preprocess the prompt
-        $prompt = gpt::pre_process_prompt($prompt, $payload);
 
         // Does this bot use criabot server?
         if ($BOT->use_bot_server() && $chat_id != 'none') {
@@ -145,11 +143,13 @@ class local_cria_external_gpt extends external_api
                 $bot_name = $BOT->get_bot_name();
             }
         }
-        $prompt = trim($prompt);
+
         // Always get user prompt if there is one.
         if ($BOT->get_user_prompt()) {
-            $prompt = $BOT->get_user_prompt() . ' ' . $prompt;
+            $prompt = $BOT->get_user_prompt() ;
         }
+        // Preprocess the prompt
+        $prompt = gpt::pre_process_prompt($prompt, $payload). ' ' . $prompt;
 
         // Check to see if the prompt ends with a question mark. If not add a question mark at the end
         if (substr($prompt, -1) != '?') {
