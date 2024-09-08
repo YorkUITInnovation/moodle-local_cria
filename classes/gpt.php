@@ -424,10 +424,10 @@ class gpt
         file_put_contents($CFG->dataroot . '/temp/before_prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
         if ($payload) {
             file_put_contents($CFG->dataroot . '/temp/prompt_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
-            if (isset($payload->idNumber)) {
+            if (isset($payload->sessionData->idNumber)) {
                 $prompt = $prompt . " My idnumber, also know as an employee id or student id, is: " . $payload->idNumber;
             }
-            if (isset($payload->firstName)) {
+            if (isset($payload->sessionData->firstName)) {
                 $prompt = $prompt . " My first name is: " . $payload->firstName;
             }
         }
