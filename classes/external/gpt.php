@@ -43,6 +43,7 @@ use local_cria\criabot;
 use local_cria\criadex;
 use local_cria\logs;
 use local_cria\bot;
+use local_cria\criaembed;
 
 class local_cria_external_gpt extends external_api
 {
@@ -104,6 +105,10 @@ class local_cria_external_gpt extends external_api
         $context = \context_system::instance();
         self::validate_context($context);
         $BOT = new bot($bot_id);
+
+        // Lets get a payload
+        $payload = criaembed::sessions_get_data($bot_id, $chat_id);
+        file_put_contents($CFG->dataroot . '/temp/payload.json', json_encode($payload, JSON_PRETTY_PRINT));
 
         //If $filters is not empty then convert into array
         if (!empty($filters)) {
