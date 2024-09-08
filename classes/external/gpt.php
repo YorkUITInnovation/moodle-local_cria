@@ -99,6 +99,7 @@ class local_cria_external_gpt extends external_api
                 'log_other' => $log_other
             )
         );
+        file_put_contents($CFG->dataroot . '/temp/chatid.txt', $chat_id);
         file_put_contents($CFG->dataroot . '/temp/gpt_response.json', json_encode($params, JSON_PRETTY_PRINT));
         //Context validation
         //OPTIONAL but in most web service it should present
