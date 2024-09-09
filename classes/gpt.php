@@ -409,7 +409,7 @@ class gpt
             }
             if (isset($payload->sessionData->firstName)) {
                 // Prepend to prompt
-                $prompt = " My first name is: " . $payload->sessionData->firstName ;
+                $prompt = $prompt . " My first name is: " . $payload->sessionData->firstName ;
             }
         }
 
