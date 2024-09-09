@@ -407,8 +407,7 @@ class gpt
     public static function pre_process_prompt(
         $user_prompt,
         $bot_prompt = '',
-        $payload = false,
-        $person_identifier = 'I am a student and my name is '
+        $payload = false
     ): string
     {
         global $CFG;
@@ -417,19 +416,20 @@ class gpt
         if ($payload) {
             if (isset($payload->sessionData->name)) {
                 // Prepend to prompt
-                $prompt = $prompt . $person_identifier . $payload->sessionData->name . '.' ;
+                $prompt = $prompt . $payload->sessionData->name;
             }
             if (isset($payload->sessionData->groups) && !empty($payload->sessionData->groups)) {
                 // Prepend to prompt
-                $prompt = "I am in group(s) " . $payload->sessionData->groups . '.';
+                $prompt = $prompt . " I am in group(s) " . $payload->sessionData->groups . '.';
             }
             if (isset($payload->sessionData->grade) && !empty($payload->sessionData->grade)) {
                 // Prepend to prompt
-                $prompt = "My current course grade is " . $payload->sessionData->grade . '.';
+                $prompt = $prompt . "My current course grade is " . $payload->sessionData->grade . '.';
             }
         }
 
         $prompt = $prompt . ' ' . $bot_prompt . $user_prompt;
+        $prompt =trim($prompt);
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
         // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
         if (strpos($prompt, 'What is this course about') !== false) {
