@@ -394,14 +394,22 @@ class gpt
     }
 
     /**
-     * Used to add content to the prompt.
-     * Although the payload is used for Moodle. It can be used for any other site.
-     * The payload must contain the following: sessionData->name, sessionData->groups, sessionData->grade
-     * Other values can be added.
-     * @param $prompt
+     *  Used to add content to the prompt.
+     *  Although the payload is used for Moodle. It can be used for any other site.
+     *  The payload must contain the following: sessionData->name, sessionData->groups, sessionData->grade
+     *  Other values can be added.
+     * @param $user_prompt string The question or query from the user
+     * @param $bot_prompt string If the bot has a defualt prompt to prepend to the user prompt
+     * @param $payload array Data that identifies the user
+     * @param $person_identifier string The sentence used for identifying the user. The default is I am a student and my name is
      * @return string
      */
-    public static function pre_process_prompt($original_prompt, $bot_prompt = '', $payload = false): string
+    public static function pre_process_prompt(
+        $user_prompt,
+        $bot_prompt = '',
+        $payload = false,
+        $person_identifier = 'I am a student and my name is '
+    ): string
     {
         global $CFG;
         // Store prompt into a variable for use later
@@ -409,7 +417,7 @@ class gpt
         if ($payload) {
             if (isset($payload->sessionData->firstName)) {
                 // Prepend to prompt
-                $prompt = $prompt . "I am a student and my name is " . $payload->sessionData->name . '.' ;
+                $prompt = $prompt . $person_identifier . $payload->sessionData->name . '.' ;
             }
             if (isset($payload->sessionData->groups) && !empty($payload->sessionData->groups)) {
                 // Prepend to prompt
@@ -421,7 +429,7 @@ class gpt
             }
         }
 
-        $prompt = $prompt . ' ' . $bot_prompt . $original_prompt;
+        $prompt = $prompt . ' ' . $bot_prompt . $user_prompt;
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
         // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
         if (strpos($prompt, 'What is this course about') !== false) {
