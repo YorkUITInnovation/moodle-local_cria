@@ -394,6 +394,10 @@ class gpt
     }
 
     /**
+     * Used to add content to the prompt.
+     * Although the payload is used for Moodle. It can be used for any other site.
+     * The payload must contain the following: sessionData->name, sessionData->groups, sessionData->grade
+     * Other values can be added.
      * @param $prompt
      * @return string
      */
@@ -403,13 +407,17 @@ class gpt
         // Store prompt into a variable for use later
         $prompt = '';
         if ($payload) {
-            if (isset($payload->sessionData->idNumber)) {
-                // Prepend to prompt
-                $prompt = "My idnumber, also know as an employee id or student id, is: " . $payload->sessionData->idNumber ;
-            }
             if (isset($payload->sessionData->firstName)) {
                 // Prepend to prompt
-                $prompt = $prompt . " My first name is: " . $payload->sessionData->firstName ;
+                $prompt = $prompt . "I am a student and my name is " . $payload->sessionData->name . '.' ;
+            }
+            if (isset($payload->sessionData->groups) && !empty($payload->sessionData->groups)) {
+                // Prepend to prompt
+                $prompt = "I am in group(s) " . $payload->sessionData->groups . '.';
+            }
+            if (isset($payload->sessionData->grade) && !empty($payload->sessionData->grade)) {
+                // Prepend to prompt
+                $prompt = "My current course grade is " . $payload->sessionData->grade . '.';
             }
         }
 
