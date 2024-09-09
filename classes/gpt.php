@@ -415,7 +415,7 @@ class gpt
         // Store prompt into a variable for use later
         $prompt = '';
         if ($payload) {
-            if (isset($payload->sessionData->firstName)) {
+            if (isset($payload->sessionData->name)) {
                 // Prepend to prompt
                 $prompt = $prompt . $person_identifier . $payload->sessionData->name . '.' ;
             }
