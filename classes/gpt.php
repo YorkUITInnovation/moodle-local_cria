@@ -397,9 +397,23 @@ class gpt
      * @param $prompt
      * @return string
      */
-    public static function pre_process_prompt($prompt, $payload = false): string
+    public static function pre_process_prompt($original_prompt, $bot_prompt = '', $payload = false): string
     {
         global $CFG;
+        // Store prompt into a variable for use later
+        $prompt = '';
+        if ($payload) {
+            if (isset($payload->sessionData->idNumber)) {
+                // Prepend to prompt
+                $prompt = "My idnumber, also know as an employee id or student id, is: " . $payload->sessionData->idNumber ;
+            }
+            if (isset($payload->sessionData->firstName)) {
+                // Prepend to prompt
+                $prompt = " My first name is: " . $payload->sessionData->firstName ;
+            }
+        }
+
+        $prompt = $prompt . ' ' . $bot_prompt . $original_prompt;
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
         // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
         if (strpos($prompt, 'What is this course about') !== false) {
@@ -419,17 +433,6 @@ class gpt
             $first_word = strtolower(strtok($prompt, " "));
             if (in_array($first_word, $question_start)) {
                 $prompt = rtrim($prompt) . "?";
-            }
-        }
-
-        if ($payload) {
-            if (isset($payload->sessionData->idNumber)) {
-                // Prepend to prompt
-                $prompt = "My idnumber, also know as an employee id or student id, is: " . $payload->sessionData->idNumber . '. ' . $prompt;
-            }
-            if (isset($payload->sessionData->firstName)) {
-                // Prepend to prompt
-                $prompt = " My first name is: " . $payload->sessionData->firstName . '. ' . $prompt;
             }
         }
 
