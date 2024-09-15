@@ -452,6 +452,9 @@ class gpt
             }
         }
 
+        // Replace [current_date] placeholder with the current date
+        $prompt = str_replace('[current_date]', date('Y-m-d'), $prompt);
+
         return $prompt;
     }
 
