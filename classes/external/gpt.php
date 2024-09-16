@@ -235,8 +235,8 @@ class local_cria_external_gpt extends external_api
             $message->file_name = $file_name;
             $file_name_for_logs = 'file name: ' . $file_name . "<br>\n";
 
-            $message->criabot_response = strip_tags(json_encode($result));
-            $message->stacktrace = strip_tags(json_encode($result));
+            $message->criabot_response = json_encode($result);
+            $message->stacktrace = json_encode($result);
             $message->cost = gpt::_get_cost($bot_id, $token_usage->prompt_tokens, $token_usage->completion_tokens);
 
 
