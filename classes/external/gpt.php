@@ -164,7 +164,7 @@ class local_cria_external_gpt extends external_api
 
         if ($chat_id != 'none') {
             $result = criabot::chat_send($chat_id, $bot_name, $prompt, $filters);
-            file_put_contents('/var/www/moodledata/temp/gpt_result_top.txt', print_r($result));
+            file_put_contents('/var/www/moodledata/temp/gpt_result_top.txt', json_encode($result, JSON_PRETTY_PRINT));
             // If no errors have occured
             if ($result->status == 200) {
                 // Get token usage
