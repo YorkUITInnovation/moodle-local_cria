@@ -100,6 +100,8 @@ class gpt
         // Set URL
         $url = $service_url . $call;
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        // Create a temporary file to capture the verbose output
+        $verbose = fopen('php://temp', 'w+');
         curl_setopt($ch, CURLOPT_URL, $url);
         if ($CFG->debug != 0) {
             curl_setopt($ch, CURLINFO_HEADER_OUT, true);
