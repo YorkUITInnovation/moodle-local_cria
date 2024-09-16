@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/cria/db" VERSION="20240827" COMMENT="XMLDB file for Moodle local/cria"
+<XMLDB PATH="local/cria/db" VERSION="20240916" COMMENT="XMLDB file for Moodle local/cria"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -202,6 +202,7 @@
         <FIELD NAME="completion_tokens" TYPE="int" LENGTH="20" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="total_tokens" TYPE="int" LENGTH="20" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="cost" TYPE="number" LENGTH="12" NOTNULL="false" DEFAULT="0.0" SEQUENCE="false" DECIMALS="6"/>
+        <FIELD NAME="payload" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="ip" TYPE="char" LENGTH="15" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="other" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Used to add any other information in the logs"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="16" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>

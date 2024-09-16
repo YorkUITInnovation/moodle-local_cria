@@ -238,6 +238,7 @@ $string['other'] = 'Other';
 $string['parse_strategy'] = 'Preprocess strategy';
 $string['parse_strategy_help'] = 'Select the type of preprocessing you would like to use.';
 $string['paste_text'] = 'Paste your text here';
+$string['payload'] = 'Payload';
 $string['permissions'] = 'Permissions';
 $string['plugin_path'] = 'Plugin path';
 $string['pluginname'] = 'Cria';

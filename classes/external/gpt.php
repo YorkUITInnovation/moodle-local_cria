@@ -247,6 +247,7 @@ class local_cria_external_gpt extends external_api
                 $token_usage->total_tokens,
                 $message->cost,
                 json_encode($result),
+                $payload,
                 $log_other
             );
         } else {

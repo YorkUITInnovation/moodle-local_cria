@@ -379,5 +379,19 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2024082600, 'local', 'cria');
     }
 
+    if ($oldversion < 2024091600) {
+
+        // Define field payload to be added to local_cria_logs.
+        $table = new xmldb_table('local_cria_logs');
+        $field = new xmldb_field('payload', XMLDB_TYPE_TEXT, null, null, null, null, null, 'cost');
+
+        // Conditionally launch add field payload.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024091600, 'local', 'cria');
+    }
     return true;
 }

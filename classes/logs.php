@@ -39,6 +39,7 @@ class logs
         $total_tokens,
         $cost,
         $context = '',
+        $payload = '',
         $other = '',
         $ip = '',
         $user_id = 0
@@ -70,6 +71,7 @@ class logs
             'total_tokens' => $total_tokens,
             'cost' => $cost,
             'index_context' => $context,
+            'payload' => $payload,
             'ip' => $ip,
             'other' => $other,
             'timecreated' => time()
@@ -114,6 +116,7 @@ class logs
                     cl.completion_tokens,
                     cl.total_tokens,
                     cl.cost,
+                    cl.payload,
                     cl.other,
                     cl.ip,
                     DATE_FORMAT(FROM_UNIXTIME(cl.timecreated), '%m/%d/%Y %h:%i') as timecreated
