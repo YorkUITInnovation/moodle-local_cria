@@ -107,6 +107,7 @@ class local_cria_external_gpt extends external_api
 
         // Lets get a payload
         $payload = criaembed::sessions_get_data($bot_id, $chat_id);
+        file_put_contents('/var/www/moodledata/temp/embed_session_data.txt', 'bot id: ' . $bot_id . "\n" . 'chat id: ' . $chat_id . "\n");
         file_put_contents('/var/www/moodledata/temp/embed_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
 
         if ($payload->status != 200) {
