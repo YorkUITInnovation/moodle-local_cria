@@ -99,6 +99,8 @@ class local_cria_external_gpt extends external_api
                 'log_other' => $log_other
             )
         );
+
+        file_put_contents('/var/www/moodledata/temp/chat_id.txt',$chat_id);
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = \context_system::instance();
