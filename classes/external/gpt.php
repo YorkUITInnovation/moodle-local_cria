@@ -242,7 +242,7 @@ class local_cria_external_gpt extends external_api
             $message->stacktrace = json_encode($result);
             $message->cost = gpt::_get_cost($bot_id, $token_usage->prompt_tokens, $token_usage->completion_tokens);
 
-
+            file_put_contents('/var/www/moodledata/temp/message.txt',$message->criabot_response );
             // Insert logs
             logs::insert(
                 $bot_id,
