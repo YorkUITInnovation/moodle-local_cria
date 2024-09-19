@@ -105,8 +105,10 @@ class local_cria_external_gpt extends external_api
         $context = \context_system::instance();
         self::validate_context($context);
         $BOT = new bot($bot_id);
+        $_SESSION['criaembed_' . $bot_id] = false;
         // Check if data is in the payload session
         if (!isset($_SESSION['criaembed_' . $bot_id])) {
+
             // Lets get a payload
             $payload = criaembed::sessions_get_data($bot_id, $chat_id);
             if ($payload->status != 200) {
