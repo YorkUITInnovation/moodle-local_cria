@@ -449,6 +449,15 @@ class gpt
             }
         }
 
+        // IF the prompt is in french, add a question mark if it doesn't end in a question mark and starts with a question word
+        $question_start_fr = ["quoi", "comment", "pourquoi", "quand", "qui", "à qui", "de qui", "lequel", "où", "est-ce que", "est-ce", "sont", "peut", "pourrait", "va", "voudrait", "devrait", "peut-être", "pourrait", "a", "doit"];
+        if (!str_ends_with($prompt, "?")) {
+            $first_word = strtolower(strtok($prompt, " "));
+            if (in_array($first_word, $question_start_fr)) {
+                $prompt = rtrim($prompt) . "?";
+            }
+        }
+
         // Replace [current_date] placeholder with the current date
         $prompt = str_replace('[current_date]', date('Y-m-d'), $prompt);
 

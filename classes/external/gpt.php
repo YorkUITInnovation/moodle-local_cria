@@ -198,8 +198,10 @@ class local_cria_external_gpt extends external_api
                     $nodes = $result->reply->context->nodes;
                     $file_name_array = [];
                     foreach ($nodes as $n) {
-                        if (!in_array($n->node->metadata->filename, $file_name_array) ) {
-                            $file_name_array[] = $n->node->metadata->filename;
+                        if (isset($n->node->metadata->filename) && !empty($n->node->metadata->filename)) {
+                            if (!in_array($n->node->metadata->filename, $file_name_array)) {
+                                $file_name_array[] = $n->node->metadata->filename;
+                            }
                         }
                     }
                     $file_name = implode(', ', $file_name_array);
