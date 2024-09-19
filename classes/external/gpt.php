@@ -105,10 +105,9 @@ class local_cria_external_gpt extends external_api
         $context = \context_system::instance();
         self::validate_context($context);
         $BOT = new bot($bot_id);
-        $_SESSION['criaembed_' . $bot_id] = false;
+
         // Check if data is in the payload session
         if (!isset($_SESSION['criaembed_' . $bot_id])) {
-
             // Lets get a payload
             $payload = criaembed::sessions_get_data($bot_id, $chat_id);
             if ($payload->status != 200) {
@@ -116,6 +115,7 @@ class local_cria_external_gpt extends external_api
                 $_SESSION['criaembed_' . $bot_id] = false;
             } else {
                 $_SESSION['criaembed_' . $bot_id] = json_encode($payload);
+                file_put_contents('/var/www/moodledata/temp/session_info.json', json_encode($_SESSION['criaembed_' . $bot_id] , JSON_PRETTY_PRINT));
             }
 
         }
