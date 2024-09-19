@@ -424,7 +424,6 @@ class gpt
                 $prompt = $prompt . "My current course grade is " . $payload->sessionData->grade . '.';
             }
         }
-        file_put_contents('/var/www/moodledata/temp/payload.json', json_encode($payload));
         $prompt = $prompt . ' ' . $bot_prompt . $user_prompt;
         $prompt =trim($prompt);
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.

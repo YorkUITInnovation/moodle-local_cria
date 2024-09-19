@@ -160,10 +160,6 @@ class criaembed
         // Get Config
         $config = get_config('local_cria');
         $BOT = new bot($bot_id);
-        file_put_contents($CFG->dataroot . '/temp/criaembed_id.json', $bot_id);
-        file_put_contents($CFG->dataroot . '/temp/criaembed_data.json', $payload);
-        file_put_contents($CFG->dataroot . '/temp/apikey.json', $payload);
-        file_put_contents($CFG->dataroot . '/temp/criaembed)url.json', $config->criaembed_url);
         // Create model
         return gpt::_make_call(
             $config->criaembed_url,

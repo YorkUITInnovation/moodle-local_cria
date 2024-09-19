@@ -1055,11 +1055,9 @@ class bot extends crud
             $default_intent = $this->create_default_intent($this->id);
             // Update embed server code
             $embed_bot = criaembed::manage_get_config($this->get_default_intent_id());
-            file_put_contents('/var/www/moodledata/temp/embed_bot.json', json_encode($embed_bot, JSON_PRETTY_PRINT));
             // If embed doesn't exist then create it
             if ($embed_bot->status != 200) {
                 $embed = criaembed::manage_insert($this->get_default_intent_id());
-                file_put_contents('/var/www/moodledata/temp/embed_bot.json', json_encode($embed, JSON_PRETTY_PRINT));
                 return $data->id;
             } else {
                 // Update embed

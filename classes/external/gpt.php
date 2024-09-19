@@ -100,19 +100,27 @@ class local_cria_external_gpt extends external_api
             )
         );
 
-        file_put_contents('/var/www/moodledata/temp/chat_id.txt',$chat_id);
         //Context validation
         //OPTIONAL but in most web service it should present
         $context = \context_system::instance();
         self::validate_context($context);
         $BOT = new bot($bot_id);
+        // Check if data is in the payload session
+        if (!isset($_SESSION['criaembed_' . $bot_id])) {
+            // Lets get a payload
+            $payload = criaembed::sessions_get_data($bot_id, $chat_id);
+            if ($payload->status != 200) {
+                // Store into session so that we don't have to make another call
+                $_SESSION['criaembed_' . $bot_id] = false;
+            } else {
+                $_SESSION['criaembed_' . $bot_id] = json_encode($payload);
+            }
 
-        // Lets get a payload
-        $payload = criaembed::sessions_get_data($bot_id, $chat_id);
-        file_put_contents('/var/www/moodledata/temp/embed_session_data.txt', 'bot id: ' . $bot_id . "\n" . 'chat id: ' . $chat_id . "\n");
-        file_put_contents('/var/www/moodledata/temp/embed_payload.json', json_encode($payload, JSON_PRETTY_PRINT));
+        }
 
-        if ($payload->status != 200) {
+        if ($_SESSION['criaembed_' . $bot_id] != false) {
+            $payload = json_decode($_SESSION['criaembed_' . $bot_id]);
+        } else {
             $payload = false;
         }
         //If $filters is not empty then convert into array
@@ -164,7 +172,6 @@ class local_cria_external_gpt extends external_api
 
         if ($chat_id != 'none') {
             $result = criabot::chat_send($chat_id, $bot_name, $prompt, $filters);
-            file_put_contents('/var/www/moodledata/temp/gpt_result_top.txt', json_encode($result, JSON_PRETTY_PRINT));
             // If no errors have occured
             if ($result->status == 200) {
                 // Get token usage
@@ -239,12 +246,10 @@ class local_cria_external_gpt extends external_api
             // File name
             $message->file_name = $file_name;
             $file_name_for_logs = 'file name: ' . $file_name . "<br>\n";
-            file_put_contents('/var/www/moodledata/temp/gpt_results.txt', print_r($result, true));
             $message->criabot_response = json_encode($result);
             $message->stacktrace = json_encode($result);
             $message->cost = gpt::_get_cost($bot_id, $token_usage->prompt_tokens, $token_usage->completion_tokens);
 
-            file_put_contents('/var/www/moodledata/temp/message.txt',$message->criabot_response );
             // Insert logs
             logs::insert(
                 $bot_id,
