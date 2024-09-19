@@ -108,11 +108,13 @@ class local_cria_external_gpt extends external_api
 
         // Check if data is in the payload session
         if (!isset($_SESSION['criaembed_' . $bot_id])) {
+            file_put_contents('/var/www/moodledata/temp/session_not_set.txt', '');
             // Lets get a payload
             $payload = criaembed::sessions_get_data($bot_id, $chat_id);
             if ($payload->status != 200) {
                 // Store into session so that we don't have to make another call
                 $_SESSION['criaembed_' . $bot_id] = false;
+                file_put_contents('/var/www/moodledata/temp/payload_error.json', json_encode($payload , JSON_PRETTY_PRINT));
             } else {
                 $_SESSION['criaembed_' . $bot_id] = json_encode($payload);
                 file_put_contents('/var/www/moodledata/temp/session_info.json', json_encode($_SESSION['criaembed_' . $bot_id] , JSON_PRETTY_PRINT));
