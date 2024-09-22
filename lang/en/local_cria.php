@@ -250,7 +250,9 @@ $string['preprocess_rules_help'] = 'Enter the rules you would like to use for pr
     . 'My name is [name]. <br>'
     . 'This will replace [name] with the value of the variable name.<br><br>'
     . 'If you want to replace a sentence, you can use the following format:<br>'
-    . 'What is this course about => Can you descriibe this course?';
+    . 'What is this course about => Can you descriibe this course?'
+    . '<b>Note</b>: Do not add too many rules as each rule increases the size of the prompt, therefore increasing the number of tokens.'
+    . 'This will add costs to each call and potential make some calls fail if too many tokens are used.';
 $string['privacy:metadata'] = 'This plugin stores no personal data.';
 $string['process'] = 'Process';
 $string['program'] = 'Program';

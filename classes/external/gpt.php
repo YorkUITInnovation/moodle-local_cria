@@ -167,7 +167,7 @@ class local_cria_external_gpt extends external_api
             $bot_prompt = $BOT->get_user_prompt();
         }
         // Preprocess the prompt
-        $prompt = gpt::pre_process_prompt($prompt, $bot_prompt, $payload);
+        $prompt = gpt::pre_process_prompt($bot_id, $prompt, $bot_prompt, $payload);
 
         // Check to see if the prompt ends with a question mark. If not add a question mark at the end
         if (substr($prompt, -1) != '?') {

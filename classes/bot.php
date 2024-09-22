@@ -565,6 +565,15 @@ class bot extends crud
     }
 
     /**
+     * Returns all variables as an array
+     * @return array
+     */
+    public function get_variables_array(): array
+    {
+        return explode("\n", $this->variables);
+    }
+
+    /**
      * @return string
      */
     public function get_preprocess_rules(): string

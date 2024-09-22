@@ -1,17 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
-
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 namespace local_cria;
@@ -155,7 +154,7 @@ class gpt
                 if ($i == 0) {
                     $full_prompt = $chunk . "\nq: " . $prompt;
                 } else {
-                    $full_prompt = 'Build off the previous call. Do not start over. '. $chunk . "\nq: " . $prompt;
+                    $full_prompt = 'Build off the previous call. Do not start over. ' . $chunk . "\nq: " . $prompt;
                 }
 
                 // Use Criadex to make the call
@@ -166,7 +165,7 @@ class gpt
                     $params->max_reply_tokens,
                     $params->temperature,
                     $params->top_p
-                    );
+                );
                 // Add the number of tokens used for the prompt to the total tokens
                 $prompt_tokens = $prompt_tokens + $result->agent_response->usage[0]->prompt_tokens;
                 $completion_tokens = $completion_tokens + $result->agent_response->usage[0]->completion_tokens;
@@ -402,40 +401,84 @@ class gpt
      * @return string
      */
     public static function pre_process_prompt(
+        $bot_id,
         $user_prompt,
         $bot_prompt = '',
         $payload = false
     ): string
     {
         global $CFG;
+        // Get the bot
+        $BOT = new bot($bot_id);
         // Store prompt into a variable for use later
         $prompt = '';
+        // If there no period (.) at the end of the bot prompt add one
+        if (!str_ends_with($bot_prompt, '.')) {
+            $bot_prompt = $bot_prompt . '.';
+        }
+        // If the bot prompt does not have q: or Q: at the end, add it
+        if (!str_ends_with($bot_prompt, ' q:') && !str_ends_with($bot_prompt, ' Q:')) {
+            $bot_prompt = $bot_prompt . ' Q: ';
+        }
+        // Add a space to the end of the user prompt and bot prompt
+        $user_prompt = trim($user_prompt) . ' ';
+
+        // If there is a payload, then add the payload to the prompt
         if ($payload) {
-            if (isset($payload->sessionData->name)) {
-                // Prepend to prompt
-                $prompt = $prompt . $payload->sessionData->name;
+            // Get bot variables
+            $bot_variables = $BOT->get_variables_array();
+            // Get the preprocess rules
+            $bot_rules_array = $BOT->get_preprocess_rules_array();
+            $bot_rules = '';
+            $bot_replace_rules = [];
+
+            foreach ($bot_rules_array as $key => $rule) {
+                // only add to bot_rules if the rule does not contain ==
+                if (!str_contains($rule, '=>')) {
+                    // If there is not a period at the end of teh $rule, add one
+                    if (!str_ends_with($rule, '.')) {
+                        $rule = $rule . '. ';
+                    }
+                    $bot_rules .= $rule;
+                } else {
+                    // If the rule contains ==, then it's a replacement rule
+                    $bot_replace_rules[] = $rule;
+                }
             }
-            if (isset($payload->sessionData->groups) && !empty($payload->sessionData->groups)) {
-                // Prepend to prompt
-                $prompt = $prompt . " I am in group(s) " . $payload->sessionData->groups . '.';
+
+            foreach ($bot_variables as $key => $variable) {
+                $variable = trim($variable);
+                if (isset($payload->sessionData->$variable)) {
+                    $bot_rules = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_rules);
+                    $bot_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_prompt);
+                    $user_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $user_prompt);
+                }
             }
-            if (isset($payload->sessionData->grade) && !empty($payload->sessionData->grade)) {
-                // Prepend to prompt
-                $prompt = $prompt . "My current course grade is " . $payload->sessionData->grade . '.';
-            }
+            $prompt = $bot_rules;
         }
         $prompt = $prompt . ' ' . $bot_prompt . $user_prompt;
-        $prompt =trim($prompt);
+        $prompt = trim($prompt);
+        // Loop through $bot_replace_rules and replace the values
+        foreach ($bot_replace_rules as $key => $replace_rule) {
+            $replace_options = explode('=>', $replace_rule);
+            $prompt = str_replace(trim($replace_options[0]), trim($replace_options[1]), $prompt);
+        }
+
         // If the prompt contains What is this course about, rewrite the prompt as Describe this course.
         // This is only used with AI Course Assistant and is in place until MS fixes it's filter issue.
         if (strpos($prompt, 'What is this course about') !== false) {
-            $prompt =rtrim($prompt, '?');
+            $prompt = rtrim($prompt, '?');
             $prompt = str_replace('What is this course about', 'Describe this course.', $prompt);
         }
 
         // LLM has difficulty answering questions that start with "I don't know", so it needs to be modified.
         if (str_starts_with($prompt, "I don't know") || str_starts_with($prompt, "I dont know")) {
             $prompt = str_replace(["I don't know", "I dont know"], "I would like to know", $prompt);
+        }
+
+        // LLM has difficulty answering questions that start with "I don't know" in French, so it needs to be modified.
+        if (str_starts_with($prompt, "Je ne sais pas")) {
+            $prompt = str_replace("Je ne sais pas", "Je voudrais savoir", $prompt);
         }
 
         // Add a question mark if the query doesn't end in a question mark and starts with a question word
