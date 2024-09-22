@@ -242,6 +242,15 @@ $string['payload'] = 'Payload';
 $string['permissions'] = 'Permissions';
 $string['plugin_path'] = 'Plugin path';
 $string['pluginname'] = 'Cria';
+$string['preprocess_rules'] = 'Prompt preprocessing rules';
+$string['preprocess_rules_help'] = 'Enter the rules you would like to use for preprocessing the prompt. '
+    . 'To use the variables above, make sure you put the variable sin square brackets ([name]) '
+    . 'One rule per line.<br>'
+    . 'For example, if your payload contains a variable called name, you can use the following rule:<br>'
+    . 'My name is [name]. <br>'
+    . 'This will replace [name] with the value of the variable name.<br><br>'
+    . 'If you want to replace a sentence, you can use the following format:<br>'
+    . 'What is this course about => Can you descriibe this course?';
 $string['privacy:metadata'] = 'This plugin stores no personal data.';
 $string['process'] = 'Process';
 $string['program'] = 'Program';
@@ -327,6 +336,11 @@ $string['use_bot_server'] = 'Requires uploading documents?';
 $string['use_bot_server_help'] = 'If you this type rqeuires uploading documents, select Yes.';
 $string['user_prompt'] = 'User prompt';
 $string['userid'] = 'User id';
+$string['variables'] = 'Variables';
+$string['variables_help'] = 'If you are sending a payload, add the variables you would like to receive. The variables will be used with the prompt preprocessing. Add one variable per line' .
+    'Example:' .
+    'name<br>' .
+    'idnumber';
 $string['view_parsing_data'] = 'View parsing data';
 $string['web_page_help'] = 'Enter web page addresses including http/https. Separate each address with a new line.<br>'
  . '<br>Please note that some web pages may not permit their content to be captured. '

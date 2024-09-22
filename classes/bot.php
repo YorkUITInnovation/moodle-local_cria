@@ -347,6 +347,17 @@ class bot extends crud
      */
     private $bot_contact;
 
+    /**
+     * @var array
+     */
+    private $variables;
+
+    /**
+     * @var string
+     */
+    private $preprocess_rules;
+
+
 
     /**
      *
@@ -423,6 +434,8 @@ class bot extends crud
         $this->bot_trust_warning = $result->bot_trust_warning ?? '';
         $this->bot_help_text = $result->bot_help_text ?? '';
         $this->bot_contact = $result->bot_contact ?? '';
+        $this->variables = $result->variables ?? '';
+        $this->preprocess_rules = $result->preprocess_rules ?? '';
     }
 
     /**
@@ -541,6 +554,31 @@ class bot extends crud
         $prompt = $this->user_prompt;
         $prompt = str_replace('{date}', date('Y-m-d'), $prompt);
         return $prompt;
+    }
+
+    /**
+     * @return string
+     */
+    public function get_variables(): string
+    {
+        return $this->variables;
+    }
+
+    /**
+     * @return string
+     */
+    public function get_preprocess_rules(): string
+    {
+        return $this->preprocess_rules;
+    }
+
+    /**
+     * Returns all preprocess rules as an array
+     * @return array
+     */
+    public function get_preprocess_rules_array(): array
+    {
+        return explode("\n", $this->preprocess_rules);
     }
 
     /**

@@ -647,6 +647,36 @@ class edit_bot_form extends \moodleform
             'default_user_prompt',
             'local_cria'
         );
+        // Variables form element
+        $mform->addElement(
+            'textarea',
+            'variables',
+            get_string('variables', 'local_cria')
+        );
+        $mform->setType(
+            'variables',
+            PARAM_TEXT
+        );
+        $mform->addHelpButton(
+            'variables',
+            'variables',
+            'local_cria'
+        );
+        // Preprocess rules form element
+        $mform->addElement(
+            'textarea',
+            'preprocess_rules',
+            get_string('preprocess_rules', 'local_cria')
+        );
+        $mform->setType(
+            'preprocess_rules',
+            PARAM_TEXT
+        );
+        $mform->addHelpButton(
+            'preprocess_rules',
+            'preprocess_rules',
+            'local_cria'
+        );
 
         if (is_siteadmin()) {
             // Publish form element
