@@ -106,27 +106,36 @@ class local_cria_external_gpt extends external_api
         self::validate_context($context);
         $BOT = new bot($bot_id);
 
+try {
+$payload = '';
+if ($chat_id != 'none') {
+ $payload = criaembed::sessions_get_data($bot_id, $chat_id);
+}
+file_put_contents('/var/www/moodledata/temp/payload.json', json_encode($payload, JSON_PRETTY_PRINT));
+
+
         // Check if data is in the payload session
-        if (!isset($_SESSION['criaembed_' . $chat_id])) {
-            file_put_contents('/var/www/moodledata/temp/session_not_set.txt', '');
+//        if (!isset($_SESSION['criaembed_' . $chat_id])) {
+//            file_put_contents('/var/www/moodledata/temp/session_not_set.txt', '');
             // Lets get a payload
-            $payload = criaembed::sessions_get_data($bot_id, $chat_id);
-            if ($payload->status != 200) {
+//            $payload = criaembed::sessions_get_data($bot_id, $chat_id);
+//            if ($payload->status != 200) {
                 // Store into session so that we don't have to make another call
-                $_SESSION['criaembed_' . $chat_id] = false;
-                file_put_contents('/var/www/moodledata/temp/payload_error.json', json_encode($payload , JSON_PRETTY_PRINT));
-            } else {
-                $_SESSION['criaembed_' . $chat_id] = json_encode($payload);
-                file_put_contents('/var/www/moodledata/temp/session_info.json', json_encode($_SESSION['criaembed_' . $chat_id] , JSON_PRETTY_PRINT));
-            }
+//                $_SESSION['criaembed_' . $chat_id] = false;
+ //               file_put_contents('/var/www/moodledata/temp/payload_error.json', json_encode($payload , JSON_PRETTY_PRINT));
+ //           } else {
+ //               $_SESSION['criaembed_' . $chat_id] = json_encode($payload);
+ //               file_put_contents('/var/www/moodledata/temp/session_info.json', json_encode($_SESSION['criaembed_' . $chat_id] , JSON_PRETTY_PRINT));
+ //           }
 
-        }
+//        }
 
-        if ($_SESSION['criaembed_' . $bot_id] != false) {
-            $payload = json_decode($_SESSION['criaembed_' . $bot_id]);
-        } else {
-            $payload = false;
-        }
+  //      if ($_SESSION['criaembed_' . $chat_id] != false) {
+  //          $payload = json_decode($_SESSION['criaembed_' . $chat_id]);
+  //      } else {
+  //          $payload = false;
+  //     }
+ 
         //If $filters is not empty then convert into array
         if (!empty($filters)) {
             $filters = json_decode($filters);
@@ -264,7 +273,7 @@ class local_cria_external_gpt extends external_api
                 $token_usage->total_tokens,
                 $message->cost,
                 json_encode($result),
-                $payload,
+                json_encode($payload),
                 $log_other
             );
         } else {
@@ -284,7 +293,10 @@ class local_cria_external_gpt extends external_api
         $data = [
             (array)$message
         ];
+file_put_contents('/var/www/moodledata/temp/message.json', json_encode($message, JSON_PRETTY_PRINT));
         return (array)$message;
+}  catch (Exception $e){ file_put_contents('/var/www/moodledata/temp/catch.json', json_encode($e, JSON_PRETTY_PRINT));
+}
     }
 
 
