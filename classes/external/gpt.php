@@ -186,6 +186,7 @@ class local_cria_external_gpt extends external_api
                                 'answer',
                                 $question->id);
                             $content = format_text($content, FORMAT_PLAIN, base::getEditorOptions($context), $context);
+                            file_put_contents('/var/www/moodledata/temp/question.html', $content);
                         }
                         $file_name = $result->reply->context->node->node->metadata->file_name;
                     } else {
