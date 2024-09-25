@@ -413,12 +413,15 @@ class gpt
         // Store prompt into a variable for use later
         $prompt = '';
         // If there no period (.) at the end of the bot prompt add one
-        if (!str_ends_with($bot_prompt, '.')) {
+        if ((!str_ends_with($bot_prompt, '.')) && (!str_ends_with($bot_prompt, ': '))) {
             $bot_prompt = $bot_prompt . '.';
         }
         // If the bot prompt does not have q: or Q: at the end, add it
-        if (!str_ends_with($bot_prompt, ' q:') && !str_ends_with($bot_prompt, ' Q:')) {
-            $bot_prompt = $bot_prompt . ' Q: ';
+        if ((!str_ends_with($bot_prompt, ' q:')) &&
+            (!str_ends_with($bot_prompt, ' q:.')) &&
+            (!str_ends_with($bot_prompt, ' q: '))
+        ) {
+            $bot_prompt = $bot_prompt . ' q: ';
         }
         // Add a space to the end of the user prompt and bot prompt
         $user_prompt = trim($user_prompt) . ' ';
