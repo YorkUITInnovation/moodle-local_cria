@@ -452,9 +452,15 @@ class gpt
             foreach ($bot_variables as $key => $variable) {
                 $variable = trim($variable);
                 if (isset($payload->sessionData->$variable)) {
-                    $bot_rules = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_rules);
-                    $bot_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_prompt);
-                    $user_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $user_prompt);
+                    if (!empty($payload->sessionData->$variable)) {
+                        $bot_rules = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_rules);
+                        $bot_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_prompt);
+                        $user_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $user_prompt);
+                    } else {
+                        $bot_rules = str_replace('[' . $variable . ']', 'n/a', $bot_rules);
+                        $bot_prompt = str_replace('[' . $variable . ']', 'n/a', $bot_prompt);
+                        $user_prompt = str_replace('[' . $variable . ']', 'n/a', $user_prompt);
+                    }
                 }
             }
             $prompt = $bot_rules;
