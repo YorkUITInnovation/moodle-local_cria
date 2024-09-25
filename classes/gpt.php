@@ -475,7 +475,7 @@ class gpt
             }
             $prompt = $bot_rules;
         }
-        $prompt = $prompt . ' ' . $bot_prompt . $user_prompt;
+        $prompt = $prompt . ' ' . $bot_prompt . ' ' . $user_prompt;
         $prompt = trim($prompt);
         // Loop through $bot_replace_rules and replace the values
         foreach ($bot_replace_rules as $key => $replace_rule) {
