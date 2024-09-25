@@ -413,7 +413,14 @@ class gpt
         // Store prompt into a variable for use later
         $prompt = '';
         // If there no period (.) at the end of the bot prompt add one
-        if ((!str_ends_with($bot_prompt, '.')) && (!str_ends_with($bot_prompt, ': '))) {
+        if (
+            (!str_ends_with($bot_prompt, '.')) &&
+            (!str_ends_with($bot_prompt, ': ')) &&
+            (!str_ends_with($bot_prompt, ':')) &&
+            (!str_ends_with($bot_prompt, ' q:')) &&
+            (!str_ends_with($bot_prompt, ' q:.')) &&
+            (!str_ends_with($bot_prompt, ' q: '))
+        ) {
             $bot_prompt = $bot_prompt . '.';
         }
         // If the bot prompt does not have q: or Q: at the end, add it
@@ -449,13 +456,14 @@ class gpt
                     $bot_replace_rules[] = $rule;
                 }
             }
-
+            // Loop through all bot variables and add them to the prompt
             foreach ($bot_variables as $key => $variable) {
                 $variable = trim($variable);
                 if (isset($payload->sessionData->$variable)) {
+                    // Only add the variable if it's not empty
                     if (!empty($payload->sessionData->$variable)) {
                         foreach($bot_rules_data as $key => $value) {
-                            // If [$varaible] is in the rule, replace it with the value
+                            // If [$variable] is in the rule, replace it with the value
                             if (str_contains($value, '[' . $variable . ']')) {
                                 $bot_rules .= str_replace('[' . $variable . ']', $payload->sessionData->$variable, $value);
                             }
