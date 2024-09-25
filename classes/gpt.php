@@ -432,6 +432,7 @@ class gpt
             $bot_variables = $BOT->get_variables_array();
             // Get the preprocess rules
             $bot_rules_array = $BOT->get_preprocess_rules_array();
+            $bot_rules_data = [];
             $bot_rules = '';
             $bot_replace_rules = [];
 
@@ -442,9 +443,9 @@ class gpt
                     if (!str_ends_with($rule, '.')) {
                         $rule = $rule . '. ';
                     }
-                    $bot_rules .= $rule;
+                    $bot_rules_data[] = $rule;
                 } else {
-                    // If the rule contains ==, then it's a replacement rule
+                    // If the rule contains =>, then it's a replacement rule
                     $bot_replace_rules[] = $rule;
                 }
             }
@@ -453,13 +454,14 @@ class gpt
                 $variable = trim($variable);
                 if (isset($payload->sessionData->$variable)) {
                     if (!empty($payload->sessionData->$variable)) {
-                        $bot_rules = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_rules);
+                        foreach($bot_rules_data as $key => $value) {
+                            // If [$varaible] is in the rule, replace it with the value
+                            if (str_contains($value, '[' . $variable . ']')) {
+                                $bot_rules .= str_replace('[' . $variable . ']', $payload->sessionData->$variable, $value);
+                            }
+                        }
                         $bot_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $bot_prompt);
                         $user_prompt = str_replace('[' . $variable . ']', $payload->sessionData->$variable, $user_prompt);
-                    } else {
-                        $bot_rules = str_replace('[' . $variable . ']', 'n/a', $bot_rules);
-                        $bot_prompt = str_replace('[' . $variable . ']', 'n/a', $bot_prompt);
-                        $user_prompt = str_replace('[' . $variable . ']', 'n/a', $user_prompt);
                     }
                 }
             }
