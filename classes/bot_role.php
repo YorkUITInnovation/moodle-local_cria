@@ -447,6 +447,37 @@ class bot_role extends crud
             $editor_data->timemodified = time();
             $DB->insert_record('local_cria_bot_capabilities', $editor_data);
         }
+
+        // Create Editor bot_role record
+        $content_editor_role_data = new \stdClass();
+        $content_editor_role_data->bot_id = $bot_id;
+        $content_editor_role_data->name = 'Content Editor';
+        $content_editor_role_data->shortname = 'content_editor';
+        $content_editor_role_data->description = 'The editor role can edit the bot config and content but cannot delete the bot, share the bot nor change permissions';
+        $content_editor_role_data->system_reserved = 1;
+        $content_editor_role_data->sortorder = 3;
+        $content_editor_role_data->usermodified = $USER->id;
+        $content_editor_role_data->timecreated = time();
+        $content_editor_role_data->timemodified = time();
+        $content_editor_role_data = $DB->insert_record($this->table, $content_editor_role_data);
+
+        $content_editor_data = new \stdClass();
+        $content_editor_data->bot_role_id = $content_editor_role_data;
+        foreach ($cria_capabilities as $cc) {
+            $content_editor_data->name = $cc->name;
+            if ($cc->name == 'local/cria:bot_permissions' ||
+                $cc->name == 'local/cria:delete_bots' ||
+                $cc->name == 'local/cria:share_bots' ||
+                $cc->name == 'local/cria:view_advanced_bot_options') {
+                $content_editor_data->permission = 0;
+            } else {
+                $content_editor_data->permission = 1;
+            }
+            $content_editor_data->usermodified = $USER->id;
+            $content_editor_data->timecreated = time();
+            $content_editor_data->timemodified = time();
+            $DB->insert_record('local_cria_bot_capabilities', $content_editor_data);
+        }
     }
 
     /**

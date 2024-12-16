@@ -417,5 +417,47 @@ function xmldb_local_cria_upgrade($oldversion)
         // Cria savepoint reached.
         upgrade_plugin_savepoint(true, 2024092200, 'local', 'cria');
     }
+
+    if ($oldversion < 2024121500) {
+        global $DB, $USER;
+        // Get all capabilities for the system
+        $BOT_CAPABILITIES = new \local_cria\bot_capabilities();
+        $cria_capabilities = $BOT_CAPABILITIES->get_cria_system_capabilities();
+        // Get all bots
+        $bots = $DB->get_records('local_cria_bot');
+        foreach ($bots as $bot) {
+            $content_editor_role_data = new \stdClass();
+            $content_editor_role_data->bot_id = $bot->id;
+            $content_editor_role_data->name = 'Content Editor';
+            $content_editor_role_data->shortname = 'content_editor';
+            $content_editor_role_data->description = 'The editor role can edit the bot config and content but cannot delete the bot, share the bot nor change permissions';
+            $content_editor_role_data->system_reserved = 1;
+            $content_editor_role_data->sortorder = 3;
+            $content_editor_role_data->usermodified = $USER->id;
+            $content_editor_role_data->timecreated = time();
+            $content_editor_role_data->timemodified = time();
+            $content_editor_role_data = $DB->insert_record('local_cria_bot_role', $content_editor_role_data);
+
+            $content_editor_data = new \stdClass();
+            $content_editor_data->bot_role_id = $content_editor_role_data;
+            foreach ($cria_capabilities as $cc) {
+                $content_editor_data->name = $cc->name;
+                if ($cc->name == 'local/cria:bot_permissions' ||
+                    $cc->name == 'local/cria:delete_bots' ||
+                    $cc->name == 'local/cria:share_bots' ||
+                    $cc->name == 'local/cria:view_advanced_bot_options') {
+                    $content_editor_data->permission = 0;
+                } else {
+                    $content_editor_data->permission = 1;
+                }
+                $content_editor_data->usermodified = $USER->id;
+                $content_editor_data->timecreated = time();
+                $content_editor_data->timemodified = time();
+                $DB->insert_record('local_cria_bot_capabilities', $content_editor_data);
+            }
+        }
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2024121500, 'local', 'cria');
+    }
     return true;
 }
