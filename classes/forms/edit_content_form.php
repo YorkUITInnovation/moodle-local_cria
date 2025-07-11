@@ -126,10 +126,6 @@ class edit_content_form extends \moodleform
 
         $file_options = [
             'maxbytes' => $CFG->maxbytes,
-            'accepted_types' => [
-                '.docx', '.pdf',  '.txt',
-                '.png', '.jpeg', '.jpg', '.html', '.htm', '.md'
-            ]
         ];
         if ($formdata->id) {
 // no file picker
