@@ -118,50 +118,50 @@ $(document).ready(function () {
     });
 
     // When icon-document-publish-all is clicked, publish all selected documents based on .cria-document-dt-select-box that are checked
-    $('#cria-publish-all-files').on('click', function () {
-        let selected = [];
-        $('.cria-document-dt-select-box').each(function () {
-            if ($(this).is(':checked')) {
-                selected.push($(this).data('id'));
-            }
-        });
-        // If no check boxes are selected, alert that no documents are selected else open the modal
-        if (selected.length === 0) {
-            alert('No documents selected. You  must select at least one document to publish.');
-        } else {
-            if (selected.length > 0) {
-                $('#cria-publish-document-modal').modal('toggle');
-                $('#cria-modal-publish-confirm').off();
-                $('#cria-modal-publish-confirm').on('click', function () {
-                    $('#cria-publish-modal').modal('toggle');
-                    document.getElementById('cria-loader').style.display = 'flex';
-                    // Show the loader
-                    $('#cria-loader').show();
-                    $.ajax({
-                        url: wwwroot + '/local/cria/ajax/publish_documents.php',
-                        type: 'POST',
-                        data: {
-                            'bot_id': $('#bot_id').val(),
-                            'intent_id': $('#intent_id').val(),
-                            'documents': selected
-                        },
-                        success: function (results) {
-                            // Convert json into object
-                            results = JSON.parse(results);
-                            // Hide the loader
-                            document.getElementById('cria-loader').style.display = 'none';
-                            $('#cria-publish-document-modal').modal('toggle');
-                            if (results.status === 404) {
-                                alert(results.message);
-                            } else {
-                                table.ajax.reload();
-                            }
-                        }
-                    });
-                });
-            }
-        }
-    });
+    // $('#cria-publish-all-files').on('click', function () {
+    //     let selected = [];
+    //     $('.cria-document-dt-select-box').each(function () {
+    //         if ($(this).is(':checked')) {
+    //             selected.push($(this).data('id'));
+    //         }
+    //     });
+    //     // If no check boxes are selected, alert that no documents are selected else open the modal
+    //     if (selected.length === 0) {
+    //         alert('No documents selected. You  must select at least one document to publish.');
+    //     } else {
+    //         if (selected.length > 0) {
+    //             $('#cria-publish-document-modal').modal('toggle');
+    //             $('#cria-modal-publish-confirm').off();
+    //             $('#cria-modal-publish-confirm').on('click', function () {
+    //                 $('#cria-publish-modal').modal('toggle');
+    //                 document.getElementById('cria-loader').style.display = 'flex';
+    //                 // Show the loader
+    //                 $('#cria-loader').show();
+    //                 $.ajax({
+    //                     url: wwwroot + '/local/cria/ajax/publish_documents.php',
+    //                     type: 'POST',
+    //                     data: {
+    //                         'bot_id': $('#bot_id').val(),
+    //                         'intent_id': $('#intent_id').val(),
+    //                         'documents': selected
+    //                     },
+    //                     success: function (results) {
+    //                         // Convert json into object
+    //                         results = JSON.parse(results);
+    //                         // Hide the loader
+    //                         document.getElementById('cria-loader').style.display = 'none';
+    //                         $('#cria-publish-document-modal').modal('toggle');
+    //                         if (results.status === 404) {
+    //                             alert(results.message);
+    //                         } else {
+    //                             table.ajax.reload();
+    //                         }
+    //                     }
+    //                 });
+    //             });
+    //         }
+    //     }
+    // });
 
     // When element with id btn-cria-save-urls is clicked, capture the vaalue of the element with id local-cria-urls
     // and send an ajax call to ajax\publish_urls.php
