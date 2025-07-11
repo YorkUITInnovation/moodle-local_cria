@@ -22,6 +22,7 @@ use local_cria\bot;
 use local_cria\criaparse;
 use local_cria\file;
 use local_cria\intent;
+use local_cria\markitdown;
 
 global $CFG, $OUTPUT, $USER, $PAGE, $DB, $SITE;
 
@@ -93,7 +94,7 @@ if ($mform->is_cancelled()) {
     $path = $CFG->dataroot . '/temp/cria/' . $data->intent_id;
     base::create_directory_if_not_exists($path);
 
-    // If id, then simple upload the file using file picker
+    // If id, then simply upload the file using file picker
     if ($data->id) {
         $FILE = new file($id);
 
@@ -189,58 +190,42 @@ if ($mform->is_cancelled()) {
             $file_name = $file->get_filename();
             // Convert files to docx based on file type
             $converted_file_name = '';
-            // Has file been converted
-            $file_was_converted = false;
             // Copy file to path
             $file->copy_content_to($path . '/' . $file_name);
-
-            // Only convert file is $config->convertapi_key is set
-            if ($config->convertapi_api_key == '') {
-                $content_data['name'] = $file_name;
-                $converted_file_name = $file_name;
-            } else {
-                // Convert file to docx if file is a pdf, html, or doc
-                // Otherwise leave as is
-                switch ($content_data['file_type']) {
-                    case 'pdf':
-                    case 'html':
-                    case 'doc':
-                    case 'rtf':
-                        $converted_file = $FILE->convert_file_to_docx($path, $file_name, $content_data['file_type']);
-                        // Replace .pdf to docx in filename
-                        $converted_file_name = str_replace('.' . $content_data['file_type'], '.docx', $file_name);
-                        $content_data['file_type'] = 'docx';
-                        $content_data['name'] = $converted_file_name;
-                        $file_was_converted = true;
-                        break;
-                    default:
-                        $content_data['name'] = $file_name;
-                        if ($content_data['file_type'] == 'docx') {
-                            // Copy file to temp path
-                            $file->copy_content_to($path . '/' . $file_name);
-                        }
-                        $converted_file = $path . '/' . $file_name;
-                        $converted_file_name = $file_name;
-                        break;
+            // Convert fiel to markdown if required
+            if ($file->get_mimetype() != 'text/plain') {
+                // Convert file to markdown
+                $converted_file = json_decode(markitdown::exec($path . '/' . $file_name, $file->get_mimetype()), true);
+                // Make sure that converted_file is an object
+                if (is_array($converted_file)) {
+                    $converted_file = (object)$converted_file;
                 }
-            }
-            $converted_file_path = $path . '/' . $converted_file_name;
-            // Save converted file to moodle
-            if ($file_was_converted) {
-                $fileinfo = [
-                    'contextid' => $context->id,   // ID of the context.
-                    'component' => 'local_cria', // Your component name.
-                    'filearea' => 'content',       // Usually = table name.
-                    'itemid' => $data->intent_id,              // Usually = ID of row in table.
-                    'filepath' => '/',            // Any path beginning and ending in /.
-                    'filename' => $converted_file_name,   // Any filename.
-                ];
+                if (isset($converted_file->filename)) {
+                    //Save file to path
+                    $file_name = $converted_file->filename . '.md';
+                    file_put_contents($path . '/' . $file_name, $converted_file->content);
+                    // Save the file to moodle file storage
+                    $fileinfo = [
+                        'contextid' => $context->id,   // ID of the context.
+                        'component' => 'local_cria', // Your component name.
+                        'filearea' => 'content',       // Usually = table name.
+                        'itemid' => $data->intent_id,              // Usually = ID of row in table.
+                        'filepath' => '/',            // Any path beginning and ending in /.
+                        'filename' => $file_name,   // Any filename.
+                    ];
+                    $fs->create_file_from_pathname($fileinfo, $path . '/' . $file_name);
+                    $new_file = $fs->
 
-                $fs->create_file_from_pathname($fileinfo, $converted_file_path);
-                // Delete the original file from the file area
-                $file->delete();
+                    $content_data['file_type'] = 'md';
+                    // Delete the original Moodle file
+                    $file->delete();
+                    // Delete the new file in temp folder
+                    unlink($path . '/' . $file_name);
+                }
+
             }
 
+            $content_data['name'] = $file_name;
             $content_data['indexed'] = $FILE::INDEXING_PENDING;
             // Verification paramaters
             $content_verification = [
@@ -251,10 +236,24 @@ if ($mform->is_cancelled()) {
                 // Insert the content into the database
                 $file_id = $DB->insert_record('local_cria_files', $content_data);
             }
+            // Check if the file still exists
+            if (file_exists($path . '/' . $file_name)) {
+                unlink($path . '/' . $file_name);
+            }
         }
     }
 
-    exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $data->intent_id .' > /dev/null 2>&1 &');
+    // Run adhoc task to index files
+    $task = new \local_cria\task\index_files_adhoc();
+    // Run task as logged in user
+    $task->set_userid($USER->id);
+    $task->set_custom_data([
+        'intent_id' => $data->intent_id,
+    ]);
+
+    \core\task\manager::queue_adhoc_task($task);
+
+    // exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $data->intent_id .' > /dev/null 2>&1 &');
 
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/content.php?bot_id=' . $data->bot_id . '&intent_id=' . $data->intent_id);

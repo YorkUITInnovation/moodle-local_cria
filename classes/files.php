@@ -171,6 +171,18 @@ class files
             $file_path = $CFG->dataroot . '/temp/cria/' . $this->intent_id;
             // Copy file content to temp folder
             $file->copy_content_to($file_path . '/' . $file->get_filename());
+            // get file name
+            $file_name = $file->get_filename();
+            // Convert to markdown
+            $file_type = $file->get_mimetype();
+            if ($file_type != 'text/markdown') {
+                $md_data = json_decode(markitdown::exec($file_path . '/' . $file_name, $file_type), true);
+                // Save the markdown file
+                file_put_contents($file_path . '/' . $md_data['filename'] . '.md', $md_data['content']);
+                // Update file name and type
+                $file_name = $md_data['filename'] . '.md';
+                $file_type = 'text/markdown';
+            }
             // Set parsing strategy based on file type.
             $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
                 $file->get_mimetype(),
@@ -184,17 +196,17 @@ class files
                 $MODEL->get_criadex_model_id(),
                 $EMBEDDING->get_criadex_model_id(),
                 $parsing_strategy,
-                $file_path . '/' . $file->get_filename()
+                $file_path . '/' . $file_name
             );
             // Delete file from CriaBot
-            criabot::document_delete($bot_name, $file->get_filename());
+            criabot::document_delete($bot_name, $file_name);
             if ($results['status'] != 200) {
                 \core\notification::error('Error parsing file: ' . $results['message']);
             } else {
                 // Get nodes from parsed results
                 $nodes = $results['nodes'];
                 // Send nodes to indexing server
-                $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file->get_filename(), $FILE->get_file_type_from_mime_type($file->get_mimetype()), false);
+                $upload = $FILE->upload_nodes_to_indexing_server($bot_name, $nodes, $file_name, 'text/markdown', false);
                 if ($upload->status != 200) {
                     \core\notification::error('Error uploading file to indexing server: ' . $upload->message);
                 }

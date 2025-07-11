@@ -11,15 +11,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$tasks = [
-    // Only perform on the first day of every month at 00:01
-    [
-        'classname' => 'local_cria\task\update_url_content',
-        'blocking' => 0,
-        'minute' => '0',
-        'hour' => '0',
-        'day' => '1',
-        'month' => '*',
-        'dayofweek' => '*',
-    ],
-];
+namespace local_cria\task;
+
+use local_cria\intent;
+
+class index_files_adhoc extends \core\task\adhoc_task
+{
+    /**
+     * Execute the task.
+     *
+     * @return void
+     */
+    public function execute()
+    {
+        $data = $this->get_custom_data();
+        $INTENT = new intent($this->get_custom_data()->intent_id);
+        $INTENT->index_files();
+    }
+}
+

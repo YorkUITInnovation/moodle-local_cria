@@ -25,8 +25,7 @@ such as Gemini, Llama, Bedrock etc.
 * [Scrapper](https://github.com/amerkurev/scrapper)
 * [Cohere AI](https://cohere.com) for reranking.
 * [Qdrant](https://qdrant.tech/)
-* [ConvertAPI](https://www.convertapi.com/) for document conversion. (Optional)
-
+* [markitdown-api](https://github.com/YorkUITInnovation/markitdown-api)
 ## Why Moodle?
 Moodle is a popular open-source learning management system that is used by many educational institutions. Although, Cria
 is not a learning management system, Moodle is used as a framework to develop the platform due to it's modular
@@ -46,7 +45,8 @@ authentication, security, roles, caching, permissions, and many more. Plus, we a
 2. Enter the URL with the port number for each Cria component. For example, for CriaBot, you would enter `https://{your.domain}:25575`
 3. Enter the API key for each Cria component.
 4. Enter the API key for Cohere AI.
-5. Enter the API key for ConvertAPI (Optional. Having ConvertAPI will allow you to use more preprocessing services within Cria)
+5. Enter the URL for the MarkItDown API server.
+5. Enter the API key for MarkItDown API server.
 
 ### Azure OpenAI
 Before you can configure the plugin, you must have an Azure Subscription and access to Azure OpenAI. You will need to 

@@ -382,8 +382,6 @@ $string['criascraper_url_help'] = 'Entrez l\'URL de l\'instance CriaScraper à l
 
 // MinutesMaster
 $string['convert'] = 'Convert';
-$string['convertapi_api_key'] = 'ConvertAPI API Key';
-$string['convertapi_api_key_help'] = 'You must get a ConverAPI API Key from convertapi_api_key';
 $string['date'] = 'Date';
 $string['date_help'] = 'Optional: Enter the time in your preferred format.';
 $string['info'] = 'MinutesMaster';

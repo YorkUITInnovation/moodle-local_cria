@@ -15,24 +15,9 @@
 
 require_once('../../config.php');
 require_once('lib.php');
-require_once("$CFG->dirroot/local/cria/classes/external/gpt.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Gpt3TokenizerConfig.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Gpt3Tokenizer.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Merges.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Vocab.php");
 
-use local_cria\base;
-use local_cria\datatables;
-use local_cria\criadex;
-use local_cria\criabot;
-use local_cria\criaembed;
-use local_cria\gpt;
-use local_cria\intent;
-use local_cria\questions;
-use local_cria\files;
-use local_cria\file;
-use local_cria\bot;
-use local_cria\criaparse;
+
+use local_cria\markitdown;
 
 // CHECK And PREPARE DATA
 global $CFG, $OUTPUT, $SESSION, $PAGE, $DB, $COURSE, $USER;
@@ -54,20 +39,10 @@ $prompt = optional_param('prompt', '', PARAM_TEXT);
 //*** DISPLAY HEADER ***
 //**********************
 echo $OUTPUT->header();
-$json = '{
-    "status": 200,
-    "timestamp": "1725838728517",
-    "code": "SUCCESS",
-    "message": "Successfully retrieved session data!",
-    "sessionData": {
-        "idNumber": "102345765",
-        "firstName": "Admin",
-        "ip": "192.168.65.1",
-        "grade": null
-    }
-}';
-
-print_object(json_decode($json));
+$path = '/var/www/moodledata/temp/cria/9/Montaigne-Of Cannibals.pdf';
+// Get mime type from file path
+$mime = 'application/pdf';
+echo markitdown::exec($path,$mime);
 
 //**********************
 //*** DISPLAY FOOTER ***

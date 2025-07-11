@@ -26,13 +26,43 @@ class edit_content_form extends \moodleform
 
     protected function definition()
     {
-        global $CFG, $OUTPUT;
+        global $CFG, $DB, $OUTPUT;
 
         $formdata = $this->_customdata['formdata'];
         // Create form object
         $mform = &$this->_form;
 
         $BOT = new bot($formdata->bot_id);
+        $context = \CONTEXT_SYSTEM::instance();
+
+        if ($formdata->id) {
+            $cria_file = $DB->get_record(
+                'local_cria_files',
+                ['id' => $formdata->id],
+                '*',
+                MUST_EXIST
+            );
+            // get the file in the moodle files table
+            $moodle_file = $DB->get_record(
+                'files',
+                [
+                    'component' => 'local_cria',
+                    'filearea' => 'content',
+                    'itemid' => $cria_file->intent_id,
+                    'filename' => $cria_file->name
+                ],
+                '*',
+                MUST_EXIST
+            );
+
+            // Get the moodle file
+            $fs = get_file_storage();
+            $file = $fs->get_file_by_id($moodle_file->id);
+            $file_content = markdown_to_html($file->get_content());
+
+        }
+
+
 
         $mform->addElement(
             'hidden',
@@ -78,6 +108,13 @@ class edit_content_form extends \moodleform
                 'edit_content_form',
                 get_string('edit_content', 'local_cria')
             );
+            // Add html element
+            $mform->addElement(
+                'html',
+                '<div class="card"><div class="card-body">' .
+                $file_content .
+                '</div></div>'
+            );
         } else {
             $mform->addElement(
                 'header',
@@ -95,17 +132,7 @@ class edit_content_form extends \moodleform
             ]
         ];
         if ($formdata->id) {
-//            $mform->addElement(
-//                'filepicker',
-//                'importedFile', get_string('file', 'local_cria'),
-//                null,
-//                $file_options
-//            );
-//            $mform->addRule(
-//                'importedFile',
-//                get_string('error_importfile', 'local_cria'),
-//                'required'
-//            );
+// no file picker
         } else {
             // Add filemanger element
             $mform->addElement(

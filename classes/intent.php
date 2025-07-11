@@ -22,17 +22,6 @@
 
 namespace local_cria;
 
-use core\notification;
-use local_cria\criabot;
-use local_cria\crud;
-use local_cria\criabdex;
-use local_cria\logs;
-use local_cria\keywords;
-use local_cria\embed;
-use local_cria\file;
-use local_cria\criaparse;
-use local_cria\bot;
-
 
 class intent extends crud
 {
@@ -672,6 +661,17 @@ class intent extends crud
             // Convert files to docx based on file type
             // Copy file to path
             $moodle_file->copy_content_to($path . '/' . $file_name);
+            // Convert the saved file to markdown if it is not a markdown file
+            if ($file_type != 'text/markdown') {
+                // Convert file to markdown
+                $md_data = json_decode(markitdown::exec($path . '/' . $file_name, $file_type), true);
+                // Save the markdown file
+                file_put_contents($path . '/' . $md_data['filename'] . '.md', $md_data['content']);
+                // Update file name and type
+                $file_name = $md_data['filename'] . '.md';
+                $file_type = 'text/markdown';
+            }
+
             // If $BOT->get_parse_strategy() is not equal to $data->parsingstrategy, then update $parsing_strategy
             if ($file->parsingstrategy != $BOT->get_parse_strategy()) {
                 $bot_parsing_strategy = $file->parsingstrategy;

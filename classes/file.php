@@ -335,7 +335,7 @@ class file extends crud
                 $file_type = 'pptx';
                 break;
             case 'text/plain':
-                $file_type = 'txt';
+                $file_type = 'md';
                 break;
             case 'text/rtf':
                 $file_type = 'rtf';
@@ -521,59 +521,4 @@ class file extends crud
         return delete_all_between($beginning, $end, str_replace($textToDelete, '', $string));
         // Recursion to ensure all occurrences are replaced
     }
-
-    /**
-     * Convert pdf to docx
-     * @param $pdf_file_path
-     * @param $pdf_file_name
-     * @return string
-     */
-    public function convert_file_to_docx($file_path, $file_name, $file_type = 'pdf')
-    {
-        global $CFG;
-        require_once($CFG->dirroot . '/local/cria/classes/convertapi/lib/ConvertApi/autoload.php');
-        $file_path = rtrim($file_path, '/');
-        $config = get_config('local_cria');
-        \ConvertApi\ConvertApi::setApiSecret($config->convertapi_api_key);
-        $result = \ConvertApi\ConvertApi::convert('docx', [
-            'File' => $file_path . '/' . $file_name],
-            $file_type);
-        $result->saveFiles($file_path);
-    }
-
-    public function handle_file_conversion($file, $path, $file_name, $content_data, $config) {
-        $converted_file_name = '';
-        $file_was_converted = false;
-        $file->copy_content_to($path . '/' . $file_name);
-
-        if ($config->convertapi_api_key == '') {
-            $content_data['name'] = $file_name;
-            $converted_file_name = $file_name;
-        } else {
-            // Convert file to docx if file is a pdf, html, or doc
-            // Otherwise leave as is
-            switch ($content_data['file_type']) {
-                case 'pdf':
-                case 'html':
-                case 'doc':
-                case 'rtf':
-                    $converted_file = $FILE->convert_file_to_docx($path, $file_name, $content_data['file_type']);
-                    $converted_file_name = str_replace('.' . $content_data['file_type'], '.docx', $file_name);
-                    $content_data['file_type'] = 'docx';
-                    $content_data['name'] = $converted_file_name;
-                    $file_was_converted = true;
-                    break;
-                default:
-                    $content_data['name'] = $file_name;
-                    if ($content_data['file_type'] == 'docx') {
-                        $file->copy_content_to($path . '/' . $file_name);
-                    }
-                    $converted_file = $path . '/' . $file_name;
-                    $converted_file_name = $file_name;
-                    break;
-            }
-        }
-        return [$converted_file_name, $file_was_converted];
-    }
-
 }
