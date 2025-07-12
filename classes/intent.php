@@ -662,13 +662,13 @@ class intent extends crud
             // Copy file to path
             $moodle_file->copy_content_to($path . '/' . $file_name);
             // Convert the saved file to markdown if it is not a markdown file
-            if ($file_type != 'text/markdown') {
+            if ($file_type != 'text/html') {
                 // Convert file to markdown
                 $md_data = json_decode(markitdown::exec($path . '/' . $file_name, $file_type), true);
                 // Save the markdown file
-                file_put_contents($path . '/' . $md_data['filename'] . '.md', $md_data['content']);
+                file_put_contents($path . '/' . $md_data['filename'] . '.html', $md_data['content']);
                 // Update file name and type
-                $file_name = $md_data['filename'] . '.md';
+                $file_name = $md_data['filename'] . '.html';
                 $file_type = 'text/markdown';
             }
 

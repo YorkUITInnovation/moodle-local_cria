@@ -193,7 +193,7 @@ if ($mform->is_cancelled()) {
             // Copy file to path
             $file->copy_content_to($path . '/' . $file_name);
             // Convert fiel to markdown if required
-            if ($file->get_mimetype() != 'text/plain') {
+            if ($file->get_mimetype() != 'text/html') {
                 // Convert file to markdown
                 $converted_file = json_decode(markitdown::exec($path . '/' . $file_name, $file->get_mimetype()), true);
                 // Make sure that converted_file is an object
@@ -201,9 +201,11 @@ if ($mform->is_cancelled()) {
                     $converted_file = (object)$converted_file;
                 }
                 if (isset($converted_file->filename)) {
+                    // Make the content HTML
+
                     //Save file to path
-                    $file_name = $converted_file->filename . '.md';
-                    file_put_contents($path . '/' . $file_name, $converted_file->content);
+                    $file_name = $converted_file->filename . '.html';
+                    file_put_contents($path . '/' . $file_name, markdown_to_html($converted_file->content));
                     // Save the file to moodle file storage
                     $fileinfo = [
                         'contextid' => $context->id,   // ID of the context.
@@ -214,9 +216,8 @@ if ($mform->is_cancelled()) {
                         'filename' => $file_name,   // Any filename.
                     ];
                     $fs->create_file_from_pathname($fileinfo, $path . '/' . $file_name);
-                    $new_file = $fs->
 
-                    $content_data['file_type'] = 'md';
+                    $content_data['file_type'] = 'html';
                     // Delete the original Moodle file
                     $file->delete();
                     // Delete the new file in temp folder

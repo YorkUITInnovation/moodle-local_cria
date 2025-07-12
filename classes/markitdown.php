@@ -10,7 +10,7 @@ class markitdown
      * @return mixed|void
      * @throws \dml_exception
      */
-    public static function exec($file_path, $mime_type)
+    public static function exec($file_path, $mime_type, $create_pages = false)
     {
         $config = get_config('local_cria');
 
@@ -34,7 +34,8 @@ class markitdown
                 $file_path,
                 $mime_type,
                 basename($file_path)
-            )
+            ),
+            'create_pages' => $create_pages ? 'true' : 'false'
         ];
 
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
