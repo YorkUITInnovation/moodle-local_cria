@@ -254,7 +254,15 @@ if ($mform->is_cancelled()) {
         }
     }
 
-    exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $data->intent_id .' > /dev/null 2>&1 &');
+    // Run adhoc task to index files
+    $task = new \local_cria\task\index_files_adhoc();
+    // Run task as logged in user
+    $task->set_userid($USER->id);
+    $task->set_custom_data([
+        'intent_id' => $data->intent_id,
+    ]);
+
+    \core\task\manager::queue_adhoc_task($task);
 
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/content.php?bot_id=' . $data->bot_id . '&intent_id=' . $data->intent_id);
