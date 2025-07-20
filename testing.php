@@ -15,11 +15,6 @@
 
 require_once('../../config.php');
 require_once('lib.php');
-require_once("$CFG->dirroot/local/cria/classes/external/gpt.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Gpt3TokenizerConfig.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Gpt3Tokenizer.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Merges.php");
-require_once("$CFG->dirroot/local/cria/classes/gpttokenizer/Vocab.php");
 
 use local_cria\base;
 use local_cria\datatables;
@@ -54,20 +49,7 @@ $prompt = optional_param('prompt', '', PARAM_TEXT);
 //*** DISPLAY HEADER ***
 //**********************
 echo $OUTPUT->header();
-$json = '{
-    "status": 200,
-    "timestamp": "1725838728517",
-    "code": "SUCCESS",
-    "message": "Successfully retrieved session data!",
-    "sessionData": {
-        "idNumber": "102345765",
-        "firstName": "Admin",
-        "ip": "192.168.65.1",
-        "grade": null
-    }
-}';
 
-print_object(json_decode($json));
 
 //**********************
 //*** DISPLAY FOOTER ***

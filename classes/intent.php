@@ -640,11 +640,10 @@ class intent extends crud
         $context = \context_system::instance();
         // Get all files that are in state other than completed
         $files = $DB->get_records('local_cria_files', ['indexed' => $FILE::INDEXING_PENDING, 'intent_id' => $this->id]);
-
         // Iterate through each file
         foreach ($files as $file) {
             // Get file list from criadex
-            $criadex_files = criadex::list_content($this->get_bot_id())->document_index['files'] ?? [];
+            $criadex_files = criadex::list_content($this->get_bot_id())->document_index->files ?? [];
             // If file already exists in criadex, skip it
             if (in_array($file->name, $criadex_files)) {
                 continue;
