@@ -459,5 +459,39 @@ function xmldb_local_cria_upgrade($oldversion)
         // Cria savepoint reached.
         upgrade_plugin_savepoint(true, 2024121500, 'local', 'cria');
     }
+
+    if ($oldversion < 2025072101) {
+
+        // Define index bot_id_x (not unique) to be added to local_cria_intents.
+        $table = new xmldb_table('local_cria_intents');
+        $index = new xmldb_index('bot_id_x', XMLDB_INDEX_NOTUNIQUE, ['bot_id']);
+
+        // Conditionally launch add index bot_id_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+
+        // Define index intent_id_x (not unique) to be added to local_cria_files.
+        $table = new xmldb_table('local_cria_files');
+        $index = new xmldb_index('intent_id_x', XMLDB_INDEX_NOTUNIQUE, ['intent_id']);
+
+        // Conditionally launch add index intent_id_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index intent_id_x (not unique) to be added to local_cria_question.
+        $table = new xmldb_table('local_cria_question');
+        $index = new xmldb_index('intent_id_x', XMLDB_INDEX_NOTUNIQUE, ['intent_id']);
+
+        // Conditionally launch add index intent_id_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2025072101, 'local', 'cria');
+    }
     return true;
 }
