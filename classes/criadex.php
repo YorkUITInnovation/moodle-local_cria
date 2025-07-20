@@ -176,4 +176,40 @@ class criadex
             'POST'
         );
     }
+
+    /**
+     * List all content in the bot's indexes.
+     * @param $bot_id
+     * @return \stdClass
+     * @throws \dml_exception
+     */
+    public static function list_content($bot_id)
+    {
+        // Get config
+        $config = get_config('local_cria');
+        $BOT = new bot($bot_id);
+
+        $groups = new \stdClass();
+        $document_index = $BOT->get_bot_name() . '-document-index';
+        $question_index = $BOT->get_bot_name() . '-question-index';
+
+
+        // Update model
+        $groups->document_index =  gpt::_make_call(
+            $config->criadex_url,
+            $config->criadex_api_key,
+            '',
+            '/groups/' . $document_index .  '/content/list',
+            'GET'
+        );
+        $groups->question_index =  gpt::_make_call(
+            $config->criadex_url,
+            $config->criadex_api_key,
+            '',
+            '/groups/' . $question_index .  '/content/list',
+            'GET'
+        );
+
+        return $groups;
+    }
 }

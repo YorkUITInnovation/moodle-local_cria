@@ -25,7 +25,7 @@ namespace local_cria;
 use core\notification;
 use local_cria\criabot;
 use local_cria\crud;
-use local_cria\criabdex;
+use local_cria\criadex;
 use local_cria\logs;
 use local_cria\keywords;
 use local_cria\embed;
@@ -643,7 +643,12 @@ class intent extends crud
 
         // Iterate through each file
         foreach ($files as $file) {
-            //            $INTENT = new intent($file->intent_id);
+            // Get file list from criadex
+            $criadex_files = criadex::list_content($this->get_bot_id())->document_index['files'] ?? [];
+            // If file already exists in criadex, skip it
+            if (in_array($file->name, $criadex_files)) {
+                continue;
+            }
             $BOT = new bot($this->get_bot_id());
             // Set default path
             $path = $CFG->dataroot . '/temp/cria';
@@ -669,6 +674,8 @@ class intent extends crud
             $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
             // get file name
             $file_name = $moodle_file->get_filename();
+            // Check if the file already exists in CriaIndex
+            $file_exists = $FILE->check_file_exists_in_cria_index($this->get_bot_name(), $file_name, $file_type);
             // Convert files to docx based on file type
             // Copy file to path
             $moodle_file->copy_content_to($path . '/' . $file_name);

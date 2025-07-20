@@ -1185,7 +1185,13 @@ class bot extends crud
     public function use_bot_server(): string
     {
         global $DB;
+        print_object('');
+        print_object('');
+        print_object('');
+        print_object('');
+        print_object($this->bot_type);
         $bot_type = $DB->get_record('local_cria_type', array('id' => $this->bot_type));
+        print_object($bot_type);
         return $bot_type->use_bot_server;
     }
 

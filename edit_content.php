@@ -194,53 +194,31 @@ if ($mform->is_cancelled()) {
             // Copy file to path
             $file->copy_content_to($path . '/' . $file_name);
 
-            // Only convert file is $config->convertapi_key is set
-            if ($config->convertapi_api_key == '') {
-                $content_data['name'] = $file_name;
-                $converted_file_name = $file_name;
-            } else {
-                // Convert file to docx if file is a pdf, html, or doc
-                // Otherwise leave as is
-                switch ($content_data['file_type']) {
-                    case 'pdf':
-                    case 'html':
-                    case 'doc':
-                    case 'rtf':
-                        $converted_file = $FILE->convert_file_to_docx($path, $file_name, $content_data['file_type']);
-                        // Replace .pdf to docx in filename
-                        $converted_file_name = str_replace('.' . $content_data['file_type'], '.docx', $file_name);
-                        $content_data['file_type'] = 'docx';
-                        $content_data['name'] = $converted_file_name;
-                        $file_was_converted = true;
-                        break;
-                    default:
-                        $content_data['name'] = $file_name;
-                        if ($content_data['file_type'] == 'docx') {
-                            // Copy file to temp path
-                            $file->copy_content_to($path . '/' . $file_name);
-                        }
-                        $converted_file = $path . '/' . $file_name;
-                        $converted_file_name = $file_name;
-                        break;
-                }
-            }
-            $converted_file_path = $path . '/' . $converted_file_name;
-            // Save converted file to moodle
-            if ($file_was_converted) {
+            // If file is not a docx, then convert it with markitdown
+            if ($content_data['file_type'] != 'docx' && $content_data['file_type'] != 'html') {
+                $converted_file = \local_cria\markitdown::exec($path . '/' . $file_name, $file->get_mimetype());
+                //Save file to path
+                $file_name = $converted_file->filename . '.html';
+                file_put_contents($path . '/' . $file_name, markdown_to_html($converted_file->content));
+                // Save the file to moodle file storage
                 $fileinfo = [
                     'contextid' => $context->id,   // ID of the context.
                     'component' => 'local_cria', // Your component name.
                     'filearea' => 'content',       // Usually = table name.
                     'itemid' => $data->intent_id,              // Usually = ID of row in table.
                     'filepath' => '/',            // Any path beginning and ending in /.
-                    'filename' => $converted_file_name,   // Any filename.
+                    'filename' => $file_name,   // Any filename.
                 ];
+                $fs->create_file_from_pathname($fileinfo, $path . '/' . $file_name);
 
-                $fs->create_file_from_pathname($fileinfo, $converted_file_path);
-                // Delete the original file from the file area
+                $content_data['file_type'] = 'html';
+                // Delete the original Moodle file
                 $file->delete();
+                // Delete the new file in temp folder
+                unlink($path . '/' . $file_name);
             }
 
+            $content_data['name'] = $file_name;
             $content_data['indexed'] = $FILE::INDEXING_PENDING;
             // Verification paramaters
             $content_verification = [

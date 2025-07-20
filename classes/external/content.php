@@ -89,14 +89,7 @@ class local_cria_external_content extends external_api {
         $result = criabot::document_delete($FILE->get_bot_name(), $FILE->get_name());
         // Delete file from database
         $FILE->delete_record();
-        if ($result->status == 200) {
-            return $result->status;
-        } else {
-            $error = 'Status: ' . $result->status .
-                ' Code: ' . $result->code .
-                ' Message: ' . $result->message;
-            return  $error;
-        }
+       return $result->status;
     }
 
     /**
@@ -104,7 +97,7 @@ class local_cria_external_content extends external_api {
      * @return external_description
      */
     public static function delete_returns() {
-        return new external_value(PARAM_TEXT, 'return code');
+        return new external_value(PARAM_INT, 'return code');
     }
 
     //**************************** PUBLISH URLS **********************

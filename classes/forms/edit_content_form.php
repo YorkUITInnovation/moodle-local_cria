@@ -89,10 +89,10 @@ class edit_content_form extends \moodleform
 
         $file_options = [
             'maxbytes' => $CFG->maxbytes,
-            'accepted_types' => [
-                '.docx', '.pdf',  '.txt',
-                '.png', '.jpeg', '.jpg', '.html', '.htm', '.md'
-            ]
+//            'accepted_types' => [
+//                '.docx', '.pdf',  '.txt',
+//                '.png', '.jpeg', '.jpg', '.html', '.htm', '.md'
+//            ]
         ];
         if ($formdata->id) {
 //            $mform->addElement(

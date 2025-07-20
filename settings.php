@@ -1,16 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 // This file is part of Moodle - https://moodle.org/
@@ -93,12 +93,18 @@ if ($hassiteconfig) {
         '', PARAM_TEXT, 255
     ));
 
-    // ConvertApi api key
-    // https://www.convertapi.com
+    // Markitdown URL
+    $settings->add( new admin_setting_configtext(
+        'local_cria/markitdown_url',
+        get_string('markitdown_url', 'local_cria'),
+        get_string('markitdown_url_help', 'local_cria'),
+        'http://md:8000', PARAM_TEXT, 255
+    ));
+
     $settings->add( new admin_setting_configpasswordunmask(
-        'local_cria/convertapi_api_key',
-        get_string('convertapi_api_key', 'local_cria'),
-        get_string('convertapi_api_key_help', 'local_cria'),
+        'local_cria/markitdown_api_key',
+        get_string('markitdown_api_key', 'local_cria'),
+        get_string('markitdown_api_key_help', 'local_cria'),
         '', PARAM_TEXT, 255
     ));
 

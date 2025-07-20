@@ -1,16 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 $string['about'] = 'About';
@@ -48,8 +48,8 @@ $string['bot'] = 'Bot';
 $string['bot_already_exists'] = 'A bot with this id already exists.';
 $string['bot_api_key'] = 'API Key';
 $string['bot_api_key_instructions'] = 'The API Key and bot name is meant to be used with CriaBot directly. This is only needed if you want to build your own AI integration into another software application.' .
- ' If you need an API Key for Cria, which allows direct calls to LLMs, please reach out to the administrator. If you want to embed this bot on a web page, click on the "Share" button for this bot on the dashboard, and copy the embed code.' .
- ' <br><br><b>DO NOT MODIFY THESE VALUES. YOU WILL BREAK YOUR EXISTING BOT!</b>';
+    ' If you need an API Key for Cria, which allows direct calls to LLMs, please reach out to the administrator. If you want to embed this bot on a web page, click on the "Share" button for this bot on the dashboard, and copy the embed code.' .
+    ' <br><br><b>DO NOT MODIFY THESE VALUES. YOU WILL BREAK YOUR EXISTING BOT!</b>';
 $string['bot_api_key_help'] = 'The API Key is meant to be used with CriaBot Directly and not Cria itself. If you need an API Key for Cria, please reachout to the administrator.';
 $string['bot_configuration'] = 'BotCraft';
 $string['bot_configuration_help'] = 'Easily create a bot by providing your own documentation and system messages.';
@@ -162,7 +162,7 @@ $string['fine_tuning_help'] = 'Fine-tuning will provide you with extra parameter
 $string['for_developers'] = 'For developers';
 $string['generate_answer'] = 'Let AI generate an answer based on your answer above?';
 $string['generate_answer_help'] = 'If yes, the AI will generate an answer based on the answer you provided above.'
-. ' If no, the answer above will be provided. NOTE: if you are using images, maps, videos or other media, you should always select no.';
+    . ' If no, the answer above will be provided. NOTE: if you are using images, maps, videos or other media, you should always select no.';
 $string['generate_synonyms'] = 'Let AI generate synonyms for this keyword?';
 $string['generate_synonyms_help'] = 'If yes is selected, AI will try it\'s best to generate some synonyms for this keyword.';
 $string['gpt_cost'] = 'GPT cost?';
@@ -204,6 +204,10 @@ $string['llm_models'] = 'LLM models';
 $string['logs'] = 'Logs';
 $string['logs_for'] = 'Logs for';
 $string['long'] = 'Long';
+$string['markitdown_api_key'] = 'Markitdown API Key';
+$string['markitdown_api_key_help'] = 'Enter the API Key for the Markitdown server.';
+$string['markitdown_url'] = 'Markitdown URL';
+$string['markitdown_url_help'] = 'Enter the URL of the Markitdown server. This is used to convert documents to markdown format.';
 $string['medium'] = 'Medium';
 $string['message'] = 'Message';
 $string['model'] = 'Model';
@@ -223,7 +227,7 @@ $string['new_category'] = 'New category';
 $string['new_role'] = 'New role';
 $string['no_context_email_message'] = '<p>The bot {$a->bot_name} was unable to return an answer for question: {$a->prompt}.</p>';
 $string['no_context_email_message_llm_guess'] = '<p>However, because the LLM guess feature is enabled, it did return '
- . 'this answer:</p><p>{$a->answer}</p>';
+    . 'this answer:</p><p>{$a->answer}</p>';
 $string['no_context_message'] = 'No results message';
 $string['no_context_subject'] = 'No results returned by bot';
 $string['no_context_use_message'] = 'Use no context message';
@@ -285,10 +289,10 @@ $string['related_questions_help'] = '<p>Related Questions are follow-up question
     'Capital of Canada!|What is the capital of Canada?';
 $string['related_prompts'] = 'Start-up questions';
 $string['related_prompts_help'] = 'You can add up to 6 start up questions/prompts. These questions will be displayed to the user when the bot is first started.'
-. 'The questions must be in the follwoing JSON format:<br>'
-. '<pre>'
-. '[{"label":"a display name", "prompt":"the question prompt"},{"label":"nother display name", "prompt":"another question prompt"}]'
-. '</pre>';
+    . 'The questions must be in the follwoing JSON format:<br>'
+    . '<pre>'
+    . '[{"label":"a display name", "prompt":"the question prompt"},{"label":"nother display name", "prompt":"another question prompt"}]'
+    . '</pre>';
 $string['requires_content_prompt'] = 'Requires content prompt';
 $string['requires_content_prompt_help'] = 'Select Yes if you want a text area to paste content that can be used with a user prompt';
 $string['requires_user_prompt'] = 'Requires user prompt';
@@ -345,9 +349,9 @@ $string['variables_help'] = 'If you are sending a payload, add the variables you
     'idnumber';
 $string['view_parsing_data'] = 'View parsing data';
 $string['web_page_help'] = 'Enter web page addresses including http/https. Separate each address with a new line.<br>'
- . '<br>Please note that some web pages may not permit their content to be captured. '
- . 'If you encounter a \'no content\' message while testing your bot, consider downloading the generated document to '
- . 'check the content.';
+    . '<br>Please note that some web pages may not permit their content to be captured. '
+    . 'If you encounter a \'no content\' message while testing your bot, consider downloading the generated document to '
+    . 'check the content.';
 $string['web_pages'] = 'Web Pages';
 $string['welcome_message'] = 'Welcome message';
 $string['welcome_message_help'] = 'The welcome message to be displayed when the bot is used';
@@ -421,8 +425,6 @@ $string['criascraper_url'] = 'CriaScraper URL';
 $string['criascraper_url_help'] = 'Enter the URL for the CriaScraper instance you are connecting too.';
 // MinutesMaster
 $string['convert'] = 'Convert';
-$string['convertapi_api_key'] = 'ConvertAPI API Key';
-$string['convertapi_api_key_help'] = 'You must get a ConverAPI API Key from convertapi_api_key';
 $string['date'] = 'Date';
 $string['date_help'] = 'Optional: Enter the time in your preferred format.';
 $string['info'] = 'MinutesMaster';
@@ -734,4 +736,3 @@ $string['small_talk_json'] = '[
         ]
     }
 ]';
-
