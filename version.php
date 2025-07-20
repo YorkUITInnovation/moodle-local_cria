@@ -13,11 +13,11 @@
 */
 
 
-$plugin->version = 2025070902; // version 1.0
+$plugin->version = 2025072100; // version 1.0
 // Moodle version required
 $plugin->requires = 2022112800; //Moodle 4.1
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0.6';
+$plugin->release = '1.2.0';
 $plugin->component = 'local_cria';
 
 //SELECT * FROM `mdl_config_plugins` WHERE plugin='local_cria' AND name='version';
