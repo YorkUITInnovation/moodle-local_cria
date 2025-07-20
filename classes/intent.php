@@ -643,7 +643,12 @@ class intent extends crud
 
         // Iterate through each file
         foreach ($files as $file) {
-            //            $INTENT = new intent($file->intent_id);
+            // Get file list from criadex
+            $criadex_files = criadex::list_content($this->get_bot_id())->document_index['files'] ?? [];
+            // If file already exists in criadex, skip it
+            if (in_array($file->name, $criadex_files)) {
+                continue;
+            }
             $BOT = new bot($this->get_bot_id());
             // Set default path
             $path = $CFG->dataroot . '/temp/cria';
