@@ -321,7 +321,18 @@ class local_cria_external_content extends external_api {
         $new_file_id = $DB->insert_record('local_cria_files', $content_data);
         // Delete temporary file
         unlink($file);
-        exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $intent_id .' > /dev/null 2>&1 &');
+
+        // Run adhoc task to index files
+        $task = new \local_cria\task\index_files_adhoc();
+        // Run task as logged in user
+        $task->set_userid($USER->id);
+        $task->set_custom_data([
+            'intent_id' => $intent_id,
+        ]);
+
+        \core\task\manager::queue_adhoc_task($task);
+
+
         return $new_file_id;
     }
 

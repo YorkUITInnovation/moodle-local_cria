@@ -335,8 +335,17 @@ class files
                 $status->file = $file_name;
             }
         }
-        // Index all file sin the background
-        exec('php ' . $CFG->dirroot . '/local/cria/cli/index_files.php --intentid=' . $this->intent_id .' > /dev/null 2>&1 &');
+
+        // Run adhoc task to index files
+        $task = new \local_cria\task\index_files_adhoc();
+        // Run task as logged in user
+        $task->set_userid($USER->id);
+        $task->set_custom_data([
+            'intent_id' => $this->intent_id,
+        ]);
+
+        \core\task\manager::queue_adhoc_task($task);
+
         return $status;
     }
 }
