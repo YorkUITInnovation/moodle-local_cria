@@ -299,11 +299,48 @@ $functions = array(
         'classname' => 'local_cria_external_criabot',
         'methodname' => 'chat_start',
         'classpath' => 'local/cria/classes/external/criabot.php',
+        'description' => 'NOw deprecated. Use cria_chat_start instead. Starts a chat session and returns the chat id',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+    'cria_chat_start' => array(
+        'classname' => 'local_cria_external_criabot',
+        'methodname' => 'chat_start',
+        'classpath' => 'local/cria/classes/external/criabot.php',
         'description' => 'Starts a chat session and returns the chat id',
         'type' => 'read',
         'capabilities' => '',
         'ajax' => true
     ),
+    'cria_chat_end' => array(
+        'classname' => 'local_cria_external_criabot',
+        'methodname' => 'chat_end',
+        'classpath' => 'local/cria/classes/external/criabot.php',
+        'description' => 'Ends a chat session',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+    'cria_chat_history' => array(
+        'classname' => 'local_cria_external_criabot',
+        'methodname' => 'chat_history',
+        'classpath' => 'local/cria/classes/external/criabot.php',
+        'description' => 'Get chat history for a specific chat id',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+    'cria_chat_send' => array(
+        'classname' => 'local_cria_external_criabot',
+        'methodname' => 'chat_send',
+        'classpath' => 'local/cria/classes/external/criabot.php',
+        'description' => 'Send a message to a chat session',
+        'type' => 'write',
+        'capabilities' => '',
+        'ajax' => true
+    ),
+
     'cria_bot_exists' => array(
         'classname' => 'local_cria_external_criabot',
         'methodname' => 'bot_exists',

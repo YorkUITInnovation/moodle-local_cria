@@ -427,7 +427,26 @@ class criabot
             $config->criabot_url,
             $config->criadex_api_key,
             '',
-            '/bots/'. $chat_id  . '/chats/history',
+            '/bots/chats/'. $chat_id  . '/history',
+            'GET'
+        );
+    }
+
+    /**
+     * Check if a chat exists
+     * @param $chat_id
+     * @return mixed
+     * @throws \dml_exception
+     */
+    public static function chat_exists($chat_id) {
+        // Get Config
+        $config = get_config('local_cria');
+        // Create model
+        return gpt::_make_call(
+            $config->criabot_url,
+            $config->criadex_api_key,
+            '',
+            '/bots/chats/'. $chat_id  . '/exists',
             'GET'
         );
     }
