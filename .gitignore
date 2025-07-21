@@ -20,3 +20,4 @@ test_minutes.txt
 /._testing.php
 /db/._upgrade.php
 /._version.php
+/react/dashboard/node_modules/

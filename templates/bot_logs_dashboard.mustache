@@ -1,0 +1,32 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Logs Dashboard</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .dashboard-iframe {
+        width: 100%;
+        height: 100vh;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<body>
+<iframe
+        class="dashboard-iframe"
+        src="{{config.wwwroot}}/local/cria/react/dashboard/build/index.html?bot_id={{bot_id}}"
+        frameborder="0"
+        allowfullscreen>
+    Your browser does not support iframes.
+</iframe>
+</body>
+</html>
+

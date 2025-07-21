@@ -1,0 +1,11 @@
+prompt,response,prompt_tokens,completion_tokens,cost,timestamp
+"How do I register for courses?","You can register for courses through the student portal at portal.university.edu. Log in with your student ID and password, then navigate to the Registration section.",25,48,0.0023,2025-07-08T10:30:00Z
+"What are the library hours?","The library is open Monday-Friday 8AM-10PM, Saturday 9AM-8PM, and Sunday 12PM-8PM. Extended hours are available during exam periods.",22,36,0.0018,2025-07-08T11:15:00Z
+"I need help with my assignment","I can help you with assignment-related questions. Please provide more details about what specific help you need with your assignment.",18,25,0.0012,2025-07-08T12:00:00Z
+"Where is the dining hall?","The main dining hall is located in the Student Center on the first floor. There are also satellite dining locations in the residence halls.",24,32,0.0016,2025-07-08T09:45:00Z
+"LLM Generated I'm sorry, but I don't understand your question","LLM Generated I'm sorry, but I don't understand your question. Could you please rephrase or provide more context?",15,22,0.0008,2025-07-08T13:20:00Z
+"How do I contact financial aid?","You can contact the Financial Aid office at financialaid@university.edu or call (555) 123-4567. Office hours are Monday-Friday 8AM-5PM.",20,35,0.0017,2025-07-08T14:10:00Z
+"What wifi network should I use?","Students should connect to the 'UniversityWiFi' network using their student credentials. For guest access, use 'UniversityGuest' network.",18,28,0.0013,2025-07-08T15:30:00Z
+"I can't log into my account","For login issues, please visit the IT Help Desk in the Technology Center or call (555) 123-HELP. Have your student ID ready.",22,28,0.0014,2025-07-08T16:00:00Z
+"What events are happening this week?","This week features the Career Fair on Wednesday, Student Organization Fair on Thursday, and the welcome back concert on Friday evening.",20,30,0.0015,2025-07-08T10:15:00Z
+"I need mental health support","The Counseling Center offers confidential mental health services. You can schedule an appointment online or call (555) 123-WELL. Crisis support is available 24/7.",25,40,0.0020,2025-07-08T11:45:00Z
