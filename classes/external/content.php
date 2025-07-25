@@ -328,6 +328,7 @@ class local_cria_external_content extends external_api {
         $task->set_userid($USER->id);
         $task->set_custom_data([
             'intent_id' => $intent_id,
+            'file_id' => $new_file_id,
         ]);
 
         \core\task\manager::queue_adhoc_task($task);
@@ -362,6 +363,7 @@ class local_cria_external_content extends external_api {
      * @param $id
      * @return true
      * @throws dml_exception
+     *
      * @throws invalid_parameter_exception
      * @throws restricted_context_exception
      */

@@ -1,16 +1,16 @@
 <?php
 
 /**
-* This file is part of Cria.
-* Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-* Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
-*
-* @package    local_cria
-* @author     Patrick Thibaudeau
-* @copyright  2024 onwards York University (https://yorku.ca)
-* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ * This file is part of Cria.
+ * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @package    local_cria
+ * @author     Patrick Thibaudeau
+ * @copyright  2024 onwards York University (https://yorku.ca)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 
 /*
@@ -405,7 +405,7 @@ class intent extends crud
         $KEYWORDS = new keywords();
         $keywords = $KEYWORDS->get_keywords_for_criabot($question->keywords);
         // Get all related questions
-        $related_prompts =  [];
+        $related_prompts = [];
         if (!empty($question->related_questions)) {
             $related_questions = json_decode($question->related_questions);
             foreach ($related_questions as $related_question) {
@@ -414,7 +414,7 @@ class intent extends crud
                 $related_prompts[] = [
                     'label' => $related_question->label,
                     'prompt' => $related_question->prompt
-                    ];
+                ];
             }
         }
         // Get all question examples
@@ -484,7 +484,7 @@ class intent extends crud
             \core\notification::error(
                 'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message
             );
-            return  'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message;
+            return 'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message;
         }
     }
 
@@ -612,7 +612,8 @@ class intent extends crud
      * @return int
      * @throws \dml_exception
      */
-    public function check_file_state() {
+    public function check_file_state()
+    {
         global $DB;
         $file_state_sql = "SELECT COUNT(*) as count FROM {local_cria_files} WHERE intent_id = ? AND indexed IN (?,?)";
         $file_state = $DB->get_record_sql($file_state_sql, [
@@ -629,7 +630,8 @@ class intent extends crud
      * @return void
      * @throws \dml_exception
      */
-    public function index_files() {
+    public function index_files($file_id)
+    {
         global $DB, $USER, $CFG;
         // Create various objects
         $PARSER = new criaparse();
@@ -639,92 +641,87 @@ class intent extends crud
         // Set context
         $context = \context_system::instance();
         // Get all files that are in state other than completed
-        $files = $DB->get_records('local_cria_files', ['indexed' => $FILE::INDEXING_PENDING, 'intent_id' => $this->id]);
-        // Iterate through each file
-        foreach ($files as $file) {
-            // Get file list from criadex
-            $criadex_files = criadex::list_content($this->get_bot_id())->document_index->files ?? [];
-            // If file already exists in criadex, skip it
-            if (in_array($file->name, $criadex_files)) {
-                continue;
-            }
-            $BOT = new bot($this->get_bot_id());
-            // Set default path
-            $path = $CFG->dataroot . '/temp/cria';
-            base::create_directory_if_not_exists($path);
-            // Set path based on intent_id
-            $path = $CFG->dataroot . '/temp/cria/' . $this->id;
-            base::create_directory_if_not_exists($path);
-            // Get Moodle file
-            $fs = get_file_storage();
-            $moodle_file = $fs->get_file($context->id, 'local_cria', 'content', $this->id, '/', $file->name);
-            // Update the file to indexing pending
-            $content_data = [
-                'id' => $file->id,
-                'indexed' => $FILE::INDEXING_STARTED,
-                'timemodified' => time(),
-                'usermodified' => $USER->id,
-            ];
-            $DB->update_record('local_cria_files', $content_data);
+        $file = $DB->get_record('local_cria_files', ['indexed' => $FILE::INDEXING_PENDING, 'id' => $file_id]);
 
-            // set bot parsing strategy
-            $bot_parsing_strategy = $BOT->get_parse_strategy();
-            // Insert file type
-            $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
-            // get file name
-            $file_name = $moodle_file->get_filename();
-            // Convert files to docx based on file type
-            // Copy file to path
-            $moodle_file->copy_content_to($path . '/' . $file_name);
-            // If $BOT->get_parse_strategy() is not equal to $data->parsingstrategy, then update $parsing_strategy
-            if ($file->parsingstrategy != $BOT->get_parse_strategy()) {
-                $bot_parsing_strategy = $file->parsingstrategy;
-            }
-            // Set parsing strategy based on file type.
-            $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
-                $file_type,
-                $bot_parsing_strategy
-            );
-            // Get bot parameters to use proper model ids
-            $bot_parameters = json_decode($BOT->get_bot_parameters_json());
+        // Get file list from criadex. Let's make sure it doesn't already exist
+        $criadex_files = criadex::list_content($this->get_bot_id())->document_index->files ?? [];
+        // If file already exists in criadex, skip it
+        if (in_array($file->name, $criadex_files)) {
+            return false;
+        }
+        $BOT = new bot($this->get_bot_id());
+        // Set default path
+        $path = $CFG->dataroot . '/temp/cria';
+        base::create_directory_if_not_exists($path);
+        // Set path based on intent_id
+        $path = $CFG->dataroot . '/temp/cria/' . $this->id;
+        base::create_directory_if_not_exists($path);
+        // Get Moodle file
+        $fs = get_file_storage();
+        $moodle_file = $fs->get_file($context->id, 'local_cria', 'content', $this->id, '/', $file->name);
+        // Update the file to indexing pending
+        $content_data = [
+            'id' => $file->id,
+            'indexed' => $FILE::INDEXING_STARTED,
+            'timemodified' => time(),
+            'usermodified' => $USER->id,
+        ];
+        $DB->update_record('local_cria_files', $content_data);
+
+        // set bot parsing strategy
+        $bot_parsing_strategy = $BOT->get_parse_strategy();
+        // Insert file type
+        $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
+        // get file name
+        $file_name = $moodle_file->get_filename();
+        // Convert files to docx based on file type
+        // Copy file to path
+        $moodle_file->copy_content_to($path . '/' . $file_name);
+        // If $BOT->get_parse_strategy() is not equal to $data->parsingstrategy, then update $parsing_strategy
+        if ($file->parsingstrategy != $BOT->get_parse_strategy()) {
+            $bot_parsing_strategy = $file->parsingstrategy;
+        }
+        // Set parsing strategy based on file type.
+        $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
+            $file_type,
+            $bot_parsing_strategy
+        );
+        // Get bot parameters to use proper model ids
+        $bot_parameters = json_decode($BOT->get_bot_parameters_json());
 //            mtrace('llm_model_id: ' . $bot_parameters->llm_model_id);
 //            mtrace('embedding_model_id: ' . $bot_parameters->embedding_model_id);
 
-            $results = $PARSER->execute(
-                $bot_parameters->llm_model_id,
-                $bot_parameters->embedding_model_id,
-                $parsing_strategy,
-                $path . '/' . $file_name
-            );
-            if ($results['status'] != 200) {
+        $results = $PARSER->execute(
+            $bot_parameters->llm_model_id,
+            $bot_parameters->embedding_model_id,
+            $parsing_strategy,
+            $path . '/' . $file_name
+        );
+        if ($results['status'] != 200) {
+            // Update file record with error and move on to the next file
+            $content_data['indexed'] = $FILE::INDEXING_FAILED;
+            $content_data['error_message'] = json_encode($results, JSON_PRETTY_PRINT);
+            $content_data['timemodified'] = time();
+            $DB->update_record('local_cria_files', $content_data);
+        } else {
+            $nodes = $results['nodes'];
+            // Send nodes to indexing server
+            $upload = $FILE->upload_nodes_to_indexing_server($this->get_bot_name(), $nodes, $file_name, $file_type, false);
+            $content_data['nodes'] = json_encode($nodes, JSON_PRETTY_PRINT);
+            $content_data['timemodified'] = time();
+
+            if ($upload->status != 200) {
                 // Update file record with error and move on to the next file
                 $content_data['indexed'] = $FILE::INDEXING_FAILED;
-                $content_data['error_message'] = json_encode($results, JSON_PRETTY_PRINT);
-                $content_data['timemodified'] = time();
+                $content_data['error_message'] = 'Error uploading file to indexing server: ' . json_encode($upload, JSON_PRETTY_PRINT);
                 $DB->update_record('local_cria_files', $content_data);
-                // Move to next file
-                continue;
             } else {
-                $nodes = $results['nodes'];
-                // Send nodes to indexing server
-                $upload = $FILE->upload_nodes_to_indexing_server($this->get_bot_name(), $nodes, $file_name, $file_type, false);
-                $content_data['nodes'] = json_encode($nodes, JSON_PRETTY_PRINT);
-                $content_data['timemodified'] = time();
-
-                if ($upload->status != 200) {
-                    // Update file record with error and move on to the next file
-                    $content_data['indexed'] = $FILE::INDEXING_FAILED;
-                    $content_data['error_message'] = 'Error uploading file to indexing server: ' . json_encode($upload, JSON_PRETTY_PRINT);
-                    $DB->update_record('local_cria_files', $content_data);
-                    // Move to next file
-                    continue;
-                } else {
-                    // Update file record with completed
-                    $content_data['indexed'] = $FILE::INDEXING_COMPLETE;
-                    $DB->update_record('local_cria_files', $content_data);
-                }
+                // Update file record with completed
+                $content_data['indexed'] = $FILE::INDEXING_COMPLETE;
+                $DB->update_record('local_cria_files', $content_data);
             }
         }
+
     }
 
 }

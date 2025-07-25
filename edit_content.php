@@ -260,6 +260,7 @@ if ($mform->is_cancelled()) {
     $task->set_userid($USER->id);
     $task->set_custom_data([
         'intent_id' => $data->intent_id,
+        'file_id' => $file_id,
     ]);
 
     \core\task\manager::queue_adhoc_task($task);

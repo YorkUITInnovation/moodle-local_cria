@@ -342,6 +342,7 @@ class files
         $task->set_userid($USER->id);
         $task->set_custom_data([
             'intent_id' => $this->intent_id,
+            'file_id' => $record->id
         ]);
 
         \core\task\manager::queue_adhoc_task($task);

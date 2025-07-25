@@ -25,7 +25,7 @@ class index_files_adhoc extends \core\task\adhoc_task
     public function execute()
     {
         $data = $this->get_custom_data();
-        $INTENT = new intent($this->get_custom_data()->intent_id);
-        $INTENT->index_files();
+        $INTENT = new intent($data->intent_id);
+        $INTENT->index_files($data->file_id);
     }
 }
