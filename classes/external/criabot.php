@@ -272,37 +272,16 @@ class local_cria_external_criabot extends external_api
         // Get chat history
         $history_response = criabot::chat_history($params['chat_id']);
         // Convert all objects to arrays recursively
-        $history = json_decode(json_encode($history_response), true);
-        return $history;
+        $history = json_encode($history_response);
+        $data = [
+            'status' => $history_response->status,
+            'code' => $history_response->code,
+            'chat_id' => $params['chat_id'],
+            'history' => $history
+        ];
+        return $data;
     }
     /**
-     * {
-     * "status": 200,
-     * "message": "string",
-     * "timestamp": 1753007789,
-     * "code": "SUCCESS",
-     * "history": [
-     * {
-     * "role": "user",
-     * "blocks": [
-     * {
-     * "block_type": "text",
-     * "text": "string"
-     * },
-     * {
-     * "block_type": "image",
-     * "image": null,
-     * "path": "string",
-     * "url": "https://example.com/",
-     * "image_mimetype": "string",
-     * "detail": "string"
-     * }
-     * ],
-     * "additional_kwargs": {},
-     * "metadata": {}
-     * }
-     * ]
-     * }
      * Returns description of method result value
      * @return external_description
      */
@@ -311,42 +290,9 @@ class local_cria_external_criabot extends external_api
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_INT, 'HTTP status code'),
-                'message' => new external_value(PARAM_TEXT, 'Message'),
-                'timestamp' => new external_value(PARAM_INT, 'Timestamp of the response'),
                 'code' => new external_value(PARAM_TEXT, 'Response code'),
-                'error' => new external_value(PARAM_TEXT, 'Error message', VALUE_OPTIONAL),
-                'history' => new external_multiple_structure(
-                    new external_single_structure(
-                        array(
-                            'role' => new external_value(PARAM_TEXT, 'Role of the user (user, assistant, or system)'),
-                            'blocks' => new external_multiple_structure(
-                                new external_single_structure(
-                                    array(
-                                        'block_type' => new external_value(PARAM_TEXT, 'Type of block (text or image)'),
-                                        'text' => new external_value(PARAM_TEXT, 'Text content', VALUE_OPTIONAL),
-                                        'image' => new external_value(PARAM_RAW, 'Image content', VALUE_OPTIONAL),
-                                        'path' => new external_value(PARAM_TEXT, 'Path to the image', VALUE_OPTIONAL),
-                                        'url' => new external_value(PARAM_URL, 'URL of the image', VALUE_OPTIONAL),
-                                        'image_mimetype' => new external_value(PARAM_TEXT, 'MIME type of the image', VALUE_OPTIONAL),
-                                        'detail' => new external_value(PARAM_TEXT, 'Additional details', VALUE_OPTIONAL),
-                                    )
-                                )
-                            ),
-                            'additional_kwargs' => new external_single_structure(
-                                array(
-                                    // This is an empty associative array in the example
-                                ), 'Additional keyword arguments', VALUE_OPTIONAL
-                            ),
-                            'metadata' => new external_single_structure(
-                                array(
-                                    'bot_name' => new external_value(PARAM_TEXT, 'Name of the bot', VALUE_OPTIONAL),
-                                    'is_ephemeral' => new external_value(PARAM_TEXT, 'Ephemeral flag', VALUE_OPTIONAL),
-                                    'token_count' => new external_value(PARAM_INT, 'Token count of the response', VALUE_OPTIONAL),
-                                ), 'Metadata information', VALUE_OPTIONAL
-                            ),
-                        )
-                    )
-                ),
+                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', VALUE_OPTIONAL),
+                'history' => new external_value(PARAM_RAW, 'Chat history in JSON format'),
             )
         );
     }
