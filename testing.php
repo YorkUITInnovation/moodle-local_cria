@@ -57,7 +57,7 @@ $data = [
 
 
 //print_object(criabot::chat_send('91608607-6bde-46fe-a14b-fda758522b72', '12-11','How much was the Bell bill worth?'));
-print_object(criabot::chat_exits('a0aabad4-de11-429f-89ec-8a6048ac489f'));
+print_object(criabot::chat_exists('a0aabad4-de11-429f-89ec-8a6048ac489f'));
 
 //**********************
 //*** DISPLAY FOOTER ***
