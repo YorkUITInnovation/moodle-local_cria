@@ -53,50 +53,11 @@ echo $OUTPUT->header();
 // Set up the data
 $data = [
     'chat_id' => 'a0aabad4-de11-429f-89ec-8a6048ac489f',
-//    'bot_name' => '12-11',
-//    'prompt' => 'How much was the Bell bill worth?',
 ];
 
-// Set up the headers
-$headers = [
-    'Content-Type: application/json',
-    'Accept: application/json',
-    'Authorization: ae788b267619f65b8da025871101082a'
-];
-
-// Initialize cURL
-$ch = curl_init();
-
-// Set cURL options
-curl_setopt($ch, CURLOPT_URL, 'http://127.0.0.1/webservice/restful/server.php/cria_chat_history');
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-
-// Execute the request
-$response = curl_exec($ch);
-
-// Check for errors
-if (curl_error($ch)) {
-    echo 'cURL Error: ' . curl_error($ch);
-} else {
-    // Process the response
-    $result = json_decode($response, true);
-    if (json_last_error() === JSON_ERROR_NONE) {
-        echo 'Parsed JSON response:<br>';
-        print_object((object)$result);
-    }
-}
-
-// Close cURL
-curl_close($ch);
 
 //print_object(criabot::chat_send('91608607-6bde-46fe-a14b-fda758522b72', '12-11','How much was the Bell bill worth?'));
-//print_object(criabot::chat_start());
+print_object(criabot::chat_exits('a0aabad4-de11-429f-89ec-8a6048ac489f'));
 
 //**********************
 //*** DISPLAY FOOTER ***
