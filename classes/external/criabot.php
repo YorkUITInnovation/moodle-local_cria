@@ -145,6 +145,60 @@ class local_cria_external_criabot extends external_api
         return new external_value(PARAM_BOOL, 'true');
     }
 
+    public static function chat_exists_parameters()
+    {
+        return new external_function_parameters(
+            array(
+                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', false, ''),
+            )
+        );
+    }
+
+    public static function chat_exists($chat_id)
+    {
+        global $CFG, $USER, $DB, $PAGE;
+
+        //Parameter validation
+        $params = self::validate_parameters(self::chat_exists_parameters(), array(
+                'chat_id' => $chat_id,
+            )
+        );
+
+        //Context validation
+        //OPTIONAL but in most web service it should present
+        $context = \context_system::instance();
+        self::validate_context($context);
+
+        // Returns the following:
+//        stdClass Object
+//          (
+//              [status] => 200
+//              [message] =>
+//              [timestamp] => 1753410528
+//              [code] => SUCCESS
+//              [exists] =>
+//          )
+
+        // Check if chat session exists
+        return criabot::chat_exists($params['chat_id']);
+    }
+    /**
+     * Returns description of method result value
+     * @return external_description
+     */
+    public static function chat_exists_returns()
+    {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_INT, 'HTTP status code'),
+                'message' => new external_value(PARAM_TEXT, 'Response message'),
+                'timestamp' => new external_value(PARAM_INT, 'Timestamp of the response'),
+                'code' => new external_value(PARAM_TEXT, 'Response code'),
+                'exists' => new external_value(PARAM_BOOL, 'True if chat session exists', VALUE_OPTIONAL),
+            )
+        );
+    }
+
 
     /*** Send message to chat session ******/
     /**

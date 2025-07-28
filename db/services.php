@@ -322,6 +322,15 @@ $functions = array(
         'capabilities' => '',
         'ajax' => true
     ),
+    'cria_chat_exists' => array(
+        'classname' => 'local_cria_external_criabot',
+        'methodname' => 'chat_exists',
+        'classpath' => 'local/cria/classes/external/criabot.php',
+        'description' => 'Checks to see if a chat session exists',
+        'type' => 'read',
+        'capabilities' => '',
+        'ajax' => true
+    ),
     'cria_chat_history' => array(
         'classname' => 'local_cria_external_criabot',
         'methodname' => 'chat_history',
