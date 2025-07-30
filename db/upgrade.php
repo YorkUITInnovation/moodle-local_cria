@@ -493,5 +493,38 @@ function xmldb_local_cria_upgrade($oldversion)
         // Cria savepoint reached.
         upgrade_plugin_savepoint(true, 2025072101, 'local', 'cria');
     }
+
+    if ($oldversion < 2025073000) {
+
+        // Define index bot_id_x (not unique) to be added to local_cria_logs.
+        $table = new xmldb_table('local_cria_logs');
+        $index = new xmldb_index('bot_id_x', XMLDB_INDEX_NOTUNIQUE, ['bot_id']);
+
+        // Conditionally launch add index bot_id_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index timecreated_x (not unique) to be added to local_cria_logs.
+        $table = new xmldb_table('local_cria_logs');
+        $index = new xmldb_index('timecreated_x', XMLDB_INDEX_NOTUNIQUE, ['timecreated']);
+
+        // Conditionally launch add index timecreated_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index botid_timecreated_x (not unique) to be added to local_cria_logs.
+        $table = new xmldb_table('local_cria_logs');
+        $index = new xmldb_index('botid_timecreated_x', XMLDB_INDEX_NOTUNIQUE, ['bot_id', 'timecreated']);
+
+        // Conditionally launch add index botid_timecreated_x.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2025073000, 'local', 'cria');
+    }
     return true;
 }
