@@ -357,7 +357,7 @@ class local_cria_external_bot extends external_api
                     VALUE_OPTIONAL,
                     ''
                 ),
-                'processing_rules' => new external_value(
+                'preprocess_rules' => new external_value(
                     PARAM_RAW,
                     'Rules to process variables. One per line',
                     VALUE_OPTIONAL,
@@ -410,7 +410,7 @@ class local_cria_external_bot extends external_api
      * @param $bot_contact
      * @param $bot_trust_warning
      * @param $variables
-     * @param $processing_rules
+     * @param $preprocess_rules
      * @return int
      * @throws dml_exception
      * @throws invalid_parameter_exception
@@ -458,7 +458,7 @@ class local_cria_external_bot extends external_api
         $bot_contact = '',
         $bot_trust_warning = '',
         $variables = '',
-        $processing_rules = ''
+        $preprocess_rules = ''
     )
     {
         global $CFG, $USER, $DB, $PAGE;
@@ -506,7 +506,7 @@ class local_cria_external_bot extends external_api
                 'bot_contact' => $bot_contact,
                 'bot_trust_warning' => $bot_trust_warning,
                 'variables' => $variables,
-                'processing_rules' => $processing_rules
+                'preprocess_rules' => $preprocess_rules
             )
         );
 
