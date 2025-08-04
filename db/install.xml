@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/cria/db" VERSION="20250720" COMMENT="XMLDB file for Moodle local/cria"
+<XMLDB PATH="local/cria/db" VERSION="20250730" COMMENT="XMLDB file for Moodle local/cria"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -215,6 +215,11 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="bot_id_x" UNIQUE="false" FIELDS="bot_id"/>
+        <INDEX NAME="timecreated_x" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="botid_timecreated_x" UNIQUE="false" FIELDS="bot_id, timecreated"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="local_cria_qa" COMMENT="Stores questions and answers for testing the bot">
       <FIELDS>
