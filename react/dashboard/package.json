@@ -6,7 +6,7 @@
   "homepage": "/local/cria/react/dashboard/build",
   "scripts": {
     "start": "react-scripts start",
-    "build": "BUILD_PATH=/local/cria/react/dashboard/build react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

@@ -139,7 +139,7 @@ const LogsDashboard = () => {
       setUploadStatus({ type: 'info', message: 'Loading bot conversation data...' });
 
       // Fetch the data from the PHP endpoint
-      const response = await fetch(`data.php?bot_id=${botId}`);
+      const response = await fetch(`../data.php?bot_id=${botId}`);
       if (!response.ok) {
         throw new Error('Could not load bot data');
       }
