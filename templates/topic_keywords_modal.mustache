@@ -1,0 +1,75 @@
+{{!
+    Topic Keywords Builder Modal Template
+
+    @template local_cria/topic_keywords_modal
+    @class template
+    @copyright 2024 Patrick Thibaudeau
+    @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+}}
+
+<div class="topic-keywords-modal">
+    <div class="mb-3">
+        <p class="text-muted">
+            Build your topic keywords array by adding topics and their associated keywords.
+            Each topic can have multiple keywords separated by commas.
+        </p>
+    </div>
+
+    <div id="topics-container">
+        {{#topics}}
+        <div class="topic-row mb-3 p-3 border rounded">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Topic Name:</label>
+                    <input type="text" class="form-control topic-name" value="{{topic}}" placeholder="e.g., technical">
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">Keywords (comma-separated):</label>
+                    <input type="text" class="form-control topic-keywords" value="{{keywords}}" placeholder="e.g., API, integration, bug, error">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-topic-btn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {{/topics}}
+        {{^topics}}
+        <div class="topic-row mb-3 p-3 border rounded">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Topic Name:</label>
+                    <input type="text" class="form-control topic-name" placeholder="e.g., technical">
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label">Keywords (comma-separated):</label>
+                    <input type="text" class="form-control topic-keywords" placeholder="e.g., API, integration, bug, error">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-topic-btn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {{/topics}}
+    </div>
+
+    <div class="mb-3">
+        <button type="button" id="add-topic-btn" class="btn btn-success">
+            <i class="fa fa-plus"></i> Add Topic
+        </button>
+    </div>
+
+    <div class="border-top pt-3">
+        <div class="d-flex justify-content-end">
+            <button type="button" id="cancel-keywords-btn" class="btn btn-secondary me-2">
+                Cancel
+            </button>
+            <button type="button" id="save-keywords-btn" class="btn btn-primary">
+                Save Keywords
+            </button>
+        </div>
+    </div>
+</div>

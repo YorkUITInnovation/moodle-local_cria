@@ -146,6 +146,8 @@ base::page(
     'standard'
 );
 $PAGE->requires->js_call_amd('local_cria/bot_form', 'init');
+$PAGE->requires->js_call_amd('local_cria/topic_keywords', 'init');
+$PAGE->requires->js_call_amd('local_cria/topic_options', 'init');
 $PAGE->requires->js(new moodle_url('/local/cria/js/jscolor.js'));
 $PAGE->requires->css(new moodle_url('/local/cria/css/select2.min.css'));
 $PAGE->requires->css(new moodle_url('/local/cria/css/select2-bootstrap4.min.css'));

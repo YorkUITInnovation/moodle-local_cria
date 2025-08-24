@@ -557,6 +557,43 @@ class edit_bot_form extends \moodleform
             '</div>'
         );
 
+        $mform->addElement(
+            'html',
+            '<h3>' . get_string('log_filter_settings', 'local_cria') . '</h3><hr>'
+        );
+        //Add textarea element for topic_keywords
+        $mform->addElement(
+            'textarea',
+            'topic_keywords',
+            get_string('topic_keywords', 'local_cria')
+        );
+        $mform->setType(
+            'topic_keywords',
+            PARAM_RAW
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'topic_keywords',
+            'topic_keywords',
+            'local_cria'
+        );
+        // Add textarea element for topic_options
+        $mform->addElement(
+            'textarea',
+            'topic_options',
+            get_string('topic_options', 'local_cria')
+        );
+        $mform->setType(
+            'topic_options',
+            PARAM_RAW
+        );
+        // Add help button
+        $mform->addHelpButton(
+            'topic_options',
+            'topic_options',
+            'local_cria'
+        );
+
         // System reserved form element
         if (has_capability('local/cria:view_advanced_bot_options', $context)) {
             // Html element as a header for Bot personality

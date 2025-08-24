@@ -201,6 +201,7 @@ $string['languages_help'] = 'One line per language. Each line must be in the fol
 $string['llm_generate_related_prompts'] = 'LLM generate related prompts';
 $string['llm_generate_related_prompts_help'] = 'Select Yes if you want the LLM to generate related prompts. If you have defined related prompts, this will be ignored.';
 $string['llm_models'] = 'LLM models';
+$string['log_filter_settings'] = 'Log filter settings';
 $string['logs'] = 'Logs';
 $string['logs_for'] = 'Logs for';
 $string['long'] = 'Long';
@@ -327,6 +328,21 @@ $string['theme_color'] = 'Theme color';
 $string['testing_bot'] = 'Testing bot';
 $string['title'] = 'Title';
 $string['tone'] = 'Tone';
+$string['topic_keywords'] = 'Keywords <button class="btn btn-secondary btn-sm mr-1" id="build-keywords-array" type="button">Build keywords array</button>';
+$string['topic_keywords_help'] = 'Enter the keywords you would like to use to filter the logs. Must be in json format. Example:<br>'
+. '{
+    "technical": ["API", "integration", "bug", "error"],
+    "business": ["pricing", "features", "upgrade"],
+    "support": ["help", "assistance", "question"]
+  }';
+$string['topic_options'] = 'Topic Menu Options <button class="btn btn-secondary btn-sm mr-1" id="build-options-array" type="button">Build Options Menu Array</button>';
+$string['topic_options_help'] = 'Enter the options you would like to use to filter the logs. Must be in json format. Example:<br>'
+    . '[
+    {"value": "all", "label": "All"},
+    {"value": "technical", "label": "Technical"},
+    {"value": "business", "label": "Business"},
+    {"value": "support", "label": "Support"}
+    ]';
 $string['total_tokens'] = 'Total tokens';
 $string['total_usage_cost'] = 'Total usage cost';
 $string['total_words'] = 'Number of words in combined content:';
@@ -734,4 +750,3 @@ $string['small_talk_json'] = '[
         ]
     }
 ]';
-

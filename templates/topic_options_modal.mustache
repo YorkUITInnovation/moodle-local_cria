@@ -1,0 +1,75 @@
+{{!
+    Topic Options Builder Modal Template
+
+    @template local_cria/topic_options_modal
+    @class template
+    @copyright 2024 Patrick Thibaudeau
+    @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+}}
+
+<div class="topic-options-modal">
+    <div class="mb-3">
+        <p class="text-muted">
+            Build your topic options array by adding option values and labels.
+            Each option should have a unique value and a descriptive label.
+        </p>
+    </div>
+
+    <div id="options-container">
+        {{#options}}
+        <div class="option-row mb-3 p-3 border rounded">
+            <div class="row">
+                <div class="col-md-5">
+                    <label class="form-label">Option Value:</label>
+                    <input type="text" class="form-control option-value" value="{{value}}" placeholder="e.g., technical">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Option Label:</label>
+                    <input type="text" class="form-control option-label" value="{{label}}" placeholder="e.g., Technical Support">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-option-btn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {{/options}}
+        {{^options}}
+        <div class="option-row mb-3 p-3 border rounded">
+            <div class="row">
+                <div class="col-md-5">
+                    <label class="form-label">Option Value:</label>
+                    <input type="text" class="form-control option-value" placeholder="e.g., technical">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Option Label:</label>
+                    <input type="text" class="form-control option-label" placeholder="e.g., Technical Support">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm remove-option-btn">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {{/options}}
+    </div>
+
+    <div class="mb-3">
+        <button type="button" id="add-option-btn" class="btn btn-success">
+            <i class="fa fa-plus"></i> Add Option
+        </button>
+    </div>
+
+    <div class="border-top pt-3">
+        <div class="d-flex justify-content-end">
+            <button type="button" id="cancel-options-btn" class="btn btn-secondary me-2">
+                Cancel
+            </button>
+            <button type="button" id="save-options-btn" class="btn btn-primary">
+                Save Options
+            </button>
+        </div>
+    </div>
+</div>
