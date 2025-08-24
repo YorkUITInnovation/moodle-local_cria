@@ -11,16 +11,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// Prevent any output before JSON
+ob_start();
+
 // Include Moodle config
 require_once(__DIR__ . '../../../../../config.php');
-require_once($CFG->libdir . '/setuplib.php');
 
 // Require login
 require_login();
 
 global $DB;
 
-// Set JSON content type
+// Clear any buffered output and set JSON headers
+ob_end_clean();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -50,7 +53,6 @@ try {
         $topic_options = [];
     }
 
-
     // Use the existing logs class to get data
     $logs = \local_cria\logs::get_logs($bot_id, $date_range);
 
@@ -66,7 +68,7 @@ try {
             'completionTokens' => (int)$log->completion_tokens,
             'totalTokens' => (int)$log->total_tokens,
             'cost' => (float)$log->cost,
-            'timestamp' => date('c', strtotime($log->timecreated)), // Convert to ISO 8601 format
+            'timestamp' => date('c', $log->timecreated), // timecreated is already a timestamp
             'user' => [
                 'id' => $log->userid,
                 'firstname' => $log->firstname,

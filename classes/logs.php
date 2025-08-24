@@ -85,19 +85,52 @@ class logs
      * Get logs for a given bot_id
      *
      * @param int $bot_id
+     * @param string $date_range - Options: '1d', '7d', '30d', 'all', or date range string
      * @return array
      */
     public static function get_logs($bot_id, $date_range = null)
     {
         global $DB, $USER;
 
+        // Handle different date range formats
         if ($date_range) {
-            $date_range = explode(' - ', $date_range);
-            $start_date = strtotime($date_range[0] . ' 00:00:00');
-            $end_date = strtotime($date_range[1] . ' 23:59:59');
+            if (strpos($date_range, ' - ') !== false) {
+                // Legacy format: "01/01/2024 - 01/31/2024"
+                $date_parts = explode(' - ', $date_range);
+                $start_date = strtotime($date_parts[0] . ' 00:00:00');
+                $end_date = strtotime($date_parts[1] . ' 23:59:59');
+            } else {
+                // New format from React dashboard: '1d', '7d', '30d', 'all'
+                $current_time = time();
+
+                switch ($date_range) {
+                    case '1d':
+                        // Current day from 00:00:00 to 23:59:59
+                        $start_date = strtotime('today 00:00:00');
+                        $end_date = strtotime('today 23:59:59');
+                        break;
+                    case '7d':
+                        // Previous 7 days up to current time
+                        $start_date = strtotime('-7 days', $current_time);
+                        $end_date = $current_time;
+                        break;
+                    case '30d':
+                        // Previous 30 days up to current time
+                        $start_date = strtotime('-30 days', $current_time);
+                        $end_date = $current_time;
+                        break;
+                    case 'all':
+                    default:
+                        // All time - use a very old start date
+                        $start_date = 0;
+                        $end_date = $current_time;
+                        break;
+                }
+            }
         } else {
-            $start_date = strtotime('first day of this month');
-            $end_date = strtotime('last day of this month');
+            // Default to current month if no date range specified
+            $start_date = strtotime('first day of this month 00:00:00');
+            $end_date = strtotime('last day of this month 23:59:59');
         }
 
         $sql = "Select
@@ -119,19 +152,19 @@ class logs
                     cl.payload,
                     cl.other,
                     cl.ip,
-                    DATE_FORMAT(FROM_UNIXTIME(cl.timecreated), '%m/%d/%Y %h:%i') as timecreated
+                    cl.timecreated
                 From
                     {local_cria_logs} cl Inner Join
                     {user} u On u.id = cl.userid Inner Join
                     {local_cria_bot} b On b.id = cl.bot_id
                 WHERE 
                     cl.timecreated BETWEEN ? AND ? AND
-                    bot_id = ?";
+                    cl.bot_id = ?";
 
         $params = [
-            'start_date' => $start_date,
-            'end_date' => $end_date,
-            'bot_id' => $bot_id
+            $start_date,
+            $end_date,
+            $bot_id
         ];
 
         // Site admins can see all logs, users can only see their own
@@ -150,19 +183,53 @@ class logs
      * Get total usage cost for a given bot_id
      *
      * @param int $bot_id
+     * @param string $currency
+     * @param string $date_range - Options: '1d', '7d', '30d', 'all', or date range string
      * @return array
      */
     public static function get_total_usage_cost($bot_id, $currency = 'CAD', $date_range = null)
     {
         global $DB;
 
+        // Handle different date range formats (same logic as get_logs)
         if ($date_range) {
-            $date_range = explode(' - ', $date_range);
-            $start_date = strtotime($date_range[0] . ' 00:00:00');
-            $end_date = strtotime($date_range[1] . ' 23:59:59');
+            if (strpos($date_range, ' - ') !== false) {
+                // Legacy format: "01/01/2024 - 01/31/2024"
+                $date_parts = explode(' - ', $date_range);
+                $start_date = strtotime($date_parts[0] . ' 00:00:00');
+                $end_date = strtotime($date_parts[1] . ' 23:59:59');
+            } else {
+                // New format from React dashboard: '1d', '7d', '30d', 'all'
+                $current_time = time();
+
+                switch ($date_range) {
+                    case '1d':
+                        // Current day from 00:00:00 to 23:59:59
+                        $start_date = strtotime('today 00:00:00');
+                        $end_date = strtotime('today 23:59:59');
+                        break;
+                    case '7d':
+                        // Previous 7 days up to current time
+                        $start_date = strtotime('-7 days', $current_time);
+                        $end_date = $current_time;
+                        break;
+                    case '30d':
+                        // Previous 30 days up to current time
+                        $start_date = strtotime('-30 days', $current_time);
+                        $end_date = $current_time;
+                        break;
+                    case 'all':
+                    default:
+                        // All time - use a very old start date
+                        $start_date = 0;
+                        $end_date = $current_time;
+                        break;
+                }
+            }
         } else {
-            $start_date = strtotime('first day of this month');
-            $end_date = strtotime('last day of this month');
+            // Default to current month if no date range specified
+            $start_date = strtotime('first day of this month 00:00:00');
+            $end_date = strtotime('last day of this month 23:59:59');
         }
 
         $sql = "SELECT 
@@ -177,7 +244,6 @@ class logs
         if (!empty($logs->total_cost)) {
             $value = $fmt->formatCurrency($logs->total_cost, $currency);
         } else {
-            echo 'here';
             $value = $fmt->formatCurrency(0.00, $currency);
         }
 

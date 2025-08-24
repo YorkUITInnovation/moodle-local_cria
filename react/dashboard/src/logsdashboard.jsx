@@ -40,6 +40,13 @@ const LogsDashboard = () => {
     }
   }, [botId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reload data when date range changes
+  React.useEffect(() => {
+    if (botId) {
+      loadBotData();
+    }
+  }, [dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Team members for assignment
   const teamMembers = [
     { id: 'ai-engineer-1', name: 'Sarah Chen', role: 'AI Engineer', department: 'Engineering' },
@@ -158,8 +165,8 @@ const LogsDashboard = () => {
       setIsLoading(true);
       setUploadStatus({ type: 'info', message: 'Loading bot conversation data...' });
 
-      // Fetch the data from the PHP endpoint
-      const response = await fetch(`../data.php?bot_id=${botId}`);
+      // Fetch the data from the PHP endpoint with date range parameter
+      const response = await fetch(`../data.php?bot_id=${botId}&date_range=${dateRange}`);
       if (!response.ok) {
         throw new Error('Could not load bot data');
       }
@@ -438,16 +445,18 @@ const LogsDashboard = () => {
 
       // Search filtering
       const matchesSearch = !searchTerm ||
-        item.prompt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.response.toLowerCase().includes(searchTerm.toLowerCase());
+        (item.prompt && item.prompt.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.response && item.response.toLowerCase().includes(searchTerm.toLowerCase()));
 
       // Query Type filtering (Success vs Failed)
       // A failed query is one where SAVY responded saying it doesn't have the answer or wasn't able to help
       // Exclude helpful capability explanations from being classified as failed queries
-      const isCapabilityExplanation = item.response.toLowerCase().includes("i can help answer questions and connect you with available resources") ||
-        item.response.toLowerCase().includes("however, i'm not currently able to answer questions about admissions, costs for individual courses and programs, or availability of your program requirements");
+      const isCapabilityExplanation = item.response && (
+        item.response.toLowerCase().includes("i can help answer questions and connect you with available resources") ||
+        item.response.toLowerCase().includes("however, i'm not currently able to answer questions about admissions, costs for individual courses and programs, or availability of your program requirements")
+      );
 
-      const isFailedQuery = !isCapabilityExplanation && (
+      const isFailedQuery = item.response && !isCapabilityExplanation && (
         item.response.toLowerCase().includes("llm generated i'm sorry, but i don't understand") ||
         item.response.toLowerCase().includes("i'm sorry, but i don't understand your question") ||
         item.response.toLowerCase().includes("i'm not currently able to answer questions about") ||
@@ -470,7 +479,7 @@ const LogsDashboard = () => {
       const topicKeywords = topicKeywordsMap;
 
       let matchesTopic = topicFilter === 'all';
-      if (!matchesTopic && topicKeywords[topicFilter]) {
+      if (!matchesTopic && topicKeywords[topicFilter] && item.prompt) {
         matchesTopic = topicKeywords[topicFilter].some(keyword =>
           item.prompt.toLowerCase().includes(keyword)
         );
@@ -501,9 +510,20 @@ const LogsDashboard = () => {
 
     const uniqueUsers = new Set(filteredData.map((_, index) => `user_${index % 20}`)).size;
     const totalQueries = filteredData.length;
-    const totalCost = filteredData.reduce((sum, item) => sum + (parseFloat(item.cost) || 0), 0);
-    const avgTokens = filteredData.length > 0 ?
-      filteredData.reduce((sum, item) => sum + (item.promptTokens || 0) + (item.completionTokens || 0), 0) / filteredData.length : 0;
+
+    // Safe cost calculation with NaN protection
+    const totalCost = filteredData.reduce((sum, item) => {
+      const itemCost = parseFloat(item.cost);
+      return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+    }, 0);
+
+    // Safe token calculation with NaN protection
+    const totalTokens = filteredData.reduce((sum, item) => {
+      const promptTokens = parseInt(item.promptTokens) || 0;
+      const completionTokens = parseInt(item.completionTokens) || 0;
+      return sum + promptTokens + completionTokens;
+    }, 0);
+    const avgTokens = filteredData.length > 0 ? totalTokens / filteredData.length : 0;
 
     // Debug logging for cost calculation
     console.log(`Date range: ${dateRange}`);
@@ -523,6 +543,8 @@ const LogsDashboard = () => {
     // A failed query is one where SAVY responded saying it doesn't have the answer or wasn't able to help
     // Exclude helpful capability explanations from being classified as failed queries
     const failedQueries = filteredData.filter(item => {
+      if (!item.response) return false; // Skip items with null/undefined response
+
       const isCapabilityExplanation = item.response.toLowerCase().includes("i can help answer questions and connect you with available resources") ||
         item.response.toLowerCase().includes("however, i'm not currently able to answer questions about admissions, costs for individual courses and programs, or availability of your program requirements");
 
@@ -542,92 +564,178 @@ const LogsDashboard = () => {
       );
     });
 
-    // Topic analysis for educational/SAVY content
-    const topicKeywords = {
-      'Academic Support': ['course', 'registration', 'academic', 'study', 'assignment', 'tutor', 'grade', 'exam'],
-      'Campus Services': ['library', 'dining', 'wifi', 'building', 'hall', 'location', 'map', 'hours'],
-      'Student Life': ['mental health', 'counselling', 'support', 'wellness', 'student', 'campus life'],
-      'Financial': ['scholarship', 'financial aid', 'tuition', 'payment', 'funding', 'bursary'],
-      'Technical Support': ['computer', 'technology', 'login', 'password', 'internet', 'system', 'IT'],
-      'General Inquiry': ['information', 'help', 'question', 'what', 'how', 'where', 'when']
-    };
-
-    const topicCounts = Object.entries(topicKeywords).map(([topic, keywords]) => {
+    // Topic analysis for educational/SAVY content - use dynamic topicKeywordsMap
+    const topicCounts = Object.entries(topicKeywordsMap).map(([topic, keywords]) => {
       const topicItems = filteredData.filter(item =>
-        keywords.some(keyword => item.prompt.toLowerCase().includes(keyword))
+        item.prompt && Array.isArray(keywords) && keywords.some(keyword =>
+          typeof keyword === 'string' && item.prompt.toLowerCase().includes(keyword.toLowerCase())
+        )
       );
 
+      // Safe cost calculation for topics with additional validation
+      const topicCost = topicItems.reduce((sum, item) => {
+        const itemCost = parseFloat(item.cost);
+        const validCost = isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost;
+        return sum + validCost;
+      }, 0);
+
+      // Safe success rate calculation with additional validation
+      const successfulTopicItems = topicItems.filter(item =>
+        item.response && typeof item.response === 'string' && !(
+          item.response.toLowerCase().includes("llm generated i'm sorry, but i don't understand") ||
+          item.response.toLowerCase().includes("i'm sorry, but i don't understand your question") ||
+          item.response.toLowerCase().includes("i'm not currently able to answer questions about") ||
+          item.response.toLowerCase().includes("this may be a topic that i am not trained on yet") ||
+          item.response.toLowerCase().includes("i might not understand your phrasing") ||
+          item.response.toLowerCase().includes("don't have access") ||
+          item.response.toLowerCase().includes("cannot help") ||
+          item.response.toLowerCase().includes("unable to") ||
+          item.response.toLowerCase().includes("not able to") ||
+          item.response.toLowerCase().includes("i don't have information") ||
+          item.response.toLowerCase().includes("i'm not equipped") ||
+          item.response.toLowerCase().includes("outside my capabilities")
+        )
+      );
+
+      const successRate = topicItems.length > 0 ? (successfulTopicItems.length / topicItems.length * 100) : 0;
+
+      // Ensure all values are valid numbers
+      const safeQueries = Math.max(0, topicItems.length || 0);
+      const safeCost = Math.max(0, isNaN(topicCost) || !isFinite(topicCost) ? 0 : topicCost);
+      const safeSuccessRate = Math.max(0, Math.min(100, isNaN(successRate) || !isFinite(successRate) ? 0 : successRate));
+
       return {
-        topic,
-        queries: topicItems.length,
-        cost: topicItems.reduce((sum, item) => sum + (parseFloat(item.cost) || 0), 0),
-        successRate: topicItems.length > 0
-          ? (topicItems.filter(item =>
-              !(item.response.toLowerCase().includes("llm generated i'm sorry, but i don't understand") ||
-                item.response.toLowerCase().includes("i'm sorry, but i don't understand your question") ||
-                item.response.toLowerCase().includes("i'm not currently able to answer questions about") ||
-                item.response.toLowerCase().includes("this may be a topic that i am not trained on yet") ||
-                item.response.toLowerCase().includes("i might not understand your phrasing") ||
-                item.response.toLowerCase().includes("don't have access") ||
-                item.response.toLowerCase().includes("cannot help") ||
-                item.response.toLowerCase().includes("unable to") ||
-                item.response.toLowerCase().includes("not able to") ||
-                item.response.toLowerCase().includes("i don't have information") ||
-                item.response.toLowerCase().includes("i'm not equipped") ||
-                item.response.toLowerCase().includes("outside my capabilities"))
-            ).length / topicItems.length * 100)
-          : 0
+        topic: String(topic), // Ensure topic is a string
+        queries: safeQueries,
+        cost: safeCost,
+        successRate: safeSuccessRate
       };
-    }).filter(item => item.queries > 0)
-      .sort((a, b) => b.queries - a.queries);
+    }).filter(item =>
+      // Only include items with valid data
+      item &&
+      typeof item.topic === 'string' &&
+      typeof item.queries === 'number' &&
+      typeof item.cost === 'number' &&
+      typeof item.successRate === 'number' &&
+      !isNaN(item.queries) &&
+      !isNaN(item.cost) &&
+      !isNaN(item.successRate) &&
+      isFinite(item.queries) &&
+      isFinite(item.cost) &&
+      isFinite(item.successRate) &&
+      item.queries > 0
+    ).sort((a, b) => b.queries - a.queries);
 
     // Debug: Log topic analysis results
     console.log('Topic analysis results:', topicCounts);
     console.log('Topic counts with data:', topicCounts.filter(item => item.queries > 0));
 
-    // Daily usage pattern (filtered)
+    // Daily usage pattern (filtered) - with NaN protection
     const dailyUsage = filteredData.reduce((acc, item) => {
-      const date = new Date(item.timestamp).toDateString();
-      acc[date] = (acc[date] || 0) + 1;
-      return acc;
+      try {
+        const date = new Date(item.timestamp).toDateString();
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      } catch (error) {
+        console.warn('Error processing daily usage item:', item, error);
+        return acc;
+      }
     }, {});
 
     const dailyData = Object.entries(dailyUsage)
-      .map(([date, count]) => ({
-        date: new Date(date).toLocaleDateString(),
-        queries: count,
-        cost: filteredData
-          .filter(item => new Date(item.timestamp).toDateString() === date)
-          .reduce((sum, item) => sum + (parseFloat(item.cost) || 0), 0)
-      }))
+      .map(([date, count]) => {
+        const cost = filteredData
+          .filter(item => {
+            try {
+              return new Date(item.timestamp).toDateString() === date;
+            } catch (error) {
+              console.warn('Error filtering daily cost data:', item, error);
+              return false;
+            }
+          })
+          .reduce((sum, item) => {
+            const itemCost = parseFloat(item.cost);
+            return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+          }, 0);
+
+        return {
+          date: new Date(date).toLocaleDateString(),
+          queries: isNaN(count) || !isFinite(count) ? 0 : count,
+          cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+        };
+      })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Hourly usage pattern (filtered)
+    // Hourly usage pattern (filtered) - with NaN protection
     const hourlyUsage = filteredData.reduce((acc, item) => {
-      const hour = new Date(item.timestamp).getHours();
-      acc[hour] = (acc[hour] || 0) + 1;
-      return acc;
+      try {
+        const hour = new Date(item.timestamp).getHours();
+        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+          acc[hour] = (acc[hour] || 0) + 1;
+        }
+        return acc;
+      } catch (error) {
+        console.warn('Error processing hourly usage item:', item, error);
+        return acc;
+      }
     }, {});
 
-    const hourlyData = Array.from({length: 24}, (_, hour) => ({
-      hour: `${hour}:00`,
-      queries: hourlyUsage[hour] || 0,
-      cost: filteredData
-        .filter(item => new Date(item.timestamp).getHours() === hour)
-        .reduce((sum, item) => sum + (parseFloat(item.cost) || 0), 0)
-    }));
+    const hourlyData = Array.from({length: 24}, (_, hour) => {
+      const queries = hourlyUsage[hour] || 0;
+      const cost = filteredData
+        .filter(item => {
+          try {
+            return new Date(item.timestamp).getHours() === hour;
+          } catch (error) {
+            console.warn('Error filtering hourly cost data:', item, error);
+            return false;
+          }
+        })
+        .reduce((sum, item) => {
+          const itemCost = parseFloat(item.cost);
+          return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+        }, 0);
 
-    // Cost efficiency breakdown
+      return {
+        hour: `${hour}:00`,
+        queries: isNaN(queries) || !isFinite(queries) ? 0 : queries,
+        cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+      };
+    });
+
+    // Cost efficiency breakdown - with NaN protection
     const costEfficiencyData = filteredData.map(item => {
-      const totalTokens = (item.promptTokens || 0) + (item.completionTokens || 0);
-      const costPerToken = totalTokens > 0 ? (item.cost || 0) / totalTokens : 0;
+      try {
+        const promptTokens = parseInt(item.promptTokens) || 0;
+        const completionTokens = parseInt(item.completionTokens) || 0;
+        const totalTokens = promptTokens + completionTokens;
+        const cost = parseFloat(item.cost) || 0;
+        const costPerToken = totalTokens > 0 && !isNaN(cost) && isFinite(cost) ? cost / totalTokens : 0;
 
-      let efficiencyLevel;
-      if (costPerToken < 0.00001) efficiencyLevel = 'High Efficiency';
-      else if (costPerToken < 0.00005) efficiencyLevel = 'Medium Efficiency';
-      else efficiencyLevel = 'Low Efficiency';
+        let efficiencyLevel;
+        if (isNaN(costPerToken) || !isFinite(costPerToken) || costPerToken === 0) {
+          efficiencyLevel = 'Unknown';
+        } else if (costPerToken < 0.00001) {
+          efficiencyLevel = 'High Efficiency';
+        } else if (costPerToken < 0.00005) {
+          efficiencyLevel = 'Medium Efficiency';
+        } else {
+          efficiencyLevel = 'Low Efficiency';
+        }
 
-      return { ...item, costPerToken, efficiencyLevel };
+        return {
+          ...item,
+          costPerToken: isNaN(costPerToken) || !isFinite(costPerToken) ? 0 : costPerToken,
+          efficiencyLevel
+        };
+      } catch (error) {
+        console.warn('Error calculating cost efficiency for item:', item, error);
+        return {
+          ...item,
+          costPerToken: 0,
+          efficiencyLevel: 'Unknown'
+        };
+      }
     });
 
     const efficiencyBreakdown = costEfficiencyData.reduce((acc, item) => {
@@ -635,21 +743,33 @@ const LogsDashboard = () => {
       return acc;
     }, {});
 
-    const efficiencyChartData = Object.entries(efficiencyBreakdown).map(([level, count]) => ({
-      level,
-      queries: count,
-      cost: costEfficiencyData
+    const efficiencyChartData = Object.entries(efficiencyBreakdown).map(([level, count]) => {
+      const cost = costEfficiencyData
         .filter(item => item.efficiencyLevel === level)
-        .reduce((sum, item) => sum + (item.cost || 0), 0)
-    }));
+        .reduce((sum, item) => {
+          const itemCost = parseFloat(item.cost);
+          return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+        }, 0);
+
+      return {
+        level,
+        queries: isNaN(count) || !isFinite(count) ? 0 : count,
+        cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+      };
+    });
+
+    // Ensure all return values are safe numbers
+    const safeAvgTokens = isNaN(avgTokens) || !isFinite(avgTokens) ? 0 : avgTokens;
+    const safeTotalCost = isNaN(totalCost) || !isFinite(totalCost) ? 0 : totalCost;
+    const safeFailureRate = totalQueries > 0 ? (failedQueries.length / totalQueries * 100).toFixed(1) : '0';
 
     return {
       uniqueUsers,
       totalQueries,
-      totalCost,
-      avgTokens,
+      totalCost: safeTotalCost,
+      avgTokens: safeAvgTokens,
       failedQueries: failedQueries.length,
-      failureRate: (failedQueries.length / totalQueries * 100).toFixed(1),
+      failureRate: safeFailureRate,
       topicCounts,
       dailyData,
       hourlyData,
@@ -657,7 +777,7 @@ const LogsDashboard = () => {
       failedQueriesList: failedQueries,
       efficiencyChartData
     };
-  }, [processedData, dateRange, searchTerm, queryTypeFilter, topicFilter, timeOfDayFilter, costEfficiencyFilter, assignments]);
+  }, [processedData, dateRange, searchTerm, queryTypeFilter, topicFilter, timeOfDayFilter, costEfficiencyFilter, topicKeywordsMap, assignments]);
 
   // Generate filter summary for chart titles
   const getFilterSummary = useCallback(() => {
@@ -1035,7 +1155,17 @@ const LogsDashboard = () => {
               )}
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analytics.dailyData}>
+              <AreaChart data={analytics.dailyData.filter(item =>
+                item &&
+                typeof item.queries === 'number' &&
+                typeof item.cost === 'number' &&
+                !isNaN(item.queries) &&
+                !isNaN(item.cost) &&
+                isFinite(item.queries) &&
+                isFinite(item.cost) &&
+                item.queries >= 0 &&
+                item.cost >= 0
+              )}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis yAxisId="left" />
@@ -1066,7 +1196,17 @@ const LogsDashboard = () => {
               )}
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.hourlyData}>
+              <BarChart data={analytics.hourlyData.filter(item =>
+                item &&
+                typeof item.queries === 'number' &&
+                typeof item.cost === 'number' &&
+                !isNaN(item.queries) &&
+                !isNaN(item.cost) &&
+                isFinite(item.queries) &&
+                isFinite(item.cost) &&
+                item.queries >= 0 &&
+                item.cost >= 0
+              )}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="hour" />
                 <YAxis yAxisId="left" />
