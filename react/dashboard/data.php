@@ -33,6 +33,10 @@ try {
         throw new Exception('Bot ID is required');
     }
 
+    $topic_keywords = [];
+    $topic_options = [];
+
+
     // Use the existing logs class to get data
     $logs = \local_cria\logs::get_logs($bot_id, $date_range);
 
@@ -73,7 +77,9 @@ try {
         'data' => $transformed_data,
         'count' => count($transformed_data),
         'bot_id' => $bot_id,
-        'date_range' => $date_range
+        'date_range' => $date_range,
+        'topicOptions' => $topic_options,
+        'topicKeywords' => $topic_keywords
     ]);
 
 } catch (Exception $e) {

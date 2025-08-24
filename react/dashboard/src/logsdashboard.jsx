@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
-import { Upload, Users, MessageSquare, AlertTriangle, DollarSign, Search, Download, RefreshCw, CheckCircle, XCircle, Info, UserPlus, Clock, CheckSquare } from 'lucide-react';
+import { Users, MessageSquare, AlertTriangle, DollarSign, Search, Download, RefreshCw, CheckCircle, XCircle, Info } from 'lucide-react';
 
 const LogsDashboard = () => {
   const [data, setData] = useState([]);
@@ -132,6 +132,26 @@ const LogsDashboard = () => {
     saveAssignments(newAssignments);
   };
 
+  // Default topic filter options and keywords
+  const defaultTopicOptions = [
+    { value: 'all', label: 'All Topics' },
+    { value: 'academic', label: 'Academic Support' },
+    { value: 'campus', label: 'Campus Services' },
+    { value: 'student-life', label: 'Student Life' },
+    { value: 'financial', label: 'Financial Aid' },
+    { value: 'technical', label: 'Technical Support' }
+  ];
+  const defaultTopicKeywordsMap = {
+    academic: ['course','registration','academic','study','assignment','tutor','grade','exam'],
+    campus: ['library','dining','wifi','building','hall','location','map','hours'],
+    'student-life': ['mental health','counselling','support','wellness','student','campus life'],
+    financial: ['scholarship','financial aid','tuition','payment','funding','bursary'],
+    technical: ['computer','technology','login','password','internet','system','IT']
+  };
+  // state for dynamic topic filters
+  const [topicOptions, setTopicOptions] = useState(defaultTopicOptions);
+  const [topicKeywordsMap, setTopicKeywordsMap] = useState(defaultTopicKeywordsMap);
+
   // Function to load bot data from PHP endpoint
   const loadBotData = async () => {
     try {
@@ -145,6 +165,27 @@ const LogsDashboard = () => {
       }
 
       const jsonResponse = await response.json();
+
+      // override topic settings if provided
+      if (jsonResponse.topicKeywords && typeof jsonResponse.topicKeywords === 'object') {
+        setTopicKeywordsMap(jsonResponse.topicKeywords);
+      }
+
+      // override topic options if provided as array of objects with value/label structure
+      if (jsonResponse.topicOptions && Array.isArray(jsonResponse.topicOptions)) {
+        // Add "All Topics" option if not present
+        const hasAllTopics = jsonResponse.topicOptions.find(opt => opt.value === 'all');
+        if (!hasAllTopics) {
+          jsonResponse.topicOptions.unshift({ value: 'all', label: 'All Topics' });
+        }
+        setTopicOptions(jsonResponse.topicOptions);
+      } else if (jsonResponse.topicKeywords && typeof jsonResponse.topicKeywords === 'object') {
+        // If only topicKeywords provided, build options from keywords map
+        setTopicOptions(Object.keys(jsonResponse.topicKeywords).map(key => ({
+          value: key,
+          label: key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        })).concat([{ value: 'all', label: 'All Topics' }]));
+      }
 
       if (!jsonResponse.success) {
         throw new Error(jsonResponse.error || 'Failed to load data');
@@ -426,13 +467,7 @@ const LogsDashboard = () => {
         (queryTypeFilter === 'failed' && isFailedQuery);
 
       // Topic filtering
-      const topicKeywords = {
-        'academic': ['course', 'registration', 'academic', 'study', 'assignment', 'tutor', 'grade', 'exam'],
-        'campus': ['library', 'dining', 'wifi', 'building', 'hall', 'location', 'map', 'hours'],
-        'student-life': ['mental health', 'counselling', 'support', 'wellness', 'student', 'campus life'],
-        'financial': ['scholarship', 'financial aid', 'tuition', 'payment', 'funding', 'bursary'],
-        'technical': ['computer', 'technology', 'login', 'password', 'internet', 'system', 'IT']
-      };
+      const topicKeywords = topicKeywordsMap;
 
       let matchesTopic = topicFilter === 'all';
       if (!matchesTopic && topicKeywords[topicFilter]) {
@@ -869,12 +904,9 @@ const LogsDashboard = () => {
                 onChange={(e) => setTopicFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Topics</option>
-                <option value="academic">Academic Support</option>
-                <option value="campus">Campus Services</option>
-                <option value="student-life">Student Life</option>
-                <option value="financial">Financial Aid</option>
-                <option value="technical">Technical Support</option>
+                {topicOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
 
@@ -1416,7 +1448,7 @@ const LogsDashboard = () => {
         {/* Recent Activity */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
-          <div className="overflow-x-auto">
+                   <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
