@@ -18,6 +18,8 @@ require_once($CFG->libdir . '/setuplib.php');
 // Require login
 require_login();
 
+global $DB;
+
 // Set JSON content type
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -33,8 +35,20 @@ try {
         throw new Exception('Bot ID is required');
     }
 
-    $topic_keywords = [];
-    $topic_options = [];
+    // Get topic_keywords from table local_cria_bot
+    $topic_keywords = $DB->get_field('local_cria_bot', 'topic_keywords', ['id' => $bot_id]);
+    if ($topic_keywords) {
+        $topic_keywords = json_decode($topic_keywords, true);
+    } else {
+        $topic_keywords = [];
+    }
+    // Get topic_options from table local_cria_bot
+    $topic_options = $DB->get_field('local_cria_bot', 'topic_options', ['id' => $bot_id]);
+    if ($topic_options) {
+        $topic_options = json_decode($topic_options, true);
+    } else {
+        $topic_options = [];
+    }
 
 
     // Use the existing logs class to get data
