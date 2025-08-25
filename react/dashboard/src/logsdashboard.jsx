@@ -488,16 +488,49 @@ const LogsDashboard = () => {
 
   // Analytics calculations
   const analytics = useMemo(() => {
-    const now = new Date();
+    console.log('=== DATA PROCESSING START ===');
+    console.log('Raw processedData length:', processedData.length);
+    console.log('Sample raw data items:', processedData.slice(0, 3));
 
-    const filteredData = processedData.filter(item => {
-      const itemDate = new Date(item.timestamp);
+    // Date range filtering
+    const now = new Date();
+    let cutoffDate;
+
+    switch (dateRange) {
+      case '7d':
+        cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        cutoffDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        cutoffDate = new Date(0); // Show all data
+    }
+
+    console.log('Date filter - cutoffDate:', cutoffDate);
+
+    const filteredData = processedData.filter((item, index) => {
+      // Log every 10th item for debugging
+      if (index % 10 === 0) {
+        console.log(`Item ${index}:`, {
+          prompt: item.prompt?.substring(0, 50),
+          cost: item.cost,
+          costType: typeof item.cost,
+          promptTokens: item.promptTokens,
+          promptTokensType: typeof item.promptTokens,
+          completionTokens: item.completionTokens,
+          completionTokensType: typeof item.completionTokens,
+          timestamp: item.timestamp
+        });
+      }
 
       // Date filtering
       let matchesDate = true;
       if (dateRange !== 'all') {
-        const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 1;
-        const cutoffDate = new Date(now - days * 24 * 60 * 60 * 1000);
+        const itemDate = new Date(item.timestamp);
         matchesDate = itemDate >= cutoffDate;
       }
 
@@ -544,6 +577,8 @@ const LogsDashboard = () => {
       }
 
       // Time of Day filtering (Business hours: 9AM-5PM weekdays)
+      // Need to declare itemDate here for time-based filtering
+      const itemDate = new Date(item.timestamp);
       const hour = itemDate.getHours();
       const dayOfWeek = itemDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const isBusinessHours = (dayOfWeek >= 1 && dayOfWeek <= 5) && (hour >= 9 && hour <= 17);
@@ -566,19 +601,60 @@ const LogsDashboard = () => {
       return matchesDate && matchesSearch && matchesQueryType && matchesTopic && matchesTimeOfDay && matchesCostEfficiency;
     });
 
+    console.log('Filtered data length:', filteredData.length);
+
     const uniqueUsers = new Set(filteredData.map((_, index) => `user_${index % 20}`)).size;
     const totalQueries = filteredData.length;
 
-    // Safe cost calculation with comprehensive NaN protection
+    // Safe cost calculation with comprehensive NaN protection and debugging
+    console.log('=== COST CALCULATION DEBUG ===');
+    const costDebugSample = filteredData.slice(0, 5).map(item => ({
+      cost: item.cost,
+      type: typeof item.cost,
+      isNaN: isNaN(item.cost),
+      isFinite: isFinite(item.cost),
+      safeParseFloat: safeParseFloat(item.cost)
+    }));
+    console.log('Cost debug sample:', costDebugSample);
+
     const totalCost = filteredData.reduce((sum, item) => {
-      return sum + safeParseFloat(item.cost);
+      const parsedCost = safeParseFloat(item.cost);
+      if (isNaN(parsedCost) || !isFinite(parsedCost)) {
+        console.warn('Invalid cost detected:', item.cost, 'parsed to:', parsedCost);
+      }
+      return sum + parsedCost;
     }, 0);
 
-    // Safe token calculation with comprehensive NaN protection
+    console.log('Total cost calculated:', totalCost, 'type:', typeof totalCost, 'isNaN:', isNaN(totalCost));
+
+    // Safe token calculation with comprehensive NaN protection and debugging
+    console.log('=== TOKEN CALCULATION DEBUG ===');
+    const tokenDebugSample = filteredData.slice(0, 5).map(item => ({
+      promptTokens: item.promptTokens,
+      completionTokens: item.completionTokens,
+      promptType: typeof item.promptTokens,
+      completionType: typeof item.completionTokens,
+      safePrompt: safeParseInt(item.promptTokens),
+      safeCompletion: safeParseInt(item.completionTokens)
+    }));
+    console.log('Token debug sample:', tokenDebugSample);
+
     const totalTokens = filteredData.reduce((sum, item) => {
-      return sum + safeParseInt(item.promptTokens) + safeParseInt(item.completionTokens);
+      const promptTokens = safeParseInt(item.promptTokens);
+      const completionTokens = safeParseInt(item.completionTokens);
+      if (isNaN(promptTokens) || isNaN(completionTokens)) {
+        console.warn('Invalid tokens detected:', {
+          prompt: item.promptTokens,
+          completion: item.completionTokens,
+          parsedPrompt: promptTokens,
+          parsedCompletion: completionTokens
+        });
+      }
+      return sum + promptTokens + completionTokens;
     }, 0);
     const avgTokens = filteredData.length > 0 ? totalTokens / filteredData.length : 0;
+
+    console.log('Total tokens:', totalTokens, 'Avg tokens:', avgTokens);
 
     // Debug logging for cost calculation
     console.log(`Date range: ${dateRange}`);
@@ -594,9 +670,8 @@ const LogsDashboard = () => {
       })));
     }
 
-    // Failed queries (responses indicating inability to help)
-    // A failed query is one where SAVY responded saying it doesn't have the answer or wasn't able to help
-    // Exclude helpful capability explanations from being classified as failed queries
+    // Failed queries (responses indicating inability to help) - with debugging
+    console.log('=== FAILED QUERIES DEBUG ===');
     const failedQueries = filteredData.filter(item => {
       if (!item.response) return false; // Skip items with null/undefined response
 
@@ -619,7 +694,12 @@ const LogsDashboard = () => {
       );
     });
 
-    // Topic analysis for educational/SAVY content - use dynamic topicKeywordsMap
+    console.log('Failed queries count:', failedQueries.length);
+
+    // Topic analysis for educational/SAVY content - use dynamic topicKeywordsMap with debugging
+    console.log('=== TOPIC ANALYSIS DEBUG ===');
+    console.log('Topic keywords map:', topicKeywordsMap);
+
     const topicCounts = Object.entries(topicKeywordsMap).map(([topic, keywords]) => {
       const topicItems = filteredData.filter(item =>
         item.prompt && Array.isArray(keywords) && keywords.some(keyword =>
@@ -627,9 +707,15 @@ const LogsDashboard = () => {
         )
       );
 
+      console.log(`Topic "${topic}": ${topicItems.length} items`);
+
       // Safe cost calculation for topics with comprehensive validation
       const topicCost = topicItems.reduce((sum, item) => {
-        return sum + safeParseFloat(item.cost);
+        const cost = safeParseFloat(item.cost);
+        if (isNaN(cost)) {
+          console.warn(`Invalid cost for topic ${topic}:`, item.cost);
+        }
+        return sum + cost;
       }, 0);
 
       // Safe success rate calculation with comprehensive validation
@@ -657,12 +743,16 @@ const LogsDashboard = () => {
       const safeCost = Math.max(0, safeParseFloat(topicCost));
       const safeSuccessRate = Math.max(0, Math.min(100, safeParseFloat(successRate)));
 
-      return {
+      const result = {
         topic: String(topic), // Ensure topic is a string
         queries: safeQueries,
         cost: safeCost,
         successRate: safeSuccessRate
       };
+
+      console.log(`Topic "${topic}" result:`, result);
+
+      return result;
     }).filter(item =>
       // Only include items with valid data and comprehensive validation
       item &&
@@ -683,7 +773,8 @@ const LogsDashboard = () => {
     console.log('Topic analysis results:', topicCounts);
     console.log('Topic counts with data:', topicCounts.filter(item => item.queries > 0));
 
-    // Daily usage pattern (filtered) - with comprehensive NaN protection
+    // Daily usage pattern (filtered) - with comprehensive NaN protection and debugging
+    console.log('=== DAILY DATA DEBUG ===');
     const dailyUsage = filteredData.reduce((acc, item) => {
       try {
         const date = new Date(item.timestamp).toDateString();
@@ -707,18 +798,28 @@ const LogsDashboard = () => {
             }
           })
           .reduce((sum, item) => {
-            return sum + safeParseFloat(item.cost);
+            const cost = safeParseFloat(item.cost);
+            if (isNaN(cost)) {
+              console.warn('Invalid daily cost:', item.cost);
+            }
+            return sum + cost;
           }, 0);
 
-        return {
+        const result = {
           date: new Date(date).toLocaleDateString(),
           queries: safeParseInt(count),
           cost: safeParseFloat(cost)
         };
+
+        console.log('Daily data point:', result);
+        return result;
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Hourly usage pattern (filtered) - with comprehensive NaN protection
+    console.log('Daily data final:', dailyData);
+
+    // Hourly usage pattern (filtered) - with comprehensive NaN protection and debugging
+    console.log('=== HOURLY DATA DEBUG ===');
     const hourlyUsage = filteredData.reduce((acc, item) => {
       try {
         const hour = new Date(item.timestamp).getHours();
@@ -744,24 +845,45 @@ const LogsDashboard = () => {
           }
         })
         .reduce((sum, item) => {
-          return sum + safeParseFloat(item.cost);
+          const cost = safeParseFloat(item.cost);
+          if (isNaN(cost)) {
+            console.warn('Invalid hourly cost:', item.cost);
+          }
+          return sum + cost;
         }, 0);
 
-      return {
+      const result = {
         hour: `${hour}:00`,
         queries: safeParseInt(queries),
         cost: safeParseFloat(cost)
       };
+
+      if (hour % 6 === 0) { // Log every 6th hour for debugging
+        console.log(`Hour ${hour} data:`, result);
+      }
+
+      return result;
     });
 
-    // Cost efficiency breakdown - with comprehensive NaN protection
-    const costEfficiencyData = filteredData.map(item => {
+    // Cost efficiency breakdown - with comprehensive NaN protection and debugging
+    console.log('=== EFFICIENCY DATA DEBUG ===');
+    const costEfficiencyData = filteredData.map((item, index) => {
       try {
         const promptTokens = safeParseInt(item.promptTokens);
         const completionTokens = safeParseInt(item.completionTokens);
         const totalTokens = promptTokens + completionTokens;
         const cost = safeParseFloat(item.cost);
         const costPerToken = totalTokens > 0 ? cost / totalTokens : 0;
+
+        if (index < 5) { // Debug first 5 items
+          console.log(`Efficiency item ${index}:`, {
+            promptTokens,
+            completionTokens,
+            totalTokens,
+            cost,
+            costPerToken
+          });
+        }
 
         let efficiencyLevel;
         if (costPerToken === 0) {
@@ -798,14 +920,21 @@ const LogsDashboard = () => {
       const cost = costEfficiencyData
         .filter(item => item.efficiencyLevel === level)
         .reduce((sum, item) => {
-          return sum + safeParseFloat(item.cost);
+          const cost = safeParseFloat(item.cost);
+          if (isNaN(cost)) {
+            console.warn('Invalid efficiency cost:', item.cost);
+          }
+          return sum + cost;
         }, 0);
 
-      return {
+      const result = {
         level,
         queries: safeParseInt(count),
         cost: safeParseFloat(cost)
       };
+
+      console.log('Efficiency chart data point:', result);
+      return result;
     });
 
     // Ensure all return values are safe numbers with comprehensive validation
@@ -813,7 +942,18 @@ const LogsDashboard = () => {
     const safeTotalCost = safeParseFloat(totalCost);
     const safeFailureRate = totalQueries > 0 ? safeParseFloat((failedQueries.length / totalQueries * 100).toFixed(1)) : 0;
 
-    return {
+    console.log('=== FINAL CALCULATION RESULTS ===');
+    console.log('uniqueUsers:', uniqueUsers);
+    console.log('totalQueries:', totalQueries);
+    console.log('safeTotalCost:', safeTotalCost, 'type:', typeof safeTotalCost, 'isNaN:', isNaN(safeTotalCost));
+    console.log('safeAvgTokens:', safeAvgTokens, 'type:', typeof safeAvgTokens, 'isNaN:', isNaN(safeAvgTokens));
+    console.log('safeFailureRate:', safeFailureRate, 'type:', typeof safeFailureRate, 'isNaN:', isNaN(safeFailureRate));
+    console.log('topicCounts length:', topicCounts.length);
+    console.log('dailyData length:', dailyData.length);
+    console.log('hourlyData length:', hourlyData.length);
+    console.log('efficiencyChartData length:', efficiencyChartData.length);
+
+    const result = {
       uniqueUsers,
       totalQueries,
       totalCost: safeTotalCost,
@@ -827,6 +967,9 @@ const LogsDashboard = () => {
       failedQueriesList: failedQueries,
       efficiencyChartData
     };
+
+    console.log('=== DATA PROCESSING END ===');
+    return result;
   }, [processedData, dateRange, searchTerm, queryTypeFilter, topicFilter, timeOfDayFilter, costEfficiencyFilter, topicKeywordsMap, assignments]);
 
   // Generate filter summary for chart titles
@@ -1205,7 +1348,28 @@ const LogsDashboard = () => {
               )}
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={sanitizeChartData(analytics.dailyData)}>
+              <AreaChart data={(() => {
+                const chartData = sanitizeChartData(analytics.dailyData);
+                console.log('=== DAILY CHART DATA DEBUG ===');
+                console.log('Raw daily data:', analytics.dailyData);
+                console.log('Sanitized daily data:', chartData);
+
+                // Check for any NaN values
+                const hasNaN = chartData.some(item =>
+                  isNaN(item.queries) || isNaN(item.cost) ||
+                  !isFinite(item.queries) || !isFinite(item.cost)
+                );
+
+                if (hasNaN) {
+                  console.error('NaN VALUES DETECTED IN DAILY CHART DATA:', chartData);
+                  console.error('Items with NaN:', chartData.filter(item =>
+                    isNaN(item.queries) || isNaN(item.cost) ||
+                    !isFinite(item.queries) || !isFinite(item.cost)
+                  ));
+                }
+
+                return chartData;
+              })()}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis yAxisId="left" />
@@ -1213,6 +1377,11 @@ const LogsDashboard = () => {
                 <Tooltip
                   labelFormatter={(value) => `Date: ${value}`}
                   formatter={(value, name, props) => {
+                    console.log('Daily chart tooltip value:', value, 'name:', name, 'type:', typeof value);
+                    if (isNaN(value)) {
+                      console.error('NaN in daily chart tooltip:', value, name);
+                      return ['Error: NaN', name];
+                    }
                     if (name === 'queries') return [value, 'Queries'];
                     if (name === 'cost') return [`$${safeParseFloat(value).toFixed(3)}`, 'Cost'];
                     return [value, name];
@@ -1236,7 +1405,28 @@ const LogsDashboard = () => {
               )}
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={sanitizeChartData(analytics.hourlyData)}>
+              <BarChart data={(() => {
+                const chartData = sanitizeChartData(analytics.hourlyData);
+                console.log('=== HOURLY CHART DATA DEBUG ===');
+                console.log('Raw hourly data:', analytics.hourlyData);
+                console.log('Sanitized hourly data:', chartData);
+
+                // Check for any NaN values
+                const hasNaN = chartData.some(item =>
+                  isNaN(item.queries) || isNaN(item.cost) ||
+                  !isFinite(item.queries) || !isFinite(item.cost)
+                );
+
+                if (hasNaN) {
+                  console.error('NaN VALUES DETECTED IN HOURLY CHART DATA:', chartData);
+                  console.error('Items with NaN:', chartData.filter(item =>
+                    isNaN(item.queries) || isNaN(item.cost) ||
+                    !isFinite(item.queries) || !isFinite(item.cost)
+                  ));
+                }
+
+                return chartData;
+              })()}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="hour" />
                 <YAxis yAxisId="left" />
@@ -1244,6 +1434,11 @@ const LogsDashboard = () => {
                 <Tooltip
                   labelFormatter={(value) => `Hour: ${value}`}
                   formatter={(value, name, props) => {
+                    console.log('Hourly chart tooltip value:', value, 'name:', name, 'type:', typeof value);
+                    if (isNaN(value)) {
+                      console.error('NaN in hourly chart tooltip:', value, name);
+                      return ['Error: NaN', name];
+                    }
                     if (name === 'queries') return [value, 'Queries'];
                     if (name === 'cost') return [`$${safeParseFloat(value).toFixed(3)}`, 'Cost'];
                     return [value, name];
@@ -1273,7 +1468,28 @@ const LogsDashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={analytics.topicCounts.filter(item => item.queries > 0)}
+                  data={(() => {
+                    const pieData = analytics.topicCounts.filter(item => item.queries > 0);
+                    console.log('=== PIE CHART DATA DEBUG ===');
+                    console.log('Raw topic counts:', analytics.topicCounts);
+                    console.log('Filtered pie data:', pieData);
+
+                    // Check for any NaN values
+                    const hasNaN = pieData.some(item =>
+                      isNaN(item.queries) || isNaN(item.cost) || isNaN(item.successRate) ||
+                      !isFinite(item.queries) || !isFinite(item.cost) || !isFinite(item.successRate)
+                    );
+
+                    if (hasNaN) {
+                      console.error('NaN VALUES DETECTED IN PIE CHART DATA:', pieData);
+                      console.error('Items with NaN:', pieData.filter(item =>
+                        isNaN(item.queries) || isNaN(item.cost) || isNaN(item.successRate) ||
+                        !isFinite(item.queries) || !isFinite(item.cost) || !isFinite(item.successRate)
+                      ));
+                    }
+
+                    return pieData;
+                  })()}
                   dataKey="queries"
                   nameKey="topic"
                   cx="50%"
@@ -1285,11 +1501,18 @@ const LogsDashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value, name, props) => [
-                  `${value} queries`,
-                  `$${props.payload.cost.toFixed(3)} cost`,
-                  `${props.payload.successRate.toFixed(1)}% success rate`
-                ]} />
+                <Tooltip formatter={(value, name, props) => {
+                  console.log('Pie chart tooltip value:', value, 'name:', name, 'props:', props);
+                  if (isNaN(value)) {
+                    console.error('NaN in pie chart tooltip:', value, name);
+                    return ['Error: NaN', name];
+                  }
+                  return [
+                    `${value} queries`,
+                    `$${props.payload.cost.toFixed(3)} cost`,
+                    `${props.payload.successRate.toFixed(1)}% success rate`
+                  ];
+                }} />
               </PieChart>
             </ResponsiveContainer>
             <p className="text-xs text-gray-500 mt-2">
@@ -1307,13 +1530,39 @@ const LogsDashboard = () => {
               )}
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.efficiencyChartData}>
+              <BarChart data={(() => {
+                const chartData = analytics.efficiencyChartData;
+                console.log('=== EFFICIENCY CHART DATA DEBUG ===');
+                console.log('Raw efficiency data:', analytics.efficiencyChartData);
+                console.log('Chart efficiency data:', chartData);
+
+                // Check for any NaN values
+                const hasNaN = chartData.some(item =>
+                  isNaN(item.queries) || isNaN(item.cost) ||
+                  !isFinite(item.queries) || !isFinite(item.cost)
+                );
+
+                if (hasNaN) {
+                  console.error('NaN VALUES DETECTED IN EFFICIENCY CHART DATA:', chartData);
+                  console.error('Items with NaN:', chartData.filter(item =>
+                    isNaN(item.queries) || isNaN(item.cost) ||
+                    !isFinite(item.queries) || !isFinite(item.cost)
+                  ));
+                }
+
+                return chartData;
+              })()}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="level" />
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
                 <Tooltip
                   formatter={(value, name, props) => {
+                    console.log('Efficiency chart tooltip value:', value, 'name:', name, 'type:', typeof value);
+                    if (isNaN(value)) {
+                      console.error('NaN in efficiency chart tooltip:', value, name);
+                      return ['Error: NaN', name];
+                    }
                     if (name === 'queries') return [value, 'Queries'];
                     if (name === 'cost') return [`$${value.toFixed(4)}`, 'Total Cost'];
                     return [value, name];
@@ -1352,14 +1601,36 @@ const LogsDashboard = () => {
             </div>
             <ResponsiveContainer width="100%" height={300}>
               {analytics.topicCounts && analytics.topicCounts.length > 0 ? (
-                <BarChart data={analytics.topicCounts.filter(item => item.queries > 0)} layout="horizontal">
-                  {/* Debug: Show what data is being passed to the chart */}
-                  {console.log('Chart data for Success Rate by Topic:', analytics.topicCounts.filter(item => item.queries > 0))}
+                <BarChart data={(() => {
+                  const chartData = analytics.topicCounts.filter(item => item.queries > 0);
+                  console.log('=== SUCCESS RATE CHART DATA DEBUG ===');
+                  console.log('Raw topic counts for success rate:', analytics.topicCounts);
+                  console.log('Filtered success rate data:', chartData);
+
+                  // Check for any NaN values
+                  const hasNaN = chartData.some(item =>
+                    isNaN(item.successRate) || !isFinite(item.successRate)
+                  );
+
+                  if (hasNaN) {
+                    console.error('NaN VALUES DETECTED IN SUCCESS RATE CHART DATA:', chartData);
+                    console.error('Items with NaN:', chartData.filter(item =>
+                      isNaN(item.successRate) || !isFinite(item.successRate)
+                    ));
+                  }
+
+                  return chartData;
+                })()} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" domain={[0, 100]} />
                   <YAxis type="category" dataKey="topic" width={120} />
                   <Tooltip
                     formatter={(value, name, props) => {
+                      console.log('Success rate chart tooltip value:', value, 'name:', name, 'type:', typeof value);
+                      if (isNaN(value)) {
+                        console.error('NaN in success rate chart tooltip:', value, name);
+                        return ['Error: NaN', name];
+                      }
                       if (name === 'successRate') return [`${value.toFixed(1)}%`, 'Success Rate'];
                       return [value, name];
                     }}
