@@ -365,9 +365,10 @@ const LogsDashboard = () => {
       try {
         const columns = parseCSVLine(row);
 
-        const costValue = parseFloat(columns[columnMap.cost]);
-        const promptTokensValue = parseInt(columns[columnMap.promptTokens]);
-        const completionTokensValue = parseInt(columns[columnMap.completionTokens]);
+        // Use safe parsing functions to handle NaN values
+        const costValue = safeParseFloat(columns[columnMap.cost]);
+        const promptTokensValue = safeParseInt(columns[columnMap.promptTokens]) || Math.floor(Math.random() * 50) + 10;
+        const completionTokensValue = safeParseInt(columns[columnMap.completionTokens]) || Math.floor(Math.random() * 100) + 20;
 
         // Debug high cost values
         if (costValue > 1) {
@@ -377,9 +378,9 @@ const LogsDashboard = () => {
         return {
           prompt: columns[columnMap.prompt] || '',
           response: columns[columnMap.response] || '',
-          promptTokens: promptTokensValue || Math.floor(Math.random() * 50) + 10,
-          completionTokens: completionTokensValue || Math.floor(Math.random() * 100) + 20,
-          cost: isNaN(costValue) ? 0 : costValue,
+          promptTokens: promptTokensValue,
+          completionTokens: completionTokensValue,
+          cost: costValue,
           timestamp: columns[columnMap.timestamp] || new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
         };
       } catch (error) {
@@ -427,6 +428,17 @@ const LogsDashboard = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }, []);
+
+  // Helper function to safely parse numbers and handle NaN values
+  const safeParseFloat = (value, fallback = 0) => {
+    const parsed = parseFloat(value);
+    return isNaN(parsed) || !isFinite(parsed) ? fallback : parsed;
+  };
+
+  const safeParseInt = (value, fallback = 0) => {
+    const parsed = parseInt(value);
+    return isNaN(parsed) || !isFinite(parsed) ? fallback : parsed;
+  };
 
   // Analytics calculations
   const analytics = useMemo(() => {
@@ -495,8 +507,8 @@ const LogsDashboard = () => {
         (timeOfDayFilter === 'after-hours' && !isBusinessHours);
 
       // Cost Efficiency filtering (based on cost per token)
-      const totalTokens = (item.promptTokens || 0) + (item.completionTokens || 0);
-      const costPerToken = totalTokens > 0 ? (item.cost || 0) / totalTokens : 0;
+      const totalTokens = safeParseInt(item.promptTokens) + safeParseInt(item.completionTokens);
+      const costPerToken = totalTokens > 0 ? safeParseFloat(item.cost) / totalTokens : 0;
 
       let matchesCostEfficiency = costEfficiencyFilter === 'all';
       if (!matchesCostEfficiency) {
@@ -511,17 +523,14 @@ const LogsDashboard = () => {
     const uniqueUsers = new Set(filteredData.map((_, index) => `user_${index % 20}`)).size;
     const totalQueries = filteredData.length;
 
-    // Safe cost calculation with NaN protection
+    // Safe cost calculation with comprehensive NaN protection
     const totalCost = filteredData.reduce((sum, item) => {
-      const itemCost = parseFloat(item.cost);
-      return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+      return sum + safeParseFloat(item.cost);
     }, 0);
 
-    // Safe token calculation with NaN protection
+    // Safe token calculation with comprehensive NaN protection
     const totalTokens = filteredData.reduce((sum, item) => {
-      const promptTokens = parseInt(item.promptTokens) || 0;
-      const completionTokens = parseInt(item.completionTokens) || 0;
-      return sum + promptTokens + completionTokens;
+      return sum + safeParseInt(item.promptTokens) + safeParseInt(item.completionTokens);
     }, 0);
     const avgTokens = filteredData.length > 0 ? totalTokens / filteredData.length : 0;
 
@@ -572,14 +581,12 @@ const LogsDashboard = () => {
         )
       );
 
-      // Safe cost calculation for topics with additional validation
+      // Safe cost calculation for topics with comprehensive validation
       const topicCost = topicItems.reduce((sum, item) => {
-        const itemCost = parseFloat(item.cost);
-        const validCost = isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost;
-        return sum + validCost;
+        return sum + safeParseFloat(item.cost);
       }, 0);
 
-      // Safe success rate calculation with additional validation
+      // Safe success rate calculation with comprehensive validation
       const successfulTopicItems = topicItems.filter(item =>
         item.response && typeof item.response === 'string' && !(
           item.response.toLowerCase().includes("llm generated i'm sorry, but i don't understand") ||
@@ -599,10 +606,10 @@ const LogsDashboard = () => {
 
       const successRate = topicItems.length > 0 ? (successfulTopicItems.length / topicItems.length * 100) : 0;
 
-      // Ensure all values are valid numbers
+      // Ensure all values are valid numbers with comprehensive validation
       const safeQueries = Math.max(0, topicItems.length || 0);
-      const safeCost = Math.max(0, isNaN(topicCost) || !isFinite(topicCost) ? 0 : topicCost);
-      const safeSuccessRate = Math.max(0, Math.min(100, isNaN(successRate) || !isFinite(successRate) ? 0 : successRate));
+      const safeCost = Math.max(0, safeParseFloat(topicCost));
+      const safeSuccessRate = Math.max(0, Math.min(100, safeParseFloat(successRate)));
 
       return {
         topic: String(topic), // Ensure topic is a string
@@ -611,7 +618,7 @@ const LogsDashboard = () => {
         successRate: safeSuccessRate
       };
     }).filter(item =>
-      // Only include items with valid data
+      // Only include items with valid data and comprehensive validation
       item &&
       typeof item.topic === 'string' &&
       typeof item.queries === 'number' &&
@@ -630,7 +637,7 @@ const LogsDashboard = () => {
     console.log('Topic analysis results:', topicCounts);
     console.log('Topic counts with data:', topicCounts.filter(item => item.queries > 0));
 
-    // Daily usage pattern (filtered) - with NaN protection
+    // Daily usage pattern (filtered) - with comprehensive NaN protection
     const dailyUsage = filteredData.reduce((acc, item) => {
       try {
         const date = new Date(item.timestamp).toDateString();
@@ -654,19 +661,18 @@ const LogsDashboard = () => {
             }
           })
           .reduce((sum, item) => {
-            const itemCost = parseFloat(item.cost);
-            return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+            return sum + safeParseFloat(item.cost);
           }, 0);
 
         return {
           date: new Date(date).toLocaleDateString(),
-          queries: isNaN(count) || !isFinite(count) ? 0 : count,
-          cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+          queries: safeParseInt(count),
+          cost: safeParseFloat(cost)
         };
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Hourly usage pattern (filtered) - with NaN protection
+    // Hourly usage pattern (filtered) - with comprehensive NaN protection
     const hourlyUsage = filteredData.reduce((acc, item) => {
       try {
         const hour = new Date(item.timestamp).getHours();
@@ -692,28 +698,27 @@ const LogsDashboard = () => {
           }
         })
         .reduce((sum, item) => {
-          const itemCost = parseFloat(item.cost);
-          return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+          return sum + safeParseFloat(item.cost);
         }, 0);
 
       return {
         hour: `${hour}:00`,
-        queries: isNaN(queries) || !isFinite(queries) ? 0 : queries,
-        cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+        queries: safeParseInt(queries),
+        cost: safeParseFloat(cost)
       };
     });
 
-    // Cost efficiency breakdown - with NaN protection
+    // Cost efficiency breakdown - with comprehensive NaN protection
     const costEfficiencyData = filteredData.map(item => {
       try {
-        const promptTokens = parseInt(item.promptTokens) || 0;
-        const completionTokens = parseInt(item.completionTokens) || 0;
+        const promptTokens = safeParseInt(item.promptTokens);
+        const completionTokens = safeParseInt(item.completionTokens);
         const totalTokens = promptTokens + completionTokens;
-        const cost = parseFloat(item.cost) || 0;
-        const costPerToken = totalTokens > 0 && !isNaN(cost) && isFinite(cost) ? cost / totalTokens : 0;
+        const cost = safeParseFloat(item.cost);
+        const costPerToken = totalTokens > 0 ? cost / totalTokens : 0;
 
         let efficiencyLevel;
-        if (isNaN(costPerToken) || !isFinite(costPerToken) || costPerToken === 0) {
+        if (costPerToken === 0) {
           efficiencyLevel = 'Unknown';
         } else if (costPerToken < 0.00001) {
           efficiencyLevel = 'High Efficiency';
@@ -725,7 +730,7 @@ const LogsDashboard = () => {
 
         return {
           ...item,
-          costPerToken: isNaN(costPerToken) || !isFinite(costPerToken) ? 0 : costPerToken,
+          costPerToken: safeParseFloat(costPerToken),
           efficiencyLevel
         };
       } catch (error) {
@@ -747,21 +752,20 @@ const LogsDashboard = () => {
       const cost = costEfficiencyData
         .filter(item => item.efficiencyLevel === level)
         .reduce((sum, item) => {
-          const itemCost = parseFloat(item.cost);
-          return sum + (isNaN(itemCost) || !isFinite(itemCost) ? 0 : itemCost);
+          return sum + safeParseFloat(item.cost);
         }, 0);
 
       return {
         level,
-        queries: isNaN(count) || !isFinite(count) ? 0 : count,
-        cost: isNaN(cost) || !isFinite(cost) ? 0 : cost
+        queries: safeParseInt(count),
+        cost: safeParseFloat(cost)
       };
     });
 
-    // Ensure all return values are safe numbers
-    const safeAvgTokens = isNaN(avgTokens) || !isFinite(avgTokens) ? 0 : avgTokens;
-    const safeTotalCost = isNaN(totalCost) || !isFinite(totalCost) ? 0 : totalCost;
-    const safeFailureRate = totalQueries > 0 ? (failedQueries.length / totalQueries * 100).toFixed(1) : '0';
+    // Ensure all return values are safe numbers with comprehensive validation
+    const safeAvgTokens = safeParseFloat(avgTokens);
+    const safeTotalCost = safeParseFloat(totalCost);
+    const safeFailureRate = totalQueries > 0 ? safeParseFloat((failedQueries.length / totalQueries * 100).toFixed(1)) : 0;
 
     return {
       uniqueUsers,
