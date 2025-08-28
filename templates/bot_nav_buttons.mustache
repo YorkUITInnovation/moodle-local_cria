@@ -36,10 +36,16 @@
             </a>
         {{/has_auto_test}}
         {{^bot_logs_page}}
-            <a href="{{config.wwwroot}}/local/cria/bot_logs_dashboard.php?bot_id={{bot_id}}" class="btn btn-outline-primary
-            mr-1">
-            {{#str}}logs, local_cria{{/str}}
-            </a>
+            <div class="btn-group mr-1">
+                <button type="button" class="btn btn-outline-primary">{{#str}}logs, local_cria{{/str}}</button>
+                <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" data-reference="parent">
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="bot_logs_dashboard.php?bot_id={{id}}">{{#str}}analytics_dashboard, local_cria{{/str}}</a>
+                    <a class="dropdown-item" href="bot_logs.php?bot_id={{id}}">{{#str}}full_logs, local_cria{{/str}}</a>
+                </div>
+            </div>
         {{/bot_logs_page}}
         </a>
         <a href="bot_config.php" class="btn btn-outline-primary mr-1">

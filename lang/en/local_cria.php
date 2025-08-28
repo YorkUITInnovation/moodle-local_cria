@@ -31,6 +31,7 @@ $string['available_child'] = 'Make this bot available to other bots';
 $string['available_child_help'] = 'Select Yes if you want this bot to be available to other bots as a child bot. This is useful if you want to create a bot that uses the content of another bot.';
 $string['advanced_settings'] = 'Advanced settings';
 $string['all'] = 'All';
+$string['analytics_dashboard'] = 'Analytics Dashboard';
 $string['answer'] = 'Answer';
 $string['audience'] = 'Audience';
 $string['auto_test'] = 'Auto-Test';
@@ -160,6 +161,7 @@ $string['fine_tuning_help'] = 'Fine-tuning will provide you with extra parameter
     ' allow you to separate your content into categories making your bot more precise and accurate.' .
     ' This is an advanced feature and should only be used if you know what you are doing.';
 $string['for_developers'] = 'For developers';
+$string['full_logs'] = 'Full logs';
 $string['generate_answer'] = 'Let AI generate an answer based on your answer above?';
 $string['generate_answer_help'] = 'If yes, the AI will generate an answer based on the answer you provided above.'
 . ' If no, the answer above will be provided. NOTE: if you are using images, maps, videos or other media, you should always select no.';

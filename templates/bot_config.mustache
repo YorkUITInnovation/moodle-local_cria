@@ -98,9 +98,16 @@
                                     </a>
                                 {{/local/cria:test_bots}}
                                 {{#local/cria:view_bot_logs}}
-                                    <a href="bot_logs_dashboard.php?bot_id={{id}}" class="btn btn-outline-primary">
-                                    {{#str}}logs, local_cria{{/str}}
-                                    </a>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-outline-primary">{{#str}}logs, local_cria{{/str}}</button>
+                                        <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" data-reference="parent">
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="bot_logs_dashboard.php?bot_id={{id}}">{{#str}}analytics_dashboard, local_cria{{/str}}</a>
+                                            <a class="dropdown-item" href="bot_logs.php?bot_id={{id}}">{{#str}}full_logs, local_cria{{/str}}</a>
+                                        </div>
+                                    </div>
                                 {{/local/cria:view_bot_logs}}
                                 {{#local/cria:delete_bots}}
                                     {{^system_reserved}}
