@@ -34,7 +34,7 @@ if (!$data) {
 }
 
 // Validate required fields
-$required_fields = ['assignee_id', 'query_id', 'priority'];
+$required_fields = ['assignee_id', 'query_id'];
 foreach ($required_fields as $field) {
     if (!isset($data[$field]) || empty($data[$field])) {
         http_response_code(400);
@@ -45,7 +45,6 @@ foreach ($required_fields as $field) {
 
 try {
     global $DB, $USER;
-
     // Extract query ID from the query_id field (remove 'query_' prefix if present)
     $log_id = $data['query_id'];
     if (strpos($log_id, 'query_') === 0) {
@@ -68,31 +67,69 @@ try {
         exit;
     }
 
+    // Determine correct DB column for priority (handle potential legacy typo 'prioirty')
+    $priority_field = 'priority';
+    try {
+        $columns = $DB->get_columns('local_cria_tasks');
+        if (!isset($columns['priority']) && isset($columns['prioirty'])) {
+            $priority_field = 'prioirty';
+        }
+    } catch (Exception $e) {
+        // Fall back silently to 'priority'
+        $priority_field = 'priority';
+    }
+
+
     // Check if task already exists for this log_id
     $existing_task = $DB->get_record('local_cria_tasks', ['log_id' => $log_id]);
 
     $task_data = new stdClass();
     $task_data->userid = $data['assignee_id'];
     $task_data->log_id = $log_id;
-    $task_data->priority = $data['priority']; // Note: field name has typo in DB
+    // Write to the resolved priority column name
+    if (isset($data['priority']) && $data['priority'] !== '') {
+        $task_data->{$priority_field} = $data['priority'];
+    }
     $task_data->notes = isset($data['notes']) ? $data['notes'] : '';
     $task_data->usermodified = $USER->id;
     $task_data->timemodified = time();
+
+    \local_cria\base::debug_to_file('original_data.txt', $data);
+
+    \local_cria\base::debug_to_file('task_data.txt', $task_data);
+    // Also log as array to confirm field keys
+    $task_data_arr = (array)$task_data;
+    \local_cria\base::debug_to_file('task_data_arr.txt', $task_data_arr);
 
     if ($existing_task) {
         // Update existing task
         $task_data->id = $existing_task->id;
         $task_data->timecreated = $existing_task->timecreated; // Keep original creation time
 
-        $result = $DB->update_record('local_cria_tasks', $task_data);
+        // Try raw update with array first, fallback to object update
+        try {
+            $result = $DB->update_record_raw('local_cria_tasks', $task_data_arr);
+        } catch (Exception $e) {
+            $result = $DB->update_record('local_cria_tasks', $task_data);
+        }
         $task_id = $existing_task->id;
         $action = 'updated';
     } else {
         // Create new task
         $task_data->timecreated = time();
-
-        $task_id = $DB->insert_record('local_cria_tasks', $task_data);
-        $result = $task_id > 0;
+        if (empty($task_data->status)) {
+            $task_data->status = 'assigned';
+        }
+        // Keep array in sync with new fields
+        $task_data_arr = (array)$task_data;
+        // Try raw insert with array first, fallback to object insert
+        try {
+            $task_id = $DB->insert_record_raw('local_cria_tasks', $task_data_arr, true);
+            $result = $task_id > 0;
+        } catch (Exception $e) {
+            $task_id = $DB->insert_record('local_cria_tasks', $task_data);
+            $result = $task_id > 0;
+        }
         $action = 'created';
     }
 
@@ -129,7 +166,7 @@ try {
                 <div style='background-color: #f8f9fa; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
                     <h4>Task Details:</h4>
                     <p><strong>Bot:</strong> {$bot_name}</p>
-                    <p><strong>Priority:</strong> " . ucfirst($data['priority']) . "</p>
+                    <p><strong>Priority:</strong> " . $data['priority'] . "</p>
                     <p><strong>Assigned by:</strong> {$from_user->firstname} {$from_user->lastname}</p>
                     <p><strong>Date:</strong> " . date('Y-m-d H:i:s') . "</p>
                 </div>
@@ -160,7 +197,7 @@ try {
             $message_text .= "You have been assigned a new task to review a failed query.\n\n";
             $message_text .= "Task Details:\n";
             $message_text .= "Bot: {$bot_name}\n";
-            $message_text .= "Priority: " . ucfirst($data['priority']) . "\n";
+            $message_text .= "Priority: " . $data['priority'] . "\n";
             $message_text .= "Assigned by: {$from_user->firstname} {$from_user->lastname}\n";
             $message_text .= "Date: " . date('Y-m-d H:i:s') . "\n\n";
             $message_text .= "Failed Query:\n";
@@ -197,6 +234,7 @@ try {
             'success' => true,
             'action' => $action,
             'task_id' => $task_id,
+            'priority' => $data['priority'],
             'assignee' => [
                 'id' => $assignee->id,
                 'name' => trim($assignee->firstname . ' ' . $assignee->lastname),

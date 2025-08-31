@@ -77,6 +77,14 @@ const LogsDashboard = () => {
     return null;
   }, []);
 
+  // Map UI priority (lowercase) to server format (Title Case)
+  const toServerPriority = useCallback((p) => {
+    const map = { low: 'Low', medium: 'Medium', high: 'High', urgent: 'Urgent' };
+    if (!p) return 'Low';
+    const key = String(p).toLowerCase();
+    return map[key] || 'Low';
+  }, []);
+
   // Team members for assignment - fallback if no permittedUsers available
   const fallbackTeamMembers = [
     { id: 'ai-engineer-1', name: 'Sarah Chen', role: 'AI Engineer', department: 'Engineering' },
@@ -138,7 +146,8 @@ const LogsDashboard = () => {
           department: 'Support'
         },
         status: task.status || 'assigned',
-        priority: task.priority || 'medium',
+  // Normalize to lowercase for consistent UI handling
+  priority: (task.priority || 'medium').toString().toLowerCase(),
         notes: '', // Notes not included in current API response
         assignedDate: task.timecreated,
         updatedDate: task.timecreated
@@ -910,7 +919,7 @@ const LogsDashboard = () => {
       try {
         const queryId = generateQueryId(selectedQuery);
 
-        const response = await fetch('../save_task.php', {
+    const response = await fetch('../save_task.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -918,7 +927,8 @@ const LogsDashboard = () => {
           body: JSON.stringify({
             assignee_id: selectedAssignee,
             query_id: queryId,
-            priority: priority,
+      // Send title-cased priority for server compatibility
+      priority: toServerPriority(priority),
             notes: notes
           })
         });
@@ -1659,15 +1669,15 @@ const LogsDashboard = () => {
             <div className="bg-yellow-50 p-3 rounded-lg">
               <p className="text-xs text-yellow-600">Unassigned</p>
               <p className="text-lg font-semibold text-yellow-800">
-                {analytics.failedQueriesList.filter(query => !assignments[generateQueryId(query)]).length}
+                {analytics.failedQueriesList.filter(query => !getTaskAssignment(query)).length}
               </p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg">
               <p className="text-xs text-blue-600">Assigned</p>
               <p className="text-lg font-semibold text-blue-800">
                 {analytics.failedQueriesList.filter(query => {
-                  const assignment = assignments[generateQueryId(query)];
-                  return assignment && ['assigned', 'in-progress'].includes(assignment.status);
+                  const assignment = getTaskAssignment(query);
+                  return assignment && ['assigned', 'in-progress'].includes((assignment.status || '').toLowerCase());
                 }).length}
               </p>
             </div>
@@ -1675,8 +1685,8 @@ const LogsDashboard = () => {
               <p className="text-xs text-green-600">Resolved</p>
               <p className="text-lg font-semibold text-green-800">
                 {analytics.failedQueriesList.filter(query => {
-                  const assignment = assignments[generateQueryId(query)];
-                  return assignment && assignment.status === 'resolved';
+                  const assignment = getTaskAssignment(query);
+                  return assignment && (assignment.status || '').toLowerCase() === 'resolved';
                 }).length}
               </p>
             </div>
