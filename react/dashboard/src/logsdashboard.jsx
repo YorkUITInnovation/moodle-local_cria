@@ -22,6 +22,7 @@ const LogsDashboard = () => {
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [assignmentFilter, setAssignmentFilter] = useState('all'); // 'all', 'unassigned', 'assigned', 'in-progress', 'resolved'
+  const [isReassignMode, setIsReassignMode] = useState(false);
 
   // Permitted users for assignment (loaded from API)
   const [permittedUsers, setPermittedUsers] = useState([]);
@@ -139,16 +140,16 @@ const LogsDashboard = () => {
       const task = query.tasks[0];
       return {
         assignee: {
-          id: task.id,
+          id: (task.userid ?? task.id)?.toString(),
           name: `${task.firstname} ${task.lastname}`.trim(),
           email: task.email,
           role: 'Team Member',
           department: 'Support'
         },
         status: task.status || 'assigned',
-  // Normalize to lowercase for consistent UI handling
-  priority: (task.priority || 'medium').toString().toLowerCase(),
-        notes: '', // Notes not included in current API response
+        // Normalize to lowercase for consistent UI handling
+        priority: (task.priority || 'medium').toString().toLowerCase(),
+        notes: task.notes || '',
         assignedDate: task.timecreated,
         updatedDate: task.timecreated
       };
@@ -197,27 +198,52 @@ const LogsDashboard = () => {
     saveAssignments(newAssignments);
   };
 
-  // Update assignment status
-  const updateAssignmentStatus = (queryId, status, notes = '') => {
-    if (!assignments[queryId]) return;
-
-    const newAssignments = {
-      ...assignments,
-      [queryId]: {
-        ...assignments[queryId],
-        status: status,
-        notes: notes || assignments[queryId].notes,
-        updatedDate: new Date().toISOString()
+  // Update assignment status via backend API then refresh data
+  const updateAssignmentStatus = async (queryId, status, notes = '') => {
+    try {
+      const resp = await fetch('../update_task.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query_id: queryId, status, notes })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        setUploadStatus({ type: 'success', message: `Task marked ${status}` });
+        try { await loadBotData(); } catch (e) { /* noop */ }
+        setTimeout(() => setUploadStatus({ type: '', message: '' }), 3000);
+      } else {
+        setUploadStatus({ type: 'error', message: result.error || 'Failed to update task' });
+        setTimeout(() => setUploadStatus({ type: '', message: '' }), 4000);
       }
-    };
-    saveAssignments(newAssignments);
+    } catch (e) {
+      console.error('Error updating task status:', e);
+      setUploadStatus({ type: 'error', message: 'Network error while updating task' });
+      setTimeout(() => setUploadStatus({ type: '', message: '' }), 4000);
+    }
   };
 
-  // Remove assignment
-  const removeAssignment = (queryId) => {
-    const newAssignments = { ...assignments };
-    delete newAssignments[queryId];
-
+  // Unassign (delete task) via backend API then refresh data
+  const removeAssignment = async (queryId) => {
+    try {
+      const resp = await fetch('../update_task.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query_id: queryId, action: 'delete' })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        setUploadStatus({ type: 'success', message: 'Task unassigned' });
+        try { await loadBotData(); } catch (e) { /* noop */ }
+        setTimeout(() => setUploadStatus({ type: '', message: '' }), 3000);
+      } else {
+        setUploadStatus({ type: 'error', message: result.error || 'Failed to unassign task' });
+        setTimeout(() => setUploadStatus({ type: '', message: '' }), 4000);
+      }
+    } catch (e) {
+      console.error('Error unassigning task:', e);
+      setUploadStatus({ type: 'error', message: 'Network error while unassigning task' });
+      setTimeout(() => setUploadStatus({ type: '', message: '' }), 4000);
+    }
   };
 
   // Default topic filter options and keywords
@@ -890,6 +916,22 @@ const LogsDashboard = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
 
+    // When opening in reassign mode, prefill assignee from current task and hide priority/notes
+    React.useEffect(() => {
+      if (showAssignmentModal && selectedQuery) {
+        const existing = getTaskAssignment(selectedQuery);
+        if (existing && existing.assignee && existing.assignee.id) {
+          setSelectedAssignee(existing.assignee.id.toString());
+        }
+        if (existing && existing.priority) {
+          setPriority(existing.priority);
+        }
+        if (existing && existing.notes) {
+          setNotes(existing.notes);
+        }
+      }
+    }, [showAssignmentModal, selectedQuery]);
+
     // Validation function
     const validateForm = () => {
       const errors = {};
@@ -919,23 +961,20 @@ const LogsDashboard = () => {
       try {
         const queryId = generateQueryId(selectedQuery);
 
-    const response = await fetch('../save_task.php', {
+        // If reassigning, call update endpoint; otherwise use save_task to create
+        const response = await fetch(isReassignMode ? '../update_task.php' : '../save_task.php', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            assignee_id: selectedAssignee,
-            query_id: queryId,
-      // Send title-cased priority for server compatibility
-      priority: toServerPriority(priority),
-            notes: notes
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            isReassignMode
+              ? { assignee_id: selectedAssignee, query_id: queryId }
+              : { assignee_id: selectedAssignee, query_id: queryId, priority: toServerPriority(priority), notes }
+          )
         });
 
         const result = await response.json();
 
-        if (result.success) {
+  if (result.success) {
           // Reload bot data so UI reflects the new task assignment
           try {
             await loadBotData();
@@ -965,16 +1004,21 @@ const LogsDashboard = () => {
           }
 
           // Show success message
-          setUploadStatus({
-            type: 'success',
-            message: `Task ${result.action} successfully and assigned to ${result.assignee.name}`
-          });
+          if (isReassignMode) {
+            setUploadStatus({ type: 'success', message: 'Task reassigned successfully' });
+          } else {
+            setUploadStatus({
+              type: 'success',
+              message: `Task ${result.action} successfully and assigned to ${result.assignee?.name || ''}`
+            });
+          }
 
           // Clear status after 5 seconds
           setTimeout(() => setUploadStatus({ type: '', message: '' }), 5000);
 
           // Close modal and reset form
           setShowAssignmentModal(false);
+          setIsReassignMode(false);
           setSelectedQuery(null);
           setSelectedAssignee('');
           setPriority('medium');
@@ -1042,7 +1086,7 @@ const LogsDashboard = () => {
               <p className="text-red-500 text-xs mt-1">{validationErrors.assignee}</p>
             )}
           </div>
-
+          {!isReassignMode && (
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Priority: <span className="text-red-500">*</span>
@@ -1069,7 +1113,9 @@ const LogsDashboard = () => {
               <p className="text-red-500 text-xs mt-1">{validationErrors.priority}</p>
             )}
           </div>
+          )}
 
+          {!isReassignMode && (
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Notes:</label>
             <textarea
@@ -1081,6 +1127,7 @@ const LogsDashboard = () => {
               disabled={isSubmitting}
             />
           </div>
+          )}
 
           <div className="flex justify-end space-x-3">
             <button
@@ -1109,10 +1156,10 @@ const LogsDashboard = () => {
               {isSubmitting ? (
                 <span className="flex items-center">
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Assigning...
+                  {isReassignMode ? 'Reassigning...' : 'Assigning...'}
                 </span>
               ) : (
-                'Assign'
+                isReassignMode ? 'Reassign' : 'Assign'
               )}
             </button>
           </div>
@@ -1768,12 +1815,14 @@ const LogsDashboard = () => {
                                     </button>
                                   </>
                                 )}
-                                <button
-                                  onClick={() => removeAssignment(queryId)}
-                                  className="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700"
-                                >
-                                  Unassign
-                                </button>
+                                {assignment.status !== 'resolved' && (
+                                  <button
+                                    onClick={() => removeAssignment(queryId)}
+                                    className="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700"
+                                  >
+                                    Unassign
+                                  </button>
+                                )}
                               </div>
                             </div>
                             <div className="mt-1 text-xs text-gray-600">
@@ -1790,10 +1839,11 @@ const LogsDashboard = () => {
 
                       {/* Action Buttons */}
                       <div className="ml-4 flex-shrink-0">
-                        {!assignment ? (
+        {!assignment ? (
                           <button
                             onClick={() => {
                               setSelectedQuery(item);
+          setIsReassignMode(false);
                               setShowAssignmentModal(true);
                             }}
                             className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
@@ -1801,15 +1851,18 @@ const LogsDashboard = () => {
                             Assign
                           </button>
                         ) : (
-                          <button
-                            onClick={() => {
-                              setSelectedQuery(item);
-                              setShowAssignmentModal(true);
-                            }}
-                            className="bg-gray-600 text-white px-3 py-1 rounded text-xs hover:bg-gray-700"
-                          >
-                            Reassign
-                          </button>
+                          assignment.status !== 'resolved' && (
+                            <button
+                              onClick={() => {
+                                setSelectedQuery(item);
+                                setIsReassignMode(true);
+                                setShowAssignmentModal(true);
+                              }}
+                              className="bg-gray-600 text-white px-3 py-1 rounded text-xs hover:bg-gray-700"
+                            >
+                              Reassign
+                            </button>
+                          )
                         )}
                       </div>
                     </div>

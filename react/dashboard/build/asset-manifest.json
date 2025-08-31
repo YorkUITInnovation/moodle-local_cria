@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/local/cria/react/dashboard/build/static/js/main.ca927631.js",
+    "main.js": "/local/cria/react/dashboard/build/static/js/main.118c4001.js",
     "index.html": "/local/cria/react/dashboard/build/index.html",
-    "main.ca927631.js.map": "/local/cria/react/dashboard/build/static/js/main.ca927631.js.map"
+    "main.118c4001.js.map": "/local/cria/react/dashboard/build/static/js/main.118c4001.js.map"
   },
   "entrypoints": [
-    "static/js/main.ca927631.js"
+    "static/js/main.118c4001.js"
   ]
 }

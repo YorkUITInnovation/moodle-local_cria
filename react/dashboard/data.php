@@ -64,8 +64,10 @@ try {
         // Get tasks. Return raw epoch then convert to ISO 8601 in PHP to ensure JS Date compatibility
         $tasks_sql = "SELECT
     ct.id,
+    ct.userid AS userid,
     ct.priority,
     ct.status,
+    ct.notes,
     ct.timecreated AS timecreated,
     u.firstname,
     u.lastname,
