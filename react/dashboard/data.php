@@ -60,6 +60,31 @@ try {
     $transformed_data = [];
 
     foreach ($logs as $log) {
+
+        // Get tasks. Return raw epoch then convert to ISO 8601 in PHP to ensure JS Date compatibility
+        $tasks_sql = "SELECT
+    ct.id,
+    ct.priority,
+    ct.status,
+    ct.timecreated AS timecreated,
+    u.firstname,
+    u.lastname,
+    u.email
+FROM
+    {local_cria_tasks} ct INNER JOIN
+    {user} u ON u.id = ct.userid
+WHERE
+    ct.log_id = ?";
+        $tasks = $DB->get_records_sql($tasks_sql, [$log->id]);
+
+        // Normalize task timestamps to ISO 8601 strings for reliable parsing in the React app
+        $task_records = array_values($tasks);
+        foreach ($task_records as &$task) {
+            // Ensure integer then format as ISO 8601 (server timezone)
+            $task->timecreated = date('c', (int)$task->timecreated);
+        }
+        unset($task);
+
         $transformed_data[] = [
             'id' => $log->id,
             'prompt' => $log->prompt,
@@ -83,21 +108,37 @@ try {
             'context' => $log->index_context,
             'payload' => $log->payload,
             'other' => $log->other,
-            'ip' => $log->ip
+            'ip' => $log->ip,
+            'tasks' => $task_records
         ];
     }
 
+    $permitted_users_sql = "Select
+    u.id,
+    u.firstname,
+    u.lastname,
+    u.email
+From
+    {local_cria_capability_assign} cc Inner Join
+    {local_cria_bot_role} cbr On cbr.id = cc.bot_role_id Inner Join
+    {user} u On u.id = cc.user_id 
+Where cbr.bot_id = ?";
+    $permitted_users = $DB->get_records_sql($permitted_users_sql, [$bot_id]);
+
+    $tasks_sql = "";
     // Return JSON response
-    echo json_encode([
+    $data = [
         'success' => true,
         'data' => $transformed_data,
         'count' => count($transformed_data),
         'bot_id' => $bot_id,
         'date_range' => $date_range,
         'topicOptions' => $topic_options,
-        'topicKeywords' => $topic_keywords
-    ]);
-
+        'topicKeywords' => $topic_keywords,
+        'permittedUsers' => array_values($permitted_users)
+    ];
+    echo json_encode($data);
+//\local_cria\base::debug_to_file('react_data.json', $data);
 } catch (Exception $e) {
     // Return error response
     http_response_code(400);

@@ -23,6 +23,9 @@ const LogsDashboard = () => {
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [assignmentFilter, setAssignmentFilter] = useState('all'); // 'all', 'unassigned', 'assigned', 'in-progress', 'resolved'
 
+  // Permitted users for assignment (loaded from API)
+  const [permittedUsers, setPermittedUsers] = useState([]);
+
   // Get bot_id from URL query parameters
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -47,8 +50,35 @@ const LogsDashboard = () => {
     }
   }, [dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Team members for assignment
-  const teamMembers = [
+  // Safe date parser that accepts ISO 8601, MySQL "YYYY-MM-DD HH:MM:SS", epoch seconds/millis
+  const safeParseDate = useCallback((value) => {
+    if (!value) return null;
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+    if (typeof value === 'number') {
+      // Heuristic: < 1e12 is seconds, otherwise milliseconds
+      const ms = value < 1e12 ? value * 1000 : value;
+      const d = new Date(ms);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    if (typeof value === 'string') {
+      // Try native parse first
+      let d = new Date(value);
+      if (!isNaN(d.getTime())) return d;
+
+      // Try replace space with 'T' (MySQL DATETIME) and assume local timezone
+      const withT = value.replace(' ', 'T');
+      d = new Date(withT);
+      if (!isNaN(d.getTime())) return d;
+
+      // Try forcing UTC by appending 'Z'
+      d = new Date(withT + 'Z');
+      if (!isNaN(d.getTime())) return d;
+    }
+    return null;
+  }, []);
+
+  // Team members for assignment - fallback if no permittedUsers available
+  const fallbackTeamMembers = [
     { id: 'ai-engineer-1', name: 'Sarah Chen', role: 'AI Engineer', department: 'Engineering' },
     { id: 'ai-engineer-2', name: 'Michael Rodriguez', role: 'AI Engineer', department: 'Engineering' },
     { id: 'content-specialist-1', name: 'Emily Watson', role: 'Content Specialist', department: 'Content' },
@@ -57,6 +87,20 @@ const LogsDashboard = () => {
     { id: 'product-manager-1', name: 'Alex Thompson', role: 'Product Manager', department: 'Product' },
     { id: 'ux-researcher-1', name: 'Maria Garcia', role: 'UX Researcher', department: 'Design' }
   ];
+
+  // Get team members - use permittedUsers if available, otherwise fallback
+  const teamMembers = useMemo(() => {
+    if (permittedUsers && permittedUsers.length > 0) {
+      return permittedUsers.map(user => ({
+        id: user.id.toString(), // Ensure ID is string for consistency
+        name: `${user.firstname} ${user.lastname}`.trim(),
+        email: user.email,
+        role: 'Team Member', // Default role since not provided in API
+        department: 'Support' // Default department since not provided in API
+      }));
+    }
+    return fallbackTeamMembers;
+  }, [permittedUsers]);
 
   // Load assignments from localStorage
   const loadAssignments = () => {
@@ -80,10 +124,38 @@ const LogsDashboard = () => {
     }
   };
 
-  // Generate unique ID for each query
+  // Get task assignment for a query from the database data (not localStorage)
+  const getTaskAssignment = (query) => {
+    if (query.tasks && query.tasks.length > 0) {
+      // Use the first task (assuming one task per query for now)
+      const task = query.tasks[0];
+      return {
+        assignee: {
+          id: task.id,
+          name: `${task.firstname} ${task.lastname}`.trim(),
+          email: task.email,
+          role: 'Team Member',
+          department: 'Support'
+        },
+        status: task.status || 'assigned',
+        priority: task.priority || 'medium',
+        notes: '', // Notes not included in current API response
+        assignedDate: task.timecreated,
+        updatedDate: task.timecreated
+      };
+    }
+    return null;
+  };
+
+  // Generate unique ID for each query - now uses the existing id field from data
   const generateQueryId = (query) => {
     try {
-      // Create a simple hash from the prompt and timestamp
+      // Use the existing id field if available, otherwise fall back to hash generation
+      if (query.id) {
+        return `query_${query.id}`;
+      }
+
+      // Fallback for data without id field (like sample data)
       const str = query.prompt.substring(0, 50) + query.timestamp;
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
@@ -136,12 +208,12 @@ const LogsDashboard = () => {
   const removeAssignment = (queryId) => {
     const newAssignments = { ...assignments };
     delete newAssignments[queryId];
-    saveAssignments(newAssignments);
+
   };
 
   // Default topic filter options and keywords
   const defaultTopicOptions = [
-    { value: 'all', label: 'All Topics' },
+
     { value: 'academic', label: 'Academic Support' },
     { value: 'campus', label: 'Campus Services' },
     { value: 'student-life', label: 'Student Life' },
@@ -179,12 +251,12 @@ const LogsDashboard = () => {
       }
 
       // override topic options if provided as array of objects with value/label structure
-      if (jsonResponse.topicOptions && Array.isArray(jsonResponse.topicOptions)) {
+
         // Add "All Topics" option if not present
         const hasAllTopics = jsonResponse.topicOptions.find(opt => opt.value === 'all');
         if (!hasAllTopics) {
           jsonResponse.topicOptions.unshift({ value: 'all', label: 'All Topics' });
-        }
+
         setTopicOptions(jsonResponse.topicOptions);
       } else if (jsonResponse.topicKeywords && typeof jsonResponse.topicKeywords === 'object') {
         // If only topicKeywords provided, build options from keywords map
@@ -203,9 +275,19 @@ const LogsDashboard = () => {
       }
 
       setData(jsonResponse.data);
+
+      // Extract and set permitted users for assignment if available
+      if (jsonResponse.permittedUsers && Array.isArray(jsonResponse.permittedUsers)) {
+        console.log('Loading permitted users:', jsonResponse.permittedUsers);
+        setPermittedUsers(jsonResponse.permittedUsers);
+      } else {
+        console.log('No permitted users found in API response, using fallback team members');
+        setPermittedUsers([]); // Clear any existing permitted users
+      }
+
       setUploadStatus({
         type: 'success',
-        message: `Loaded ${jsonResponse.data.length} conversations for bot ${botId}`
+        message: `Loaded ${jsonResponse.data.length} conversations for bot ${botId}${jsonResponse.permittedUsers ? ` with ${jsonResponse.permittedUsers.length} permitted users` : ''}`
       });
 
       // Clear status after 5 seconds
@@ -222,18 +304,18 @@ const LogsDashboard = () => {
     }
   };
 
-  // Enhanced sample data with SAVY-like conversations
+  // Sample data for testing
   const sampleData = [
-    { prompt: "What kinds of questions can you answer?", response: "I can help answer questions and connect you with available resources for academic success. However, I'm not currently able to answer questions about admissions, costs for individual courses and programs, or availability of your program requirements.", promptTokens: 15, completionTokens: 45, cost: 0.002, timestamp: "2025-07-08T09:30:00Z" },
-    { prompt: "Where is Vari Hall?", response: "Vari Hall is located at the Keele Campus of York University. It is one of the central buildings with multiple lecture halls. For specific room locations and to find your lecture hall, you can use the York University Interactive Map.", promptTokens: 12, completionTokens: 35, cost: 0.001, timestamp: "2025-07-08T10:15:00Z" },
-    { prompt: "How do I register for courses?", response: "To register for courses, you'll need to log into your student portal and use the course enrollment system. Make sure to check prerequisites and course availability. If you need help with registration, contact the Registrar's Office.", promptTokens: 18, completionTokens: 42, cost: 0.0015, timestamp: "2025-07-08T11:00:00Z" },
-    { prompt: "What are the library hours?", response: "Library hours vary by location and time of year. During the academic year, most libraries are open extended hours including evenings and weekends. Check the York University Libraries website for current hours and any holiday closures.", promptTokens: 14, completionTokens: 38, cost: 0.0012, timestamp: "2025-07-08T14:20:00Z" },
-    { prompt: "How can I get academic support?", response: "York University offers various academic support services including tutoring centers, writing support, study groups, and academic advising. Visit the Student Success Centre or check the academic support resources on the university website.", promptTokens: 16, completionTokens: 41, cost: 0.0018, timestamp: "2025-07-08T15:45:00Z" },
-    { prompt: "What mental health resources are available?", response: "York offers counselling services, mental health workshops, peer support programs, and crisis support. The Counselling & Psychological Services office can provide individual counselling and connect you with appropriate resources.", promptTokens: 13, completionTokens: 34, cost: 0.001, timestamp: "2025-07-07T08:30:00Z" },
-    { prompt: "How do I access WiFi on campus?", response: "Students can connect to the 'YorkU' wireless network using their Passport York credentials. Guest access is also available. For technical support with connectivity issues, contact UIT (University Information Technology).", promptTokens: 16, completionTokens: 36, cost: 0.0019, timestamp: "2025-07-07T09:15:00Z" },
-    { prompt: "Where can I find information about scholarships?", response: "Scholarship information is available through the Student Financial Services office and the university website. You can search for scholarships by program, year of study, and eligibility criteria. Application deadlines vary by scholarship.", promptTokens: 18, completionTokens: 40, cost: 0.0016, timestamp: "2025-07-07T10:30:00Z" },
-    { prompt: "Can you help me with my assignment?", response: "I can provide general guidance on academic resources and study strategies, but I cannot help with specific assignment content. For assignment help, visit the Writing Centre, subject-specific tutoring services, or speak with your instructor during office hours.", promptTokens: 15, completionTokens: 43, cost: 0.0011, timestamp: "2025-07-07T13:45:00Z" },
-    { prompt: "What dining options are available on campus?", response: "York University has various dining options including cafeterias, food courts, coffee shops, and restaurants across different campuses. Meal plans are available for students living in residence. Check the York Dining website for locations and hours.", promptTokens: 17, completionTokens: 39, cost: 0.0017, timestamp: "2025-07-07T16:20:00Z" }
+    { id: 1, prompt: "What kinds of questions can you answer?", response: "I can help answer questions and connect you with available resources for academic success. However, I'm not currently able to answer questions about admissions, costs for individual courses and programs, or availability of your program requirements.", promptTokens: 15, completionTokens: 45, cost: 0.002, timestamp: "2025-07-08T09:30:00Z" },
+    { id: 2, prompt: "Where is Vari Hall?", response: "Vari Hall is located at the Keele Campus of York University. It is one of the central buildings with multiple lecture halls. For specific room locations and to find your lecture hall, you can use the York University Interactive Map.", promptTokens: 12, completionTokens: 35, cost: 0.001, timestamp: "2025-07-08T10:15:00Z" },
+    { id: 3, prompt: "How do I register for courses?", response: "To register for courses, you'll need to log into your student portal and use the course enrollment system. Make sure to check prerequisites and course availability. If you need help with registration, contact the Registrar's Office.", promptTokens: 18, completionTokens: 42, cost: 0.0015, timestamp: "2025-07-08T11:00:00Z" },
+    { id: 4, prompt: "What are the library hours?", response: "Library hours vary by location and time of year. During the academic year, most libraries are open extended hours including evenings and weekends. Check the York University Libraries website for current hours and any holiday closures.", promptTokens: 14, completionTokens: 38, cost: 0.0012, timestamp: "2025-07-08T14:20:00Z" },
+    { id: 5, prompt: "How can I get academic support?", response: "York University offers various academic support services including tutoring centers, writing support, study groups, and academic advising. Visit the Student Success Centre or check the academic support resources on the university website.", promptTokens: 16, completionTokens: 41, cost: 0.0018, timestamp: "2025-07-08T15:45:00Z" },
+    { id: 6, prompt: "What mental health resources are available?", response: "York offers counselling services, mental health workshops, peer support programs, and crisis support. The Counselling & Psychological Services office can provide individual counselling and connect you with appropriate resources.", promptTokens: 13, completionTokens: 34, cost: 0.001, timestamp: "2025-07-07T08:30:00Z" },
+    { id: 7, prompt: "How do I access WiFi on campus?", response: "Students can connect to the 'YorkU' wireless network using their Passport York credentials. Guest access is also available. For technical support with connectivity issues, contact UIT (University Information Technology).", promptTokens: 16, completionTokens: 36, cost: 0.0019, timestamp: "2025-07-07T09:15:00Z" },
+    { id: 8, prompt: "Where can I find information about scholarships?", response: "Scholarship information is available through the Student Financial Services office and the university website. You can search for scholarships by program, year of study, and eligibility criteria. Application deadlines vary by scholarship.", promptTokens: 18, completionTokens: 40, cost: 0.0016, timestamp: "2025-07-07T10:30:00Z" },
+    { id: 9, prompt: "Can you help me with my assignment?", response: "I can provide general guidance on academic resources and study strategies, but I cannot help with specific assignment content. For assignment help, visit the Writing Centre, subject-specific tutoring services, or speak with your instructor during office hours.", promptTokens: 15, completionTokens: 43, cost: 0.0011, timestamp: "2025-07-07T13:45:00Z" },
+    { id: 10, prompt: "What dining options are available on campus?", response: "York University has various dining options including cafeterias, food courts, coffee shops, and restaurants across different campuses. Meal plans are available for students living in residence. Check the York Dining website for locations and hours.", promptTokens: 17, completionTokens: 39, cost: 0.0017, timestamp: "2025-07-07T16:20:00Z" }
   ];
 
   // Use the loaded data directly, no more CSV processing needed
@@ -796,18 +878,108 @@ const LogsDashboard = () => {
     const [selectedAssignee, setSelectedAssignee] = useState('');
     const [priority, setPriority] = useState('medium');
     const [notes, setNotes] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
 
-    const handleAssign = () => {
-      if (!selectedAssignee || !selectedQuery) return;
+    // Validation function
+    const validateForm = () => {
+      const errors = {};
 
-      const queryId = generateQueryId(selectedQuery);
-      assignQuery(queryId, selectedAssignee, priority, notes);
+      if (!selectedAssignee) {
+        errors.assignee = 'Please select a team member to assign to';
+      }
 
-      setShowAssignmentModal(false);
-      setSelectedQuery(null);
-      setSelectedAssignee('');
-      setPriority('medium');
-      setNotes('');
+      if (!priority) {
+        errors.priority = 'Please select a priority level';
+      }
+
+      setValidationErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
+
+    // Handle form submission with API call
+    const handleAssign = async () => {
+      if (!validateForm()) {
+        return;
+      }
+
+      if (!selectedQuery) return;
+
+      setIsSubmitting(true);
+
+      try {
+        const queryId = generateQueryId(selectedQuery);
+
+        const response = await fetch('../save_task.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            assignee_id: selectedAssignee,
+            query_id: queryId,
+            priority: priority,
+            notes: notes
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update local assignments state
+          const newAssignments = {
+            ...assignments,
+            [queryId]: {
+              assignee: result.assignee,
+              status: 'assigned',
+              priority: priority,
+              notes: notes,
+              assignedDate: new Date().toISOString(),
+              updatedDate: new Date().toISOString()
+            }
+          };
+
+          // Save to localStorage as backup
+          try {
+            localStorage.setItem('savy-query-assignments', JSON.stringify(newAssignments));
+            setAssignments(newAssignments);
+          } catch (error) {
+            console.error('Error saving assignments to localStorage:', error);
+          }
+
+          // Show success message
+          setUploadStatus({
+            type: 'success',
+            message: `Task ${result.action} successfully and assigned to ${result.assignee.name}`
+          });
+
+          // Clear status after 5 seconds
+          setTimeout(() => setUploadStatus({ type: '', message: '' }), 5000);
+
+          // Close modal and reset form
+          setShowAssignmentModal(false);
+          setSelectedQuery(null);
+          setSelectedAssignee('');
+          setPriority('medium');
+          setNotes('');
+          setValidationErrors({});
+        } else {
+          setUploadStatus({
+            type: 'error',
+            message: `Failed to assign task: ${result.error}`
+          });
+          setTimeout(() => setUploadStatus({ type: '', message: '' }), 5000);
+        }
+      } catch (error) {
+        console.error('Error assigning task:', error);
+        setUploadStatus({
+          type: 'error',
+          message: 'Network error occurred while assigning task'
+        });
+        setTimeout(() => setUploadStatus({ type: '', message: '' }), 5000);
+      } finally {
+        setIsSubmitting(false);
+      }
     };
 
     if (!showAssignmentModal || !selectedQuery) return null;
@@ -819,17 +991,28 @@ const LogsDashboard = () => {
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Query:</label>
-            <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded border max-h-20 overflow-y-auto">
-              {selectedQuery.prompt}
-            </p>
+            <div className="p-3 bg-gray-50 rounded-md">
+              <p className="text-sm text-gray-800 font-medium">{selectedQuery.prompt}</p>
+              <p className="text-xs text-gray-600 mt-1">Response: {selectedQuery.response}</p>
+            </div>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Assign to:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Assignee: <span className="text-red-500">*</span>
+            </label>
             <select
               value={selectedAssignee}
-              onChange={(e) => setSelectedAssignee(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setSelectedAssignee(e.target.value);
+                if (validationErrors.assignee) {
+                  setValidationErrors({...validationErrors, assignee: null});
+                }
+              }}
+              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                validationErrors.assignee ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isSubmitting}
             >
               <option value="">Select team member...</option>
               {teamMembers.map(member => (
@@ -838,20 +1021,36 @@ const LogsDashboard = () => {
                 </option>
               ))}
             </select>
+            {validationErrors.assignee && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.assignee}</p>
+            )}
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Priority: <span className="text-red-500">*</span>
+            </label>
             <select
               value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setPriority(e.target.value);
+                if (validationErrors.priority) {
+                  setValidationErrors({...validationErrors, priority: null});
+                }
+              }}
+              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                validationErrors.priority ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={isSubmitting}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
               <option value="urgent">Urgent</option>
             </select>
+            {validationErrors.priority && (
+              <p className="text-red-500 text-xs mt-1">{validationErrors.priority}</p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -862,22 +1061,42 @@ const LogsDashboard = () => {
               placeholder="Add any notes or context..."
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="3"
+              disabled={isSubmitting}
             />
           </div>
 
           <div className="flex justify-end space-x-3">
             <button
-              onClick={() => setShowAssignmentModal(false)}
+              onClick={() => {
+                setShowAssignmentModal(false);
+                setSelectedQuery(null);
+                setSelectedAssignee('');
+                setPriority('medium');
+                setNotes('');
+                setValidationErrors({});
+              }}
               className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               onClick={handleAssign}
-              disabled={!selectedAssignee}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              disabled={isSubmitting}
+              className={`px-4 py-2 text-white rounded-md transition-colors ${
+                isSubmitting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              Assign
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Assigning...
+                </span>
+              ) : (
+                'Assign'
+              )}
             </button>
           </div>
         </div>
@@ -1467,19 +1686,20 @@ const LogsDashboard = () => {
           <div className="space-y-3">
             {analytics.failedQueriesList
               .filter(query => {
-                const queryId = generateQueryId(query);
-                const assignment = assignments[queryId];
+                // Use database task data instead of localStorage assignments
+                const taskAssignment = getTaskAssignment(query);
 
-                if (assignmentFilter === 'unassigned') return !assignment;
-                if (assignmentFilter === 'assigned') return assignment && assignment.status === 'assigned';
-                if (assignmentFilter === 'in-progress') return assignment && assignment.status === 'in-progress';
-                if (assignmentFilter === 'resolved') return assignment && assignment.status === 'resolved';
+                if (assignmentFilter === 'unassigned') return !taskAssignment;
+                if (assignmentFilter === 'assigned') return taskAssignment && taskAssignment.status === 'assigned';
+                if (assignmentFilter === 'in-progress') return taskAssignment && taskAssignment.status === 'in-progress';
+                if (assignmentFilter === 'resolved') return taskAssignment && taskAssignment.status === 'resolved';
                 return true; // 'all'
               })
               .slice(0, 10)
               .map((item, index) => {
                 const queryId = generateQueryId(item);
-                const assignment = assignments[queryId];
+                // Use database task data instead of localStorage
+                const assignment = getTaskAssignment(item);
 
                 return (
                   <div key={index} className="border-l-4 border-red-500 pl-4 py-3 bg-red-50 rounded-r-lg">
@@ -1491,7 +1711,7 @@ const LogsDashboard = () => {
                           Cost: ${item.cost.toFixed(4)} | Time: {new Date(item.timestamp).toLocaleString()}
                         </p>
 
-                        {/* Assignment Info */}
+                        {/* Assignment Info - showing real database data */}
                         {assignment && (
                           <div className="mt-2 p-2 bg-white rounded border">
                             <div className="flex items-center justify-between">
@@ -1541,7 +1761,10 @@ const LogsDashboard = () => {
                             </div>
                             <div className="mt-1 text-xs text-gray-600">
                               <p>Assigned to: <span className="font-medium">{assignment.assignee.name}</span> ({assignment.assignee.role})</p>
-                              <p>Assigned: {new Date(assignment.assignedDate).toLocaleDateString()}</p>
+                              <p>Assigned: {(() => {
+                                const d = safeParseDate(assignment.assignedDate);
+                                return d ? d.toLocaleDateString() : 'Unknown';
+                              })()}</p>
                               {assignment.notes && <p>Notes: {assignment.notes}</p>}
                             </div>
                           </div>

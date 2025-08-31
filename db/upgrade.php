@@ -551,5 +551,39 @@ function xmldb_local_cria_upgrade($oldversion)
         // Cria savepoint reached.
         upgrade_plugin_savepoint(true, 2025082400, 'local', 'cria');
     }
+
+    if ($oldversion < 2025083100) {
+
+        // Define table local_cria_tasks to be created.
+        $table = new xmldb_table('local_cria_tasks');
+
+        // Adding fields to table local_cria_tasks.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_field('log_id', XMLDB_TYPE_INTEGER, '10', null, null, null, '0');
+        $table->add_field('priority', XMLDB_TYPE_CHAR, '100', null, null, null, 'Low');
+        $table->add_field('notes', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table local_cria_tasks.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+
+        // Adding indexes to table local_cria_tasks.
+        $table->add_index('user_x', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('log_x', XMLDB_INDEX_NOTUNIQUE, ['log_id']);
+        $table->add_index('user_log_x', XMLDB_INDEX_NOTUNIQUE, ['userid', 'log_id']);
+
+        // Conditionally launch create table for local_cria_tasks.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2025083100, 'local', 'cria');
+    }
+
     return true;
 }
