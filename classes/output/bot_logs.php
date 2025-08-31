@@ -64,7 +64,6 @@ class bot_logs implements \renderable, \templatable
             'name' => $BOT->get_name(),
             'logs' => logs::get_logs($this->bot_id, $this->date_range),
             'total_usage_cost' => logs::get_total_usage_cost($this->bot_id, 'CAD', $this->date_range),
-            'bot_logs_page' => true,
             'date_range' => $this->date_range
         ];
 

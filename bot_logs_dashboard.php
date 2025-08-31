@@ -36,7 +36,7 @@ if (!$date_range) {
 echo $OUTPUT->header();
 raise_memory_limit(MEMORY_UNLIMITED);
 $output = $PAGE->get_renderer('local_cria');
-echo $output->render_from_template('local_cria/bot_logs_dashboard', ['bot_id' => $bot_id, 'bot_logs_page' => true,]);
+echo $output->render_from_template('local_cria/bot_logs_dashboard', ['bot_id' => $bot_id]);
 //**********************
 //*** DISPLAY FOOTER ***
 //**********************
