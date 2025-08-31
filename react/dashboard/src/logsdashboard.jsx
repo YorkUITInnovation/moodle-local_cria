@@ -936,6 +936,13 @@ const LogsDashboard = () => {
         const result = await response.json();
 
         if (result.success) {
+          // Reload bot data so UI reflects the new task assignment
+          try {
+            await loadBotData();
+          } catch (e) {
+            console.error('Error reloading bot data after assignment:', e);
+          }
+
           // Update local assignments state
           const newAssignments = {
             ...assignments,
