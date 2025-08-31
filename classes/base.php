@@ -500,4 +500,9 @@ class base
             mkdir($path);
         }
     }
+
+    public static function debug_to_file($file_name, $data) {
+        $path = '/var/www/moodledata/temp/' . $file_name;
+        file_put_contents($path, print_r($data, true));
+    }
 }

@@ -16,6 +16,7 @@
 
 namespace local_cria;
 
+use local_cria\base;
 use local_cria\gpt;
 use local_cria\bot;
 use local_cria\intent;
@@ -41,11 +42,12 @@ class criaembed
             'botGreeting' => $BOT->get_welcome_message(),
             'botIconUrl' => $BOT->get_icon_url(),
             "botEmbedTheme" => $BOT->get_theme_color(),
-            "botEmbedDefaultEnabled" => $BOT->get_embed_enabled_bool(),
             "botEmbedPosition" => $BOT->get_embed_position(),
+            "botEmbedDefaultEnabled" => $BOT->get_embed_enabled_bool(),
             "botWatermark" => $BOT->get_bot_watermark_string_bool(),
             "botLocale" => $BOT->get_bot_locale(),
             "initialPrompts" => $BOT->get_related_prompts(),
+            "integrationsWhitelistFilter" => "",
             'microsoftAppId' => $BOT->get_ms_app_id(),
             'microsoftAppPassword' => $BOT->get_ms_app_password(),
             'integrationsNoContextReply' => $BOT->get_integrations_no_context_reply(),

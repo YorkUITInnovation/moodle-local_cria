@@ -272,6 +272,12 @@ class local_cria_external_content extends external_api {
         // Save file to temporary folder
         $file = $path . $filename;
         $file_content = base64_decode($filecontent);
+        
+        // Temporary fix: Handle resource_ files - replace first forum URL with resource URL
+        if (strpos($filename, 'resource_') === 0) {
+            $file_content = preg_replace('/\/mod\/forum\/view\.php/', '/mod/resource/view.php', $file_content, 1);
+        }
+
         file_put_contents($file, $file_content);
 
         // Get moodle file storage
