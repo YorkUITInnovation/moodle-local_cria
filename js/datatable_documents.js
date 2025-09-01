@@ -1,240 +1,229 @@
 $(document).ready(function () {
     let wwwroot = M.cfg.wwwroot;
 
-    let table = $('#cria-documents-table').DataTable({
-        dom: 'lfrtip',
-        "processing": true,
-        "serverSide": true,
-        "ajax": {
-            "url": wwwroot + "/local/cria/ajax/datatable_documents.php",
-            "type": "POST",
-            "data": {
-                "bot_id": $('#bot_id').val(),
-                "intent_id": $('#intent_id').val()
-            },
-            "complete": function () {
+    // Helper to get the currently active tab pane
+    const getActivePane = () => $('#cria-content-tab .tab-pane.active');
 
-                $('.delete-content').off();
-                $('.delete-content').on('click', function () {
-                    id = $(this).data('id');
-                    // Insert title into modal
-                    $('#cria-delete-modal-title').html('Document');
-                    // Insert delete message into modal
-                    $('#cria-delete-modal-message').html('Are you sure you want to delete this document?');
-                    $('#cria-delete-modal').modal('toggle');
-                    $('#cria-modal-delete-confirm').off();
-                    $('#cria-modal-delete-confirm').on('click', function () {
+    // Get or init DataTable for the active tab
+    const getTable = () => {
+        const $tableEl = getActivePane().find('#cria-documents-table');
+        if ($.fn.DataTable.isDataTable($tableEl)) {
+            return $tableEl.DataTable();
+        }
+        return $tableEl.DataTable({
+            dom: 'lfrtip',
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: wwwroot + '/local/cria/ajax/datatable_documents.php',
+                type: 'POST',
+                data: function (d) {
+                    d.bot_id = $('#bot-id').val();
+                    d.intent_id = getActivePane().find('#intent_id').val();
+                },
+                complete: function () {
+                    // Single delete button in actions column
+                    $('.delete-content').off();
+                    $('.delete-content').on('click', function () {
+                        const $btn = $(this);
+                        const id = $btn.data('id');
+                        $('#cria-delete-modal-title').html('Document');
+                        $('#cria-delete-modal-message').html('Are you sure you want to delete this document?');
                         $('#cria-delete-modal').modal('toggle');
-                        $.ajax({
-                            url: wwwroot + '/local/cria/ajax/delete_document.php?id=' + id,
-                            type: 'POST',
-                            success: function (results) {
-                                let row = table.row($(this).parents('tr'));
-                                row.remove()
-                                    .draw(false);
-                            }
+                        $('#cria-modal-delete-confirm').off();
+                        $('#cria-modal-delete-confirm').on('click', function () {
+                            $('#cria-delete-modal').modal('toggle');
+                            $.ajax({
+                                url: wwwroot + '/local/cria/ajax/delete_document.php?id=' + id,
+                                type: 'POST',
+                                success: function () {
+                                    const table = getTable();
+                                    const row = table.row($btn.closest('tr'));
+                                    if (row.length) {
+                                        row.remove().draw(false);
+                                    } else {
+                                        table.ajax.reload();
+                                    }
+                                }
+                            });
                         });
                     });
-                });
-                // Publish document. Stop intervale when all published
-                var fileState = $('#cria-file-state').val();
-                if (fileState !== '0') {
-                    let interval = setInterval(function () {
-                        table.ajax.reload();
-                        // Make ajax call to check_file_state.php
-                        $.ajax({
-                            url: wwwroot + '/local/cria/ajax/check_file_state.php',
-                            type: 'POST',
-                            data: {
-                                'intent_id': $('#intent_id').val()
-                            },
-                            success: function (results) {
-                                results = JSON.parse(results);
-                                if (results.count === '0') {
-                                    console.log('State equals 0')
-                                    $('#cria-file-state').val('0')
-                                    fileState = $('#cria-file-state').val();
-                                    clearInterval(interval);
 
+                    // If indexing is in progress, poll until complete
+                    let fileState = $('#cria-file-state').val();
+                    if (fileState !== '0') {
+                        let interval = setInterval(function () {
+                            getTable().ajax.reload();
+                            $.ajax({
+                                url: wwwroot + '/local/cria/ajax/check_file_state.php',
+                                type: 'POST',
+                                data: {
+                                    intent_id: getActivePane().find('#intent_id').val()
+                                },
+                                success: function (results) {
+                                    results = JSON.parse(results);
+                                    if (results.count === '0') {
+                                        $('#cria-file-state').val('0');
+                                        fileState = '0';
+                                        clearInterval(interval);
+                                    }
                                 }
+                            });
+                            if ($('#cria-file-state').val() === '0') {
+                                clearInterval(interval);
                             }
-                        });
-                        fileState = $('#cria-file-state').val();
-                        if (fileState === '0') {
-                            clearInterval(interval);
-                        }
-                    }, 30000);
+                        }, 30000);
+                    }
                 }
-
-
-                //
-                // // Edit entity
-                // $('.keyword-dt-edit').off();
-                // $('.keyword-dt-edit').on('click', function () {
-                //     let id = $(this).data('id');
-                //     window.location.href = wwwroot + '/local/cria/edit_keyword.php?id=' + id;
-                // });
-            }
-        },
-        "deferRender": true,
-        "columns": [
-            {
-                "data": "select",
             },
-            {"data": "name"},
-            {"data": "indexed"},
-            {"data": "actions"}
-        ],
-        "order": [[1, "asc"]],
-        "columnDefs": [
-            {
-                "targets": [0, 3],
-                "orderable": false
-            },
-            {
-                "targets": [0],
-                "visible": true,
-                "searchable": false
-            }
-        ],
-        "lengthMenu": [[5, 10, 25, 50, 100, 500, 1000, 10000], [5, 10, 25, 50, 100, 500, 1000, 10000]],
-        "pageLength": 25,
-        stateSave: false
+            deferRender: true,
+            columns: [
+                { data: 'select' },
+                { data: 'name' },
+                { data: 'indexed' },
+                { data: 'actions' }
+            ],
+            order: [[1, 'asc']],
+            columnDefs: [
+                { targets: [0, 3], orderable: false },
+                { targets: [0], visible: true, searchable: false }
+            ],
+            lengthMenu: [[5, 10, 25, 50, 100, 500, 1000, 10000], [5, 10, 25, 50, 100, 500, 1000, 10000]],
+            pageLength: 25,
+            stateSave: false
+        });
+    };
+
+    // Initialize for initial active tab
+    getTable();
+
+    // Reinitialize when switching tabs
+    $(document).on('shown.bs.tab', '#cria-content-tabs [data-toggle="tab"]', function () {
+        getTable();
     });
 
-    // Add some top spacing
+    // Style tweaks for DataTables buttons
     $('.dataTables_length').css('margin-top', '.5rem');
-    $('.buttons-html5').addClass('btn-outline-primary');
-    $('.buttons-html5').addClass('mr-2');
-    $('.buttons-html5').removeClass('btn-secondary');
+    $('.buttons-html5').addClass('btn-outline-primary mr-2').removeClass('btn-secondary');
 
-    $('#cria-document-select-all').on('click', function () {
-        // if this element is checked, select all checkboxes .row-checkbox
-        if ($(this).is(':checked')) {
-            $('.cria-document-dt-select-box').prop('checked', true);
-        } else {
-            $('.cria-document-dt-select-box').prop('checked', false);
-        }
+    // Select all within the current card (handles duplicate IDs across tabs)
+    $(document).off('click', '#cria-document-select-all');
+    $(document).on('click', '#cria-document-select-all', function () {
+        const $card = $(this).closest('.card');
+        const checked = $(this).is(':checked');
+        $card.find('.cria-document-dt-select-box').prop('checked', checked);
     });
 
-    // When icon-document-publish-all is clicked, publish all selected documents based on .cria-document-dt-select-box that are checked
-    $('#cria-publish-all-files').on('click', function () {
+    // Publish all selected documents within the same tab/card
+    $(document).off('click', '#cria-publish-all-files');
+    $(document).on('click', '#cria-publish-all-files', function () {
+        const $btn = $(this);
+        const $card = $btn.closest('.card');
         let selected = [];
-        $('.cria-document-dt-select-box').each(function () {
+        $card.find('.cria-document-dt-select-box').each(function () {
             if ($(this).is(':checked')) {
                 selected.push($(this).data('id'));
             }
         });
-        // If no check boxes are selected, alert that no documents are selected else open the modal
         if (selected.length === 0) {
             alert('No documents selected. You  must select at least one document to publish.');
-        } else {
-            if (selected.length > 0) {
-                $('#cria-publish-document-modal').modal('toggle');
-                $('#cria-modal-publish-confirm').off();
-                $('#cria-modal-publish-confirm').on('click', function () {
-                    $('#cria-publish-modal').modal('toggle');
-                    document.getElementById('cria-loader').style.display = 'flex';
-                    // Show the loader
-                    $('#cria-loader').show();
-                    $.ajax({
-                        url: wwwroot + '/local/cria/ajax/publish_documents.php',
-                        type: 'POST',
-                        data: {
-                            'bot_id': $('#bot_id').val(),
-                            'intent_id': $('#intent_id').val(),
-                            'documents': selected
-                        },
-                        success: function (results) {
-                            // Convert json into object
-                            results = JSON.parse(results);
-                            // Hide the loader
-                            document.getElementById('cria-loader').style.display = 'none';
-                            $('#cria-publish-document-modal').modal('toggle');
-                            if (results.status === 404) {
-                                alert(results.message);
-                            } else {
-                                table.ajax.reload();
-                            }
-                        }
-                    });
-                });
-            }
+            return;
         }
+        const intentId = $btn.data('intent_id') || getActivePane().find('#intent_id').val();
+        $('#cria-publish-document-modal').modal('toggle');
+        $('#cria-modal-publish-confirm').off();
+        $('#cria-modal-publish-confirm').on('click', function () {
+            // Close the correct modal
+            $('#cria-publish-document-modal').modal('toggle');
+            document.getElementById('cria-loader').style.display = 'flex';
+            $('#cria-loader').show();
+            $.ajax({
+                url: wwwroot + '/local/cria/ajax/publish_documents.php',
+                type: 'POST',
+                data: {
+                    bot_id: $('#bot-id').val(),
+                    intent_id: intentId,
+                    documents: selected
+                },
+                success: function (results) {
+                    results = JSON.parse(results);
+                    document.getElementById('cria-loader').style.display = 'none';
+                    $('#cria-publish-document-modal').modal('toggle');
+                    if (results.status === 404) {
+                        alert(results.message);
+                    } else {
+                        getTable().ajax.reload();
+                    }
+                }
+            });
+        });
     });
 
-    // When element with id btn-cria-save-urls is clicked, capture the vaalue of the element with id local-cria-urls
-    // and send an ajax call to ajax\publish_urls.php
-    $('#btn-cria-save-urls').click(function () {
-        let urls = $('#local-cria-urls').val();
-        let intent_id = $(this).data('intent_id');
+    // Save URLs (scoped to the same tab)
+    $(document).off('click', '#btn-cria-save-urls');
+    $(document).on('click', '#btn-cria-save-urls', function () {
+        const $btn = $(this);
+        const $pane = $btn.closest('.tab-pane');
+        let urls = $pane.find('#local-cria-urls').val();
+        let intent_id = $btn.data('intent_id') || getActivePane().find('#intent_id').val();
         document.getElementById('cria-loader').style.display = 'flex';
         $.ajax({
             url: wwwroot + '/local/cria/ajax/publish_urls.php',
             type: 'POST',
-            data: {
-                urls: urls,
-                intent_id: intent_id
-            },
+            data: { urls: urls, intent_id: intent_id },
             success: function (data) {
-                // convert data to JSON
                 data = JSON.parse(data);
-                // Hide modla
                 $('#urlModal').modal('toggle');
-                // Hide loader
                 document.getElementById('cria-loader').style.display = 'none';
                 if (data.status === 404) {
                     alert(data.message);
                 } else {
-                    // Reload the table
-                    table.ajax.reload();
+                    getTable().ajax.reload();
                 }
             }
         });
     });
 
-    // When element with id criaDeleteSelectedDocuments is clicked, delete all selected documents based on .cria-document-dt-select-box that are checked
-    $('#criaDeleteSelectedDocuments').off();
-    $('#criaDeleteSelectedDocuments').on('click', function () {
+    // Delete all selected documents within same tab/card
+    $(document).off('click', '#criaDeleteSelectedDocuments');
+    $(document).on('click', '#criaDeleteSelectedDocuments', function () {
+        const $btn = $(this);
+        const $card = $btn.closest('.card');
         let selected = [];
-        $('.cria-document-dt-select-box').each(function () {
+        $card.find('.cria-document-dt-select-box').each(function () {
             if ($(this).is(':checked')) {
                 selected.push($(this).data('id'));
             }
         });
-        // If no check boxes are selected, alert that no documents are selected else open the modal
         if (selected.length === 0) {
             alert('No documents selected. You  must select at least one document to delete.');
-        } else {
-            $('#cria-delete-modal-title').html('Document');
-            $('#cria-delete-modal-message').html('Are you sure you want to delete the selected documents?');
-            $('#cria-delete-modal').modal('toggle');
-            $('#cria-modal-delete-confirm').off();
-            $('#cria-modal-delete-confirm').on('click', function () {
-                $('#cria-delete-modal').modal('toggle');
-                document.getElementById('cria-loader').style.display = 'flex';
-                $.ajax({
-                    url: wwwroot + '/local/cria/ajax/delete_document.php',
-                    type: 'POST',
-                    data: {
-                        'bot_id': $('#bot_id').val(),
-                        'intent_id': $('#intent_id').val(),
-                        'documents': selected
-                    },
-                    success: function (results) {
-                        // Convert json into object
-                        results = JSON.parse(results);
-                        // Hide the loader
-                        document.getElementById('cria-loader').style.display = 'none';
-                        if (results.status === 404) {
-                            alert(results.message);
-                        } else {
-                            table.ajax.reload();
-                        }
-                    }
-                });
-            });
+            return;
         }
+        $('#cria-delete-modal-title').html('Document');
+        $('#cria-delete-modal-message').html('Are you sure you want to delete the selected documents?');
+        $('#cria-delete-modal').modal('toggle');
+        $('#cria-modal-delete-confirm').off();
+        $('#cria-modal-delete-confirm').on('click', function () {
+            $('#cria-delete-modal').modal('toggle');
+            document.getElementById('cria-loader').style.display = 'flex';
+            $.ajax({
+                url: wwwroot + '/local/cria/ajax/delete_document.php',
+                type: 'POST',
+                data: {
+                    bot_id: $('#bot-id').val(),
+                    intent_id: $btn.data('intent_id') || getActivePane().find('#intent_id').val(),
+                    documents: selected
+                },
+                success: function (results) {
+                    results = JSON.parse(results);
+                    document.getElementById('cria-loader').style.display = 'none';
+                    if (results.status === 404) {
+                        alert(results.message);
+                    } else {
+                        getTable().ajax.reload();
+                    }
+                }
+            });
+        });
     });
 });
-

@@ -9,12 +9,13 @@ $(document).ready(function () {
             "url": wwwroot + "/local/cria/ajax/datatable_entities.php",
             "type": "POST",
             "data": {
-                "bot_id": $('#bot_id').val()
+                "bot_id": $('#bot-id').val()
             },
             "complete": function () {
                 $('.entity-dt-delete').off();
                 $('.entity-dt-delete').on('click', function () {
-                    id = $(this).data('id');
+                    const $btn = $(this);
+                    const id = $btn.data('id');
                     $('#cria-delete-modal').modal('toggle');
                     $('#cria-modal-delete-confirm').off();
                     $('#cria-modal-delete-confirm').on('click', function () {
@@ -22,10 +23,13 @@ $(document).ready(function () {
                         $.ajax({
                             url: wwwroot + '/local/cria/ajax/delete_entity.php?id=' + id,
                             type: 'POST',
-                            success: function (results) {
-                                let row = table.row($(this).parents('tr'));
-                                row.remove()
-                                    .draw(false);
+                            success: function () {
+                                const row = table.row($btn.closest('tr'));
+                                if (row.length) {
+                                    row.remove().draw(false);
+                                } else {
+                                    table.ajax.reload();
+                                }
                             }
                         });
                     });
@@ -69,4 +73,3 @@ $(document).ready(function () {
     $('.buttons-html5').removeClass('btn-secondary');
 
 });
-
