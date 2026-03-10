@@ -71,30 +71,28 @@ if ($mform->is_cancelled()) {
         $DB->update_record('local_cria_models', $data);
         $id = $data->id;
         $params = $DB->get_record('local_cria_models', ['id' => $id]);
-        // Update model on CriaDex
-        $results = criadex::update_model($params->criadex_model_id, $data->value, 'azure');
-        if ($results->status == '200') {
+        $MODEL_OBJ = new model($id);
+        $results = criadex::update_model($params->criadex_model_id, $data->value, $MODEL_OBJ->get_provider_type());
+        if (isset($results->status) && $results->status == '200') {
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            // Print the error message
-            \core\notification::error($results->status . "\n" . $results->message . "\n" . $results->code);
+            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
         }
     } else {
         $data->usermodified = $USER->id;
         $data->timemodified = time();
         $data->timecreated = time();
         $id  = $DB->insert_record('local_cria_models', $data);
-        // Create model on CriaDex
-        $results = criadex::create_model($data->value, 'azure');
-        if ($results->status == '200') {
+        $provider_type = (new \local_cria\provider($data->provider_id))->get_type();
+        $results = criadex::create_model($data->value, $provider_type);
+        if (isset($results->status) && $results->status == '200') {
             $params = new stdClass();
             $params->id = $id;
-            $params->criadex_model_id = $results->model->id;
+            $params->criadex_model_id = $results->model->id ?? 0;
             $DB->update_record('local_cria_models', $params);
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            // Print the error message
-            \core\notification::error($results->status . "\n" . $results->message . "\n" . $results->code);
+            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
         }
     }
 } else {

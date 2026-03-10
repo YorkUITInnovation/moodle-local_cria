@@ -47,7 +47,8 @@ function select_provider() {
         $('.btn-select-provider').off();
         $('.btn-select-provider').on('click', function () {
             var idnumber = $(this).data('idnumber');
-            window.location.href = M.cfg.wwwroot + '/local/cria/providers/' + idnumber + '/model.php';
+            var providerid = $(this).data('providerid');
+            window.location.href = M.cfg.wwwroot + '/local/cria/model_router.php?idnumber=' + encodeURIComponent(idnumber) + '&provider_id=' + providerid;
         });
     });
 }

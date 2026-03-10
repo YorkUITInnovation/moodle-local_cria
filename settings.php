@@ -102,6 +102,13 @@ if ($hassiteconfig) {
         '', PARAM_TEXT, 255
     ));
 
+    $settings->add( new admin_setting_configtext(
+        'local_cria/compare_text_bot_id',
+        get_string('compare_text_bot_id', 'local_cria'),
+        get_string('compare_text_bot_id_help', 'local_cria'),
+        '1', PARAM_INT, 10
+    ));
+
     // Support email
     $settings->add( new admin_setting_configtext(
         'local_cria/support_email',

@@ -464,8 +464,13 @@ class base
         $parse_strategies = $CRIAPARSE->get_strategies();
 
         $strategies = [];
-        foreach ($parse_strategies['strategies'] as $key => $strategy) {
-            $strategies[$strategy] = $strategy;
+        if (!empty($parse_strategies['strategies'])) {
+            foreach ($parse_strategies['strategies'] as $key => $strategy) {
+                $strategies[$strategy] = $strategy;
+            }
+        }
+        if (empty($strategies)) {
+            $strategies['GENERIC'] = 'GENERIC';
         }
         return $strategies;
     }

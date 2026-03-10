@@ -585,5 +585,28 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2025083100, 'local', 'cria');
     }
 
+    if ($oldversion < 2026022700) {
+
+        // Add type field to local_cria_providers for extensible provider routing.
+        $table = new xmldb_table('local_cria_providers');
+        $field = new xmldb_field('type', XMLDB_TYPE_CHAR, '50', null, null, null, 'azure', 'idnumber');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Pre-populate type for existing providers based on idnumber.
+        $providers = $DB->get_records('local_cria_providers');
+        foreach ($providers as $provider) {
+            $type = 'azure';
+            if ($provider->idnumber === 'cohere') {
+                $type = 'cohere';
+            }
+            $DB->set_field('local_cria_providers', 'type', $type, ['id' => $provider->id]);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022700, 'local', 'cria');
+    }
+
     return true;
 }

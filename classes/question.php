@@ -342,7 +342,7 @@ class question extends crud
         // Add to logs
         $INTENT->insert_log_record($results, $prompt);
 
-        $messages = json_decode($results->agent_response->chat_response->message->content);
+        $messages = json_decode(gpt::extract_content($results->agent_response ?? new \stdClass()));
         foreach ($messages as $example) {
             $data = new \stdClass();
             $data->questionid = $question->id;
@@ -375,7 +375,7 @@ class question extends crud
         // Add to logs
         $INTENT->insert_log_record($results, $prompt);
 
-        return $results->response->message->content;
+        return gpt::extract_content($results->agent_response ?? new \stdClass());
     }
 
 

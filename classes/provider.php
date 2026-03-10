@@ -50,6 +50,12 @@ class provider extends crud
      *
      * @var string
      */
+    private $type;
+
+    /**
+     *
+     * @var string
+     */
     private $llm_models;
 
     /**
@@ -115,6 +121,7 @@ class provider extends crud
 
         $this->name = $result->name ?? '';
         $this->idnumber = $result->idnumber ?? '';
+        $this->type = $result->type ?? 'azure';
         $this->llm_models = $result->llm_models ?? '';
         $this->usermodified = $result->usermodified ?? 0;
         $this->timecreated = $result->timecreated ?? 0;
@@ -171,27 +178,25 @@ class provider extends crud
 
     public function get_type(): string
     {
-        switch ($this->idnumber) {
-            case 'ms-azure-openai':
-                $type = 'azure';
-                break;
-            case 'cohere':
-                $type = 'cohere';
-                break;
-            default:
-                $type = 'azure';
-        }
-        return $type;
+        return $this->type ?: 'azure';
     }
     /**
      * return array of llm models
      */
     public function get_llm_models_array(): array
     {
-        $llm_models = explode("\n", $this->llm_models);
+        $raw = str_replace(["\r\n", "\r"], "\n", $this->llm_models);
+        if (strpos($raw, "\n") !== false) {
+            $llm_models = explode("\n", $raw);
+        } else {
+            $llm_models = explode(",", $raw);
+        }
         $models = [];
-        foreach ($llm_models as $key => $value) {
-            $models[trim($value)] = trim($value);
+        foreach ($llm_models as $value) {
+            $v = trim($value);
+            if ($v !== '') {
+                $models[$v] = $v;
+            }
         }
         return $models;
     }
@@ -281,6 +286,14 @@ class provider extends crud
     public function set_idnumber($idnumber): void
     {
         $this->idnumber = $idnumber;
+    }
+
+    /**
+     * @param string $type Provider type for Criadex routing
+     */
+    public function set_type(string $type): void
+    {
+        $this->type = $type;
     }
 
     /**

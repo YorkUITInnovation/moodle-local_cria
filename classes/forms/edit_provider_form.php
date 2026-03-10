@@ -81,6 +81,34 @@ class edit_provider_form extends \moodleform
             'client'
         );
 
+        $provider_types = [
+            'azure' => 'Azure OpenAI',
+            'cohere' => 'Cohere',
+            'openai' => 'OpenAI',
+            'ollama' => 'Ollama',
+            'anthropic' => 'Anthropic (Claude)',
+            'gemini' => 'Gemini (Google)',
+            'deepseek' => 'DeepSeek',
+            'mistral' => 'Mistral',
+            'bedrock' => 'AWS Bedrock',
+            'groq' => 'Groq',
+            'together_ai' => 'Together AI',
+            'huggingface' => 'HuggingFace',
+            'vllm' => 'vLLM',
+            'xinference' => 'Xinference',
+            'localai' => 'LocalAI',
+            'nvidia' => 'NVIDIA',
+            'openai_compatible' => 'OpenAI-API Compatible',
+        ];
+        $mform->addElement(
+            'select',
+            'type',
+            get_string('provider_type', 'local_cria'),
+            $provider_types
+        );
+        $mform->setDefault('type', 'azure');
+        $mform->addHelpButton('type', 'provider_type', 'local_cria');
+
         $mform->addElement(
             'textarea',
             'llm_models',

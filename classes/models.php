@@ -60,6 +60,7 @@ class models {
             $models[$i]['name'] = $MODEL->get_name();
             $models[$i]['value'] = $MODEL->get_value();
             $models[$i]['criadex_model_id'] = $MODEL->get_criadex_model_id();
+            $models[$i]['provider_id'] = $MODEL->get_provider_id();
             $models[$i]['provider_idnumber'] = $MODEL->get_provider_idnumber();
             $models[$i]['provider_name'] = $MODEL->get_provider_name();
             $models[$i]['usermodified'] = $MODEL->get_usermodified();
@@ -88,9 +89,12 @@ class models {
         if ($embedding && !$rerank) {
            $results =  $DB->get_records('local_cria_models', ['is_embedding' => 1], 'name ASC');
         } else if (!$embedding && $rerank) {
-            //  Get cohere provider id
-            $provider = $DB->get_record('local_cria_providers', ['idnumber' => 'cohere']);
-            $results = $DB->get_records('local_cria_models', ['provider_id' => $provider->id], 'name ASC');
+            $rerank_providers = $DB->get_records('local_cria_providers', ['type' => 'cohere']);
+            $results = [];
+            foreach ($rerank_providers as $rp) {
+                $provider_models = $DB->get_records('local_cria_models', ['provider_id' => $rp->id], 'name ASC');
+                $results = $results + $provider_models;
+            }
         } else {
             $results = $DB->get_records('local_cria_models', ['is_embedding' => 0], 'name ASC');
         }

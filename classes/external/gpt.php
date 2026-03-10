@@ -121,23 +121,24 @@ class local_cria_external_gpt extends external_api
                 // Find out how many intents the bot has
                 // If more than one then make a call to criadex to get the best intent (child bot) to use
                 if ($BOT->get_number_of_intents() > 1) {
-                    // Make call to criadex to return the best intent to use.
                     $intents_result = criadex::get_top_intent($bot_id, $prompt);
-                    $bot_name = $intents_result->agent_response->ranked_intents[0]->name;
-                    // Get cost of call
+                    $agent = $intents_result->agent_response ?? new \stdClass();
+                    $ranked = $agent->ranked_intents ?? [];
+                    $bot_name = !empty($ranked) ? $ranked[0]->name : $BOT->get_bot_name();
+
+                    $intent_usage = gpt::extract_usage($agent);
                     $cost = gpt::_get_cost(
                         $bot_id,
-                        $intents_result->agent_response->usage[0]->prompt_tokens,
-                        $intents_result->agent_response->usage[0]->completion_tokens
+                        $intent_usage->prompt_tokens ?? 0,
+                        $intent_usage->completion_tokens ?? 0
                     );
-                    // Enter into logs
                     logs::insert(
                         $bot_id,
                         $prompt,
                         json_encode($intents_result),
-                        $intents_result->agent_response->usage[0]->prompt_tokens,
-                        $intents_result->agent_response->usage[0]->completion_tokens,
-                        $intents_result->agent_response->usage[0]->total_tokens,
+                        $intent_usage->prompt_tokens ?? 0,
+                        $intent_usage->completion_tokens ?? 0,
+                        $intent_usage->total_tokens ?? 0,
                         $cost,
                     );
                 } else {

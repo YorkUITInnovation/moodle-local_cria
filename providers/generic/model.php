@@ -14,15 +14,17 @@
 
 require_once("../../../../config.php");
 global $CFG;
-require_once($CFG->dirroot . "/local/cria/providers/cohere/model_form.php");
+require_once($CFG->dirroot . "/local/cria/providers/generic/model_form.php");
 
 use local_cria\base;
 use local_cria\model;
+use local_cria\provider;
 use local_cria\criadex;
 
 global $CFG, $OUTPUT, $USER, $PAGE, $DB, $SITE;
 
 $id = optional_param('id', 0, PARAM_INT);
+$provider_id = optional_param('provider_id', 0, PARAM_INT);
 
 $context = CONTEXT_SYSTEM::instance();
 
@@ -33,31 +35,35 @@ require_login(1, false);
 if ($id) {
     $formdata = $MODEL->get_result();
     $values = json_decode($formdata->value);
-    $formdata->api_key = $values->api_key;
-    $formdata->api_model = $values->api_model;
+    $formdata->api_base_url = $values->api_base_url ?? '';
+    $formdata->api_key = $values->api_key ?? '';
+    $formdata->api_model = $values->api_model ?? '';
+    $provider_id = $formdata->provider_id;
 } else {
     $formdata = new stdClass();
-    $provider = $DB->get_record('local_cria_providers', ['idnumber' => 'cohere']);
-    $formdata->provider_id = $provider->id;
+    if ($provider_id) {
+        $formdata->provider_id = $provider_id;
+    }
 }
 
+$PROVIDER = new provider($provider_id);
 
-$mform = new \local_cria\cohere_model_form(null, array('formdata' => $formdata));
+$mform = new \local_cria\generic_model_form(null, array('formdata' => $formdata));
 if ($mform->is_cancelled()) {
-    //Handle form cancel operation, if cancel button is present on form
     redirect($CFG->wwwroot . '/local/cria/bot_models.php');
 } else if ($data = $mform->get_data()) {
 
     $value = new stdClass();
-    $value->api_key = $data->api_key;
-    $value->api_model = $data->api_model;
+    $value->api_base_url = $data->api_base_url ?? '';
+    $value->api_key = $data->api_key ?? '';
+    $value->api_model = $data->api_model ?? '';
     $data->value = json_encode($value);
 
-    unset($data->api_resource);
-    unset($data->api_version);
+    unset($data->api_base_url);
     unset($data->api_key);
-    unset($data->api_deployment);
     unset($data->api_model);
+
+    $provider_type = $PROVIDER->get_type();
 
     if ($data->id) {
         $data->usermodified = $USER->id;
@@ -65,19 +71,20 @@ if ($mform->is_cancelled()) {
         $DB->update_record('local_cria_models', $data);
         $id = $data->id;
         $params = $DB->get_record('local_cria_models', ['id' => $id]);
-        $MODEL_OBJ = new model($id);
-        $results = criadex::update_model($params->criadex_model_id, $data->value, $MODEL_OBJ->get_provider_type());
+        $results = criadex::update_model($params->criadex_model_id, $data->value, $provider_type);
         if (isset($results->status) && $results->status == '200') {
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
+            $msg = isset($results->status) ? $results->status : 'Unknown error';
+            $msg .= isset($results->message) ? "\n" . $results->message : '';
+            $msg .= isset($results->code) ? "\n" . $results->code : '';
+            \core\notification::error($msg);
         }
     } else {
         $data->usermodified = $USER->id;
         $data->timemodified = time();
         $data->timecreated = time();
-        $id  = $DB->insert_record('local_cria_models', $data);
-        $provider_type = (new \local_cria\provider($data->provider_id))->get_type();
+        $id = $DB->insert_record('local_cria_models', $data);
         $results = criadex::create_model($data->value, $provider_type);
         if (isset($results->status) && $results->status == '200') {
             $params = new stdClass();
@@ -86,34 +93,26 @@ if ($mform->is_cancelled()) {
             $DB->update_record('local_cria_models', $params);
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
+            $msg = isset($results->status) ? $results->status : 'Criadex route not available for provider type: ' . $provider_type;
+            $msg .= isset($results->message) ? "\n" . $results->message : '';
+            $msg .= isset($results->code) ? "\n" . $results->code : '';
+            \core\notification::error($msg);
         }
     }
 } else {
-
     $mform->set_data($mform);
 }
 
 
 base::page(
-    new moodle_url('/local/cria/providers/cohere/model.php', ['id' => $id]),
-    'Cohere ' . get_string('model', 'local_cria'),
-    'Cohere ' . get_string('model', 'local_cria'),
+    new moodle_url('/local/cria/providers/generic/model.php', ['id' => $id, 'provider_id' => $provider_id]),
+    $PROVIDER->get_name() . ' ' . get_string('model', 'local_cria'),
+    $PROVIDER->get_name() . ' ' . get_string('model', 'local_cria'),
     $context,
     'standard'
 );
 
 
 echo $OUTPUT->header();
-//**********************
-//*** DISPLAY HEADER ***
-//
-
 $mform->display();
-
-
-//**********************
-//*** DISPLAY FOOTER ***
-//**********************
 echo $OUTPUT->footer();
-?>

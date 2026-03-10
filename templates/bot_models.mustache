@@ -21,7 +21,7 @@
                             <td>{{name}}</td>
                             <td>{{criadex_model_id}}</td>
                             <td>
-                                <a href="{{config.wwwroot}}/local/cria/providers/{{provider_idnumber}}/model.php?id={{id}}" class="btn btn-outline-primary">
+                                <a href="{{config.wwwroot}}/local/cria/model_router.php?id={{id}}&idnumber={{provider_idnumber}}&provider_id={{provider_id}}" class="btn btn-outline-primary">
                                     {{#str}}edit, local_cria{{/str}}
                                 </a>
                                 <button class="btn btn-outline-danger delete-model" data-id="{{id}}">
@@ -53,7 +53,7 @@
                 <ul class="list-group">
                 {{#providers}}
                     <li class="list-group-item">
-                        <a href="#" class="btn-select-provider" data-idnumber="{{idnumber}}">
+                        <a href="#" class="btn-select-provider" data-idnumber="{{idnumber}}" data-providerid="{{id}}">
                             <img src="{{image}}" class="img-fluis" style="height:60px; widht: auto; margin-right:10px;">{{name}}
                         </a>
                 {{/providers}}

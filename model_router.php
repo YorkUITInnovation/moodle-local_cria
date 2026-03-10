@@ -1,7 +1,7 @@
 <?php
 
 /**
-* This file is part of Cria. 
+* This file is part of Cria.
 * Cria is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
@@ -12,11 +12,20 @@
 * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
+require_once('../../config.php');
 
-$plugin->version = 2026022701;
-$plugin->requires = 2022112800; //Moodle 4.1
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.5.0';
-$plugin->component = 'local_cria';
+$id = optional_param('id', 0, PARAM_INT);
+$idnumber = optional_param('idnumber', '', PARAM_TEXT);
+$provider_id = optional_param('provider_id', 0, PARAM_INT);
 
-//SELECT * FROM `mdl_config_plugins` WHERE plugin='local_cria' AND name='version';
+require_login(1, false);
+
+$provider_page = $CFG->dirroot . '/local/cria/providers/' . $idnumber . '/model.php';
+
+if ($idnumber && file_exists($provider_page)) {
+    $params = ['id' => $id];
+    redirect(new moodle_url('/local/cria/providers/' . $idnumber . '/model.php', $params));
+} else {
+    $params = ['id' => $id, 'provider_id' => $provider_id];
+    redirect(new moodle_url('/local/cria/providers/generic/model.php', $params));
+}

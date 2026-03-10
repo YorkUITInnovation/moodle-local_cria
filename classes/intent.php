@@ -243,23 +243,18 @@ class intent extends crud
      */
     public function insert_log_record($results, $prompt)
     {
-        // Get token usage
-        $token_usage = $results->agent_response->chat_response->raw->usage;
-        // loop through token usage and add the prompt tokens and completion tokens
-        $prompt_tokens = 0;
-        $completion_tokens = 0;
-        $total_tokens = 0;
+        $agent = $results->agent_response ?? new \stdClass();
+        $token_usage = gpt::extract_usage($agent);
 
-        $prompt_tokens = $token_usage->prompt_tokens;
-        $completion_tokens = $token_usage->completion_tokens;
-        $total_tokens = $token_usage->total_tokens;
+        $prompt_tokens = $token_usage->prompt_tokens ?? 0;
+        $completion_tokens = $token_usage->completion_tokens ?? 0;
+        $total_tokens = $token_usage->total_tokens ?? 0;
 
         $cost = gpt::_get_cost($this->bot_id, $prompt_tokens, $completion_tokens);
-        // Insert logs
         logs::insert(
             $this->bot_id,
             $prompt,
-            $results->agent_response->chat_response->message->content,
+            gpt::extract_content($agent),
             $prompt_tokens,
             $completion_tokens,
             $total_tokens,

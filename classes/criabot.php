@@ -51,6 +51,25 @@ class criabot
     }
 
     /**
+     * Update only the parent_bot_names for a child bot on Criabot.
+     * @param string $bot_name The child bot's Criabot name
+     * @param array $parent_bot_names List of parent bot Criabot names
+     * @return mixed
+     * @throws \dml_exception
+     */
+    public static function bot_update_parents(string $bot_name, array $parent_bot_names) {
+        $config = get_config('local_cria');
+        $data = json_encode(['parent_bot_names' => array_values($parent_bot_names)]);
+        return gpt::_make_call(
+            $config->criabot_url,
+            $config->criadex_api_key,
+            $data,
+            '/bots/' . $bot_name . '/manage/update',
+            'PATCH'
+        );
+    }
+
+    /**
      * @param $bot_name String
      * @param $data Array ["max_tokens": 16,
      *  "temperature" => 0.1,
@@ -310,14 +329,14 @@ class criabot
     }
 
     /**
-     * Query a bot in a 1-message chat
+     * Query a bot in a 1-message chat.
+     * Starts an ephemeral chat, sends the query, then ends the chat.
      * @param $bot_name String
      * @param $prompt String
      * @return mixed
      * @throws \local_cria\dml_exception
      */
     public static function chat_query($bot_name, $prompt) {
-        // Get Config
         $config = get_config('local_cria');
 
         // Get child bots
@@ -328,19 +347,31 @@ class criabot
             $child_bots = [];
         }
 
+        // Start an ephemeral chat session
+        $chat_result = self::chat_start();
+        if (empty($chat_result->chat_id)) {
+            return $chat_result;
+        }
+        $chat_id = $chat_result->chat_id;
+
         $data = [
             'prompt' => $prompt,
+            'bot_name' => $bot_name,
             'extra_bots' => $child_bots
         ];
 
-        // Create model
-        return gpt::_make_call(
+        $result = gpt::_make_call(
             $config->criabot_url,
             $config->criadex_api_key,
             json_encode($data),
-            '/bots/'. $bot_name  . '/chats/query',
+            '/bots/chats/' . $chat_id . '/query',
             'POST'
         );
+
+        // End the ephemeral chat
+        self::chat_end($chat_id);
+
+        return $result;
     }
 
     /**
@@ -400,15 +431,13 @@ class criabot
      * @throws \local_cria\dml_exception
      */
     public static function chat_end($chat_id) {
-        // Get Config
         $config = get_config('local_cria');
-        // Create model
         return gpt::_make_call(
             $config->criabot_url,
             $config->criadex_api_key,
             '',
-            '/bots/'. $chat_id  . '/chats/end',
-            'POST'
+            '/bots/chats/' . $chat_id . '/end',
+            'DELETE'
         );
     }
 
@@ -454,6 +483,7 @@ class criabot
     // Direct query
 
     /**
+     * Direct query: starts an ephemeral chat, queries, then cleans up.
      * @param $bot_name
      * @param $prompt
      * @param $filters
@@ -466,9 +496,8 @@ class criabot
         $filters = [],
     )
     {
-        // Get config
         $config = get_config('local_cria');
-        // If no filters are set, set to empty array
+
         if (!$filters) {
             $filters = [
                 "must" => [],
@@ -476,19 +505,31 @@ class criabot
                 "should" => []
             ];
         }
-        // Build data object
+
+        // Start an ephemeral chat session
+        $chat_result = self::chat_start();
+        if (empty($chat_result->chat_id)) {
+            return $chat_result;
+        }
+        $chat_id = $chat_result->chat_id;
+
         $data = [
-            "direct_question_answer" => false,
-            "metadata_filter" => $filters,
-            "prompt" => $prompt
+            "prompt" => $prompt,
+            "bot_name" => $bot_name,
+            "metadata_filter" => $filters
         ];
-        // Update model
-        return gpt::_make_call(
+
+        $result = gpt::_make_call(
             $config->criabot_url,
             $config->criadex_api_key,
             json_encode($data),
-            '/bots/' . $bot_name . '/chats/query',
+            '/bots/chats/' . $chat_id . '/query',
             'POST'
         );
+
+        // End the ephemeral chat
+        self::chat_end($chat_id);
+
+        return $result;
     }
 }

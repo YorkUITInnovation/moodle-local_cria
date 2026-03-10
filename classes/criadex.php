@@ -112,17 +112,13 @@ class criadex
         $max_tokens = 512,
         $temperature = 0.1,
         $top_p = 0.1,
-        $provider = 'azure'
     )
     {
-        // Get config
         $config = get_config('local_cria');
 
-        // Build data object
         $data = [
-            'max_reply_tokens' => $max_tokens,
+            'max_tokens' => $max_tokens,
             'temperature' => $temperature,
-            'top_p' => $top_p,
             'history' => [
                 [
                     'role' => 'system',
@@ -135,12 +131,11 @@ class criadex
             ]
         ];
 
-        // Update model
         return gpt::_make_call(
             $config->criadex_url,
             $config->criadex_api_key,
             json_encode($data),
-            '/models/' . $provider . '/' . $model_id . '/agents/chat',
+            '/models/ragflow/' . $model_id . '/agents/chat',
             'POST'
         );
     }
@@ -153,26 +148,23 @@ class criadex
      * @return void
      */
     public static function get_top_intent($bot_id, $prompt) {
-        // Get config
         $config = get_config('local_cria');
         $BOT = new bot($bot_id);
-        // Build data object
+
         $data = [
             'max_tokens' => $BOT->get_max_tokens(),
             'temperature' => $BOT->get_temperature(),
-            'top_p' => $BOT->get_top_p(),
             'intents' => $BOT->get_intents(),
             'prompt' => $prompt
         ];
 
         $model_config = $BOT->get_model_config();
 
-        // Update model
         return gpt::_make_call(
             $config->criadex_url,
             $config->criadex_api_key,
             json_encode($data),
-            '/azure/models/' . $model_config->criadex_model_id . '/agents/intents',
+            '/models/ragflow/' . $model_config->criadex_model_id . '/agents/intents',
             'POST'
         );
     }

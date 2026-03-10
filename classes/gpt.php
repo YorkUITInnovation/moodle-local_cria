@@ -23,6 +23,47 @@ class gpt
 {
 
     /**
+     * Extract text content from a Criadex agent response, handling both
+     * the blocks-based format and the legacy flat content format.
+     */
+    public static function extract_content($agent_response): string
+    {
+        if (isset($agent_response->chat_response->message->blocks[0]->text)) {
+            return $agent_response->chat_response->message->blocks[0]->text;
+        }
+        if (isset($agent_response->chat_response->message->content)) {
+            return $agent_response->chat_response->message->content;
+        }
+        return '';
+    }
+
+    /**
+     * Extract token usage from a Criadex agent response, handling flat
+     * objects, arrays, and the raw sub-object fallback.
+     */
+    public static function extract_usage($agent_response): \stdClass
+    {
+        $default = new \stdClass();
+        $default->prompt_tokens = 0;
+        $default->completion_tokens = 0;
+        $default->total_tokens = 0;
+
+        if (isset($agent_response->usage)) {
+            $u = $agent_response->usage;
+            if (is_object($u) && isset($u->prompt_tokens)) {
+                return $u;
+            }
+            if (is_array($u) && !empty($u)) {
+                return is_object($u[0]) ? $u[0] : $default;
+            }
+        }
+        if (isset($agent_response->chat_response->raw->usage)) {
+            return $agent_response->chat_response->raw->usage;
+        }
+        return $default;
+    }
+
+    /**
      * @param $service_url string
      * @param $api_key string
      * @param $data string JSON formatted string
@@ -166,12 +207,11 @@ class gpt
                     $params->temperature,
                     $params->top_p
                 );
-                // Add the number of tokens used for the prompt to the total tokens
-                $prompt_tokens = $prompt_tokens + $result->agent_response->usage[0]->prompt_tokens;
-                $completion_tokens = $completion_tokens + $result->agent_response->usage[0]->completion_tokens;
-                $total_tokens = $total_tokens + $result->agent_response->usage[0]->total_tokens;
-                // Capture the response
-                $summary[] = $result->agent_response->chat_response->message->content;
+                $usage = self::extract_usage($result->agent_response ?? new \stdClass());
+                $prompt_tokens += $usage->prompt_tokens ?? 0;
+                $completion_tokens += $usage->completion_tokens ?? 0;
+                $total_tokens += $usage->total_tokens ?? 0;
+                $summary[] = self::extract_content($result->agent_response ?? new \stdClass());
             }
             if (count($summary) > 1) {
                 $content_prompt = '';
@@ -192,12 +232,12 @@ class gpt
                     $params->temperature,
                     $params->top_p
                 );
-                // Add the number of tokens used for the comparison to the total tokens
-                $prompt_tokens = $prompt_tokens + $comparison_result->agent_response->usage[0]->prompt_tokens;
-                $completion_tokens = $completion_tokens + $comparison_result->agent_response->usage[0]->completion_tokens;
-                $total_tokens = $total_tokens + $comparison_result->agent_response->usage[0]->total_tokens;
+                $comp_usage = self::extract_usage($comparison_result->agent_response ?? new \stdClass());
+                $prompt_tokens += $comp_usage->prompt_tokens ?? 0;
+                $completion_tokens += $comp_usage->completion_tokens ?? 0;
+                $total_tokens += $comp_usage->total_tokens ?? 0;
 
-                $answer = $comparison_result->agent_response->chat_response->message->content;
+                $answer = self::extract_content($comparison_result->agent_response ?? new \stdClass());
                 if ($answer == 'True') {
                     $summaries = $summary[0];
                 } else {
@@ -217,12 +257,12 @@ class gpt
                 $params->temperature,
                 $params->top_p
             );
-            $summaries = $result->agent_response->chat_response->message->content;
+            $summaries = self::extract_content($result->agent_response ?? new \stdClass());
 
-            // Add the number of tokens used for the prompt to the total tokens
-            $prompt_tokens = $result->agent_response->usage[0]->prompt_tokens;
-            $completion_tokens = $result->agent_response->usage[0]->completion_tokens;
-            $total_tokens = $result->agent_response->usage[0]->total_tokens;
+            $usage = self::extract_usage($result->agent_response ?? new \stdClass());
+            $prompt_tokens = $usage->prompt_tokens ?? 0;
+            $completion_tokens = $usage->completion_tokens ?? 0;
+            $total_tokens = $usage->total_tokens ?? 0;
         }
 
         // Get the cost of the call
@@ -341,12 +381,12 @@ class gpt
             $params->top_p
         );
 
-        $summaries = $results->agent_response->chat_response->message->content;
+        $summaries = self::extract_content($results->agent_response ?? new \stdClass());
 
-        // Add the number of tokens used for the prompt to the total tokens
-        $prompt_tokens = $results->agent_response->raw->usage->prompt_tokens;
-        $completion_tokens = $results->agent_response->raw->usage->completion_tokens;
-        $total_tokens = $results->agent_response->raw->usage->total_tokens;
+        $usage = self::extract_usage($results->agent_response ?? new \stdClass());
+        $prompt_tokens = $usage->prompt_tokens ?? 0;
+        $completion_tokens = $usage->completion_tokens ?? 0;
+        $total_tokens = $usage->total_tokens ?? 0;
 
         $data = new \stdClass();
         // Get the cost of the call
@@ -372,14 +412,15 @@ class gpt
      */
     public static function compare_text($response, $answer): \stdClass
     {
-        $content_prompt = '';
-        $sentences = "---\nText 1: " . $response . "\n\nText 2: " . $answer . "\n---\n";
-        $content_prompt .= $sentences . "q: Question: Please answer with a boolean only to the following question. 
-        In the two texts provided above, do the two texts mean the same thing?\n";
+        $config = get_config('local_cria');
+        $model_id = !empty($config->compare_text_bot_id) ? (int) $config->compare_text_bot_id : 1;
 
+        $content_prompt = "---\nText 1: " . $response . "\n\nText 2: " . $answer . "\n---\n";
+        $content_prompt .= "q: Question: Please answer with a boolean only to the following question. "
+            . "In the two texts provided above, do the two texts mean the same thing?\n";
 
         $comparison_result = criadex::query(
-            1,
+            $model_id,
             'You compare text. You only answer with a single boolean. You return the boolean that appears more often.',
             $content_prompt,
             4000,
