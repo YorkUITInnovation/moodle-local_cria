@@ -33,11 +33,11 @@ require_login(1, false);
 if ($id) {
     $formdata = $MODEL->get_result();
     $values = json_decode($formdata->value);
-    $formdata->api_resource = $values->api_resource;
-    $formdata->api_version = $values->api_version;
-    $formdata->api_key = $values->api_key;
-    $formdata->api_deployment = $values->api_deployment;
-    $formdata->api_model = $values->api_model;
+    $formdata->api_resource = $values->api_resource ?? $values->api_base_url ?? '';
+    $formdata->api_version = $values->api_version ?? '';
+    $formdata->api_key = $values->api_key ?? '';
+    $formdata->api_deployment = $values->api_deployment ?? '';
+    $formdata->api_model = $values->api_model ?? '';
 } else {
     $formdata = new stdClass();
     $provider = $DB->get_record('local_cria_providers', ['idnumber' => 'ms-azure-openai']);

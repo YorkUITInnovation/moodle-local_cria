@@ -74,11 +74,16 @@ class ms_azure_openai_model_form extends \moodleform
         $mform->addElement(
             'text',
             'api_resource',
-            'API resource'
+            get_string('azure_endpoint_or_resource', 'local_cria')
         );
         $mform->setType(
             'api_resource',
             PARAM_TEXT
+        );
+        $mform->addHelpButton(
+            'api_resource',
+            'azure_endpoint_or_resource',
+            'local_cria'
         );
 
 
