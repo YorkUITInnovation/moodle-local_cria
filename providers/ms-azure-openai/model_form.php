@@ -70,21 +70,35 @@ class ms_azure_openai_model_form extends \moodleform
             'name',
             PARAM_TEXT
         );
+
+        // Support older deployments where new lang strings are not yet present.
+        $stringmanager = get_string_manager();
+        $endpointlabel = 'API endpoint or resource';
+        $endpointhelpidentifier = null;
+        if ($stringmanager->string_exists('azure_endpoint_or_resource', 'local_cria')) {
+            $endpointlabel = get_string('azure_endpoint_or_resource', 'local_cria');
+            if ($stringmanager->string_exists('azure_endpoint_or_resource_help', 'local_cria')) {
+                $endpointhelpidentifier = 'azure_endpoint_or_resource';
+            }
+        }
+
         // Description form element
         $mform->addElement(
             'text',
             'api_resource',
-            get_string('azure_endpoint_or_resource', 'local_cria')
+            $endpointlabel
         );
         $mform->setType(
             'api_resource',
             PARAM_TEXT
         );
-        $mform->addHelpButton(
-            'api_resource',
-            'azure_endpoint_or_resource',
-            'local_cria'
-        );
+        if ($endpointhelpidentifier !== null) {
+            $mform->addHelpButton(
+                'api_resource',
+                $endpointhelpidentifier,
+                'local_cria'
+            );
+        }
 
 
         // API Version

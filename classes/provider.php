@@ -210,11 +210,15 @@ class provider extends crud
         $context = \context_system::instance();
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'local_cria', 'provider', $this->id);
+        $file_name = '';
         foreach($files as $f) {
             if ($f->get_filename() != '.') {
                 $file_name = trim($f->get_filename());
                 break;
             }
+        }
+        if ($file_name === '') {
+            return '';
         }
         $url = \moodle_url::make_pluginfile_url(
             $context->id,
