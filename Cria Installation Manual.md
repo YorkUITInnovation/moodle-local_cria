@@ -152,18 +152,50 @@ cd cria-prod
       volumes:
         - "./user_data:/home/user/user_data"
         - "./user_scripts:/home/user/user_scripts"
-    # Cria-Back Qdrant (pronounced cue-drant, Patrick!!!!)
-    qdrant:
-      image: qdrant/qdrant:v1.9.6
+    # Elasticsearch
+    elasticsearch:
+      image: docker.io/elasticsearch:8.13.4
+      environment:
+        discovery.type: single-node
+        ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
       ports:
-        - "127.0.0.1:6333:6333"
-        - "127.0.0.1:6334:6334"
+        - "127.0.0.1:9200:9200"
       volumes:
-        - ./qdrant_data/storage:/qdrant/storage
-        - ./qdrant_data/config:/qdrant/config/custom_config.yaml
+        - ./elasticsearch_data:/usr/share/elasticsearch/data:cached
+      healthcheck:
+        test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s' >/dev/null || exit 1"]
+        start_period: 10s
+        interval: 5s
+        timeout: 5s
+        retries: 20
+    # MinIO for Ragflow
+    minio:
+      image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+      command: server /data --console-address ":9001"
+      ports:
+        - "127.0.0.1:9000:9000"
+        - "127.0.0.1:9001:9001"
+      volumes:
+        - ./minio_data:/data
+    # Ragflow
+    ragflow:
+      image: infiniflow/ragflow:v0.22.1
+      ports:
+        - "127.0.0.1:8080:9380"
+        - "127.0.0.1:9381:80"
+      depends_on:
+        - minio
+        - elasticsearch
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://ragflow:9380/v1/system/healthz"]
+        start_period: 1s
+        interval: 5s
+        timeout: 5s
+        retries: 15
     # Cria-Back Criadex
     criadex:
-      image: uitadmin/criadex:v1.7.1
+      image: uitadmin/criadex:latest
       ports:
         - "127.0.0.1:25574:25574"
       environment:
@@ -171,8 +203,10 @@ cd cria-prod
       volumes:
         - ./criadex_data:/home/cria/env
       depends_on:
-        qdrant:
-          condition: service_started
+        elasticsearch:
+          condition: service_healthy
+        ragflow:
+          condition: service_healthy
       healthcheck:
         test: [ "CMD", "curl", "-f", "http://criadex:25574/health_check" ]
         start_period: 1s
@@ -181,7 +215,7 @@ cd cria-prod
         retries: 5
     # Cria-Back Criabot
     criabot:
-      image: uitadmin/criabot:v1.7.1
+      image: uitadmin/criabot:latest
       ports:
         - "127.0.0.1:25575:25575"
       environment:
@@ -255,15 +289,33 @@ mkdir criaembed-app_data
 mkdir html
 mkdir log
 mkdir moodledata
-mkdir qdrant_data
+mkdir elasticsearch_data
+mkdir minio_data
+mkdir ragflow_data
 mkdir redis_data
 mkdir user_data
 mkdir user_scripts
 ```
 Add the following configuration files to the respective folders:
-1. criabot_data
+
+0. **Criabot root**
+   - .env (Used by docker-compose)
+```
+ELASTIC_PASSWORD=elastic
+REDIS_PASSWORD=password
+MYSQL_ROOT_PASSWORD=cria
+MINIO_ROOT_USER=admin
+MINIO_ROOT_PASSWORD=password
+```
+
+1. **criabot_data**
    - docker.env
 ```
+# Criadex Settings
+CRIADEX_API_BASE=http://criadex:25574
+CRIADEX_API_KEY=password
+CRIADEX_MASTER_API_KEY=password
+
 # Redis Credentials (Cache)
 REDIS_HOST=redis
 REDIS_PORT=6379
@@ -271,93 +323,150 @@ REDIS_USERNAME=default
 REDIS_PASSWORD=password
 
 # MySQL Credentials (Management)
-MYSQL_HOST=<host_address>
+MYSQL_HOST=mysql
 MYSQL_PORT=3306
-MYSQL_USERNAME=<mysql_username>
-MYSQL_PASSWORD=<mysql_password>
+MYSQL_USERNAME=root
+MYSQL_PASSWORD=cria
 MYSQL_DATABASE=criabot
 
 # Initial API Key
-APP_INITIAL_MASTER_KEY=<criadex_api_key>
+APP_INITIAL_MASTER_KEY=password
+
+# Criadex timeout
+CRIADEX_SDK_IO_TIMEOUT=300
+
+# Chat expiry time (e.g., 2h, 1d)
+CHAT_EXPIRE_TIME=2h
 ```
 
-2. criadex_data
+2. **criadex_data**
    - docker.env
 ```
 # Criadex API Settings
 APP_API_MODE=PRODUCTION
 APP_API_PORT=25574
 
-# Qdrant Credentials (Vector Database)
-QDRANT_HOST=qdrant
-QDRANT_PORT=6333
-QDRANT_GRPC_PORT=6334
-QDRANT_API_KEY=NONE
-
-# MySQL Credentials (Management)
-MYSQL_HOST=<host_address>
+# MySQL Credentials
+MYSQL_HOST=mysql
 MYSQL_PORT=3306
-MYSQL_USERNAME=<mysql_username>
-MYSQL_PASSWORD=<mysql_password>
+MYSQL_USERNAME=root
+MYSQL_PASSWORD=cria
 MYSQL_DATABASE=criadex
 
+# Elasticsearch Credentials
+ELASTICSEARCH_HOST=elasticsearch
+ELASTICSEARCH_PORT=9200
+ELASTICSEARCH_API_KEY=None
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=elastic
+
 # Initial API Key
-APP_INITIAL_MASTER_KEY=<criadex_api_key>
+APP_INITIAL_MASTER_KEY=password
 ```
-3. criaembed-api_data
+
+3. **criaembed-api_data**
    - docker.env
 ```
-MYSQL_HOST=<host_address>
+# MySQL Credentials
+MYSQL_HOST=mysql
 MYSQL_PORT=3306
-MYSQL_USERNAME=<mysql_username>
-MYSQL_PASSWORD=<mysql_password>
+MYSQL_USERNAME=root
+MYSQL_PASSWORD=cria
 MYSQL_DATABASE=criaembed
 
-CRIA_SERVER_URL="<cria_server_url (Moodle)>"
-CRIA_SERVER_TOKEN="<cria_server_token from Moodle>"
-CRIA_BOT_SERVER_URL="http://criabot:25575/"
-CRIA_BOT_SERVER_TOKEN="<cria_bot_server_token>"
-THIS_APP_URL="url_to_api_server. e.g. https://criaembedapi.uit.yorku.ca"
-WEB_APP_URL="url_to_app_server e.g. https://criaembedapp.uit.yorku.ca"
-ASSETS_FOLDER_PATH="./dist/src/assets/"
+CRIA_SERVER_URL="http://localhost/"
+CRIA_SERVER_TOKEN=<moodle_token>
+CRIA_BOT_SERVER_URL="http://criabot/"
+CRIA_BOT_SERVER_TOKEN=<bot_token>
+THIS_APP_URL="http://localhost:3003/embed-api"
+WEB_APP_URL="http://localhost:4000/embed"
 
 DEFAULT_BOT_GREETING="Hello there! Got a question?"
 APP_MODE=PRODUCTION
 
-RATE_LIMIT_MINUTE_MAX=30
-RATE_LIMIT_HOUR_MAX=120
-RATE_LIMIT_DAY_MAX=1000
-
-RATE_LIMIT_EMBED_MINUTE_MAX=15
-RATE_LIMIT_EMBED_HOUR_MAX=100
-RATE_LIMIT_EMBED_DAY_MAX=200
-
-RATE_LIMIT_CHAT_MINUTE_MAX=50
-RATE_LIMIT_CHAT_HOUR_MAX=100
-RATE_LIMIT_CHAT_DAY_MAX=1000
-
-AZURE_SPEECH_API_URL="https://canadacentral.tts.speech.microsoft.co>
-AZURE_SPEECH_API_KEY=<azure_speech_api_key>
-
 REDIS_HOST=redis
 REDIS_PORT=6379
-REDIS_USERNAME=default
 REDIS_PASSWORD=password
 
-DEBUG_ENABLED=true
+ELASTICSEARCH_HOST=elasticsearch
+ELASTICSEARCH_PORT=9200
+ELASTIC_PASSWORD=elastic
 ```
-4. criaparse_data
+
+4. **criaparse_data**
    - docker.env
 ```
 # Criaparse API Settings
 APP_API_MODE=PRODUCTION
 APP_API_PORT=25576
 
+# Redis Credentials
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=password
+
 # SDK For auth
 CRIADEX_SDK_IO_TIMEOUT=500
 CRIADEX_API_BASE=http://criadex:25574
-CRIADEX_API_KEY=<criadex_api_key>
+CRIADEX_API_KEY=password
 ```
+
+5. **ragflow_data**
+   - docker.env
+```
+# Ragflow environment variables
+# (Refer to Criabot/docker-compose.yml for passed environment)
+RAGFLOW_API_KEY=<ragflow_api_key>
+```
+## Initial Database Setup and Migrations
+After the containers are running, you must initialize the databases and apply the necessary migrations for the parent-child bot feature.
+
+1. **Clear existing data (if any)**:
+```bash
+sudo docker exec cria-prod-mysql-1 mysql -uroot -pcria -e "DROP DATABASE IF EXISTS criadex; DROP DATABASE IF EXISTS criabot; DROP DATABASE IF EXISTS cria; DROP DATABASE IF EXISTS criaembed;"
+```
+
+2. **Import clean database**:
+```bash
+sudo docker exec -i cria-prod-mysql-1 mysql -uroot -pcria < path/to/cria-clean.sql
+```
+
+3. **Apply BotParents migration**:
+```bash
+sudo docker exec -i cria-prod-mysql-1 \
+  mysql -uroot -pcria criabot \
+  < ./Criabot/migrations/001_add_bot_parents_table.sql
+```
+
+## Configure Ragflow
+Once the database is ready, you need to configure the Ragflow tenant and API key.
+
+1. **Access Ragflow UI**:
+   Open your browser and navigate to: `http://localhost:9381/`
+
+2. **Create/Login to Ragflow**:
+   Sign up for a new account. This will create a new tenant in the Ragflow database.
+
+3. **Configure LLM Models**:
+   In the Ragflow UI, navigate to Settings and configure your preferred LLM (e.g., Azure OpenAI, OpenAI), Embedding, and Rerank models.
+
+4. **Generate API Key**:
+   Navigate to the API Keys section in Ragflow and create a new key. Copy this key (format: `ragflow-XXXX...`).
+
+5. **Get Tenant ID**:
+   Query the database to find your tenant ID:
+```bash
+sudo docker exec cria-prod-mysql-1 mysql -uroot -pcria rag_flow -e "SELECT id, name FROM tenant ORDER BY create_time DESC LIMIT 5;"
+```
+
+6. **Update Environment Files**:
+   Update your `.env` and `docker.env` files with the new `RAGFLOW_API_KEY` and `RAGFLOW_TENANT_ID`.
+
+7. **Restart Services**:
+```bash
+docker-compose restart criabot criadex
+```
+
 ## Change folder and file permissions
 ```
 sudo chgrp -R docker criabot_data/ criadex_data/ criaembed-api_data/ criaembed-app_data/ criaparse_data/

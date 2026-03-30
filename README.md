@@ -12,8 +12,7 @@ creating bots for their students, staff and faculty. Building bots is as easy as
 or creating questions within the interface.
 
 This module is the front-end interface that allows you easily to create bots based on Large Language Models (LLM).
-Currently, the only supported LLM is MS Azure OpenAI. However, it is possible to create providers for other AI systems 
-such as Gemini, Llama, Bedrock etc.
+Following the Ragflow migration, the system now supports extensible multi-provider configurations, including Azure OpenAI, OpenAI, Anthropic, Gemini, and over 17 other RAGFlow-supported providers.
 
 ## Dependencies
 * [Moodle](https://download.moodle.org/) 3.11 or later
@@ -24,7 +23,8 @@ such as Gemini, Llama, Bedrock etc.
 * [CriaEmbed](https://github.com/YorkUITInnovation/criaembed)
 * [Scrapper](https://github.com/amerkurev/scrapper)
 * [Cohere AI](https://cohere.com) for reranking.
-* [Qdrant](https://qdrant.tech/)
+* [Ragflow](https://github.com/infiniflow/ragflow)
+* [Elasticsearch](https://www.elastic.co/)
 * [ConvertAPI](https://www.convertapi.com/) for document conversion. (Optional)
 
 ## Why Moodle?
