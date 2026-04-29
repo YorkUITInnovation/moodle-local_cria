@@ -96,6 +96,27 @@ class criadex
     }
 
     /**
+     * @param string $type Provider type or empty for aggregate list
+     * @return mixed
+     */
+    public static function list_models(string $type = '')
+    {
+        $config = get_config('local_cria');
+        $path = '/models/list';
+        if (!empty($type)) {
+            $path = '/models/' . $type . '/list';
+        }
+
+        return gpt::_make_call(
+            $config->criadex_url,
+            $config->criadex_api_key,
+            [],
+            $path,
+            'GET'
+        );
+    }
+
+    /**
      * @param $model_id
      * @param $system_message
      * @param $prompt

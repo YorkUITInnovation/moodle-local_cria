@@ -333,6 +333,11 @@ class bot extends crud
     private $llm_generate_related_prompts;
 
     /**
+     * @var int
+     */
+    private $web_search_enabled;
+
+    /**
      * @var string
      */
     private $bot_trust_warning;
@@ -431,6 +436,7 @@ class bot extends crud
         $this->integrations_no_context_reply = $result->integrations_no_context_reply ?? 0;
         $this->integrations_first_email_only = $result->integrations_first_email_only ?? 0;
         $this->llm_generate_related_prompts = $result->llm_generate_related_prompts ?? 0;
+        $this->web_search_enabled = $result->web_search_enabled ?? 0;
         $this->bot_trust_warning = $result->bot_trust_warning ?? '';
         $this->bot_help_text = $result->bot_help_text ?? '';
         $this->bot_contact = $result->bot_contact ?? '';
@@ -914,6 +920,14 @@ class bot extends crud
     }
 
     /**
+     * @return bool
+     */
+    public function get_web_search_enabled(): bool
+    {
+        return (bool) $this->web_search_enabled;
+    }
+
+    /**
      * @return string/null
      */
     public function get_bot_trust_warning()
@@ -998,6 +1012,8 @@ class bot extends crud
         $params->embedding_model_id = $EMBEDDING_MODEL->get_criadex_model_id();
         $params->rerank_model_id = $RERANK_MODEL->get_criadex_model_id();
         $params->llm_generate_related_prompts = $this->get_llm_generate_related_prompts();
+        $params->web_search_enabled = $this->get_web_search_enabled();
+        $params->web_search_global_enabled = (bool) get_config('local_cria', 'web_search_global_enabled');
         $params->parent_bot_names = array_map('strval', self::get_parent_bot_ids_for_child($this->id));
 
         $params = json_encode($params);

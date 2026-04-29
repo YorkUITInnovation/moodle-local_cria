@@ -65,7 +65,7 @@ if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot . '/local/cria/providers.php');
 } else {
     // Show form
-    $mform->set_data($mform);
+    $mform->set_data($formdata);
 }
 
 base::page(

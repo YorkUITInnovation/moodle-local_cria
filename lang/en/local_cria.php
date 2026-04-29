@@ -378,6 +378,8 @@ $string['web_pages'] = 'Web Pages';
 $string['welcome_message'] = 'Welcome message';
 $string['welcome_message_help'] = 'The welcome message to be displayed when the bot is used';
 $string['word_count'] = 'Word count';
+$string['web_search_enabled'] = 'Enable web search fallback for this bot';
+$string['web_search_enabled_help'] = 'When enabled, this bot may use web search fallback when retrieval confidence is low.';
 
 // GPT Settings
 $string['max_tokens'] = 'Max tokens';
@@ -445,6 +447,8 @@ $string['criaparse_url'] = 'CriaParse URL';
 $string['criaparse_url_help'] = 'Enter the URL for the CriaParse instance you are connecting too.';
 $string['criascraper_url'] = 'CriaScraper URL';
 $string['criascraper_url_help'] = 'Enter the URL for the CriaScraper instance you are connecting too.';
+$string['web_search_global_enabled'] = 'Enable web search globally';
+$string['web_search_global_enabled_help'] = 'Global switch for web search usage across all bots. Individual bots still need their per-bot web search toggle enabled.';
 // MinutesMaster
 $string['convert'] = 'Convert';
 $string['convertapi_api_key'] = 'ConvertAPI API Key';

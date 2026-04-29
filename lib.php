@@ -106,6 +106,8 @@ function local_cria_pluginfile($course, $cm, $context, $filearea, $args, $forced
 
     // If the file does not exist.
     if (!$file) {
+        // Debug: log what we were looking for
+        error_log("Cria pluginfile not found - context: {$context->id}, component: local_cria, filearea: {$filearea}, itemid: {$itemid}, path: {$path}, filename: {$filename}");
         send_file_not_found();
     }
 

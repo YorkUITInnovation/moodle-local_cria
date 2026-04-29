@@ -32,6 +32,12 @@ $context = CONTEXT_SYSTEM::instance();
 
 require_login(1, false);
 
+try {
+    \local_cria\models::sync_from_criadex();
+} catch (\Throwable $e) {
+    // Keep bot editing available if temporary sync issues occur.
+}
+
 if ($id) {
     $BOT = new bot($id);
     $formdata = $BOT->get_record();
@@ -73,6 +79,7 @@ if ($id) {
     $formdata->theme_color = '#e31837';
     $formdata->fine_tuning = true;
     $formdata->max_context = 8000; //max_input_tokens
+    $formdata->web_search_enabled = 0;
     $formdata->no_context_message = get_string('default_no_context_message', 'local_cria');
     $formdata->no_context_use_message = 1;
     $formdata->no_context_llm_guess = 0;

@@ -608,5 +608,20 @@ function xmldb_local_cria_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2026022700, 'local', 'cria');
     }
 
+    if ($oldversion < 2026042900) {
+
+        // Define field web_search_enabled to be added to local_cria_bot.
+        $table = new xmldb_table('local_cria_bot');
+        $field = new xmldb_field('web_search_enabled', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'llm_generate_related_prompts');
+
+        // Conditionally launch add field web_search_enabled.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Cria savepoint reached.
+        upgrade_plugin_savepoint(true, 2026042900, 'local', 'cria');
+    }
+
     return true;
 }

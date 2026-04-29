@@ -53,6 +53,7 @@
         <FIELD NAME="bot_locale" TYPE="char" LENGTH="10" NOTNULL="false" DEFAULT="en-US" SEQUENCE="false"/>
         <FIELD NAME="related_prompts" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="llm_generate_related_prompts" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="web_search_enabled" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="ms_app_id" TYPE="char" LENGTH="1333" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="ms_app_password" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="integrations_no_context_reply" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>

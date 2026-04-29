@@ -312,7 +312,8 @@ $string['web_pages'] = 'Pages web';
 $string['welcome_message'] = 'Message de bienvenue';
 $string['welcome_message_help'] = 'Le message de bienvenue à afficher lorsque le bot est utilisé';
 $string['word_count'] = 'Nombre de mots';
-
+$string['web_search_enabled'] = 'Activer la recherche web de secours pour ce bot';
+$string['web_search_enabled_help'] = 'Lorsqu\'activée, ce bot peut utiliser la recherche web de secours lorsque la confiance de récupération est faible.';
 
 // GPT Settings
 $string['max_tokens'] = 'Nombre maximum de jetons';
@@ -381,7 +382,8 @@ $string['criaparse_url'] = 'URL de CriaParse';
 $string['criaparse_url_help'] = 'Entrez l\'URL de l\'instance CriaParse à laquelle vous vous connectez.';
 $string['criascraper_url'] = 'URL de CriaScraper';
 $string['criascraper_url_help'] = 'Entrez l\'URL de l\'instance CriaScraper à laquelle vous vous connectez.';
-
+$string['web_search_global_enabled'] = 'Activer la recherche web globalement';
+$string['web_search_global_enabled_help'] = 'Interrupteur global pour l\'utilisation de la recherche web par tous les bots. Les bots individuels doivent également avoir leur propre interrupteur de recherche web activé.';
 // MinutesMaster
 $string['convert'] = 'Convert';
 $string['convertapi_api_key'] = 'ConvertAPI API Key';

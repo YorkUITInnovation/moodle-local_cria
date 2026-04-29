@@ -22,6 +22,12 @@ require_login(1, false);
 
 $context = context_system::instance();
 
+try {
+    \local_cria\models::sync_from_criadex();
+} catch (\Throwable $e) {
+    // Keep dashboard available even if backend sync is temporarily unavailable.
+}
+
 \local_cria\base::page(
     new moodle_url('/local/cria/bot_models.php'),
     get_string('bot_models', 'local_cria'),

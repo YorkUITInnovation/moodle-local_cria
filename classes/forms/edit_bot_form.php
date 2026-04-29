@@ -823,6 +823,26 @@ class edit_bot_form extends \moodleform
             'local_cria'
         );
 
+        // Element web_search_enabled
+        $mform->addElement(
+            'selectyesno',
+            'web_search_enabled',
+            get_string('web_search_enabled', 'local_cria')
+        );
+        $mform->setType(
+            'web_search_enabled',
+            PARAM_INT
+        );
+        $mform->setDefault(
+            'web_search_enabled',
+            0
+        );
+        $mform->addHelpButton(
+            'web_search_enabled',
+            'web_search_enabled',
+            'local_cria'
+        );
+
 
         // Add textare element for related_prompts
         $mform->addElement(

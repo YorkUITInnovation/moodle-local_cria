@@ -78,6 +78,13 @@ if ($hassiteconfig) {
         'http://criascraper:25580', PARAM_TEXT, 255
     ));
 
+    $settings->add( new admin_setting_configcheckbox(
+        'local_cria/web_search_global_enabled',
+        get_string('web_search_global_enabled', 'local_cria'),
+        get_string('web_search_global_enabled_help', 'local_cria'),
+        1
+    ));
+
     $settings->add( new admin_setting_configpasswordunmask(
         'local_cria/criadex_api_key',
         get_string('criadex_api_key', 'local_cria'),

@@ -25,6 +25,12 @@ if (!has_capability('local/cria:view_providers', $context)) {
     redirect(new moodle_url('/local/cria/index.php'));
 }
 
+try {
+    \local_cria\models::sync_from_criadex();
+} catch (\Throwable $e) {
+    // Do not block provider page when sync endpoint is unavailable.
+}
+
 \local_cria\base::page(
     new moodle_url('/local/cria/bot_config.php'),
     get_string('providers', 'local_cria'),
