@@ -6,7 +6,7 @@
  * Cria is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License along with Cria. If not, see <https://www.gnu.org/licenses/>.
  *
- * End-to-end test: create provider, model, bot type, and bot from Cria APIs.
+ * End-to-end test: create provider, model, bot type, and bot; list or purge orphaned E2E data.
  *
  * @package    local_cria
  * @copyright  2024 onwards York University (https://yorku.ca)
@@ -22,24 +22,212 @@ use local_cria\api_response;
 use local_cria\bot;
 use local_cria\criabot;
 use local_cria\criadex;
-use local_cria\intent;
-use local_cria\model;
+
+/**
+ * Find orphaned E2E entities in Moodle.
+ *
+ * @return array{providers: array, models: array, types: array, bots: array, intents: array}
+ */
+function local_cria_e2e_find_leftovers(): array {
+    global $DB;
+
+    return [
+        'providers' => $DB->get_records_sql(
+            "SELECT id, name, idnumber, type FROM {local_cria_providers} WHERE name LIKE ? OR idnumber LIKE ?",
+            ['%E2E%', '%e2e%']
+        ),
+        'models' => $DB->get_records_sql(
+            "SELECT id, name, criadex_model_id, provider_id FROM {local_cria_models} WHERE name LIKE ? OR value LIKE ?",
+            ['%E2E%', '%e2e%']
+        ),
+        'types' => $DB->get_records_sql(
+            "SELECT id, name FROM {local_cria_type} WHERE name LIKE ?",
+            ['%E2E%']
+        ),
+        'bots' => $DB->get_records_sql(
+            "SELECT id, name, bot_type, model_id FROM {local_cria_bot} WHERE name LIKE ?",
+            ['%E2E%']
+        ),
+        'intents' => $DB->get_records_sql(
+            "SELECT i.id, i.bot_id FROM {local_cria_intents} i
+              JOIN {local_cria_bot} b ON b.id = i.bot_id
+             WHERE b.name LIKE ?",
+            ['%E2E%']
+        ),
+    ];
+}
+
+/**
+ * Print orphaned E2E entities.
+ *
+ * @param array $leftovers
+ * @return void
+ */
+function local_cria_e2e_list_leftovers(array $leftovers): void {
+    cli_writeln('Providers: ' . count($leftovers['providers']));
+    foreach ($leftovers['providers'] as $p) {
+        cli_writeln("  id={$p->id} name={$p->name} idnumber={$p->idnumber} type={$p->type}");
+    }
+
+    cli_writeln('Models: ' . count($leftovers['models']));
+    foreach ($leftovers['models'] as $m) {
+        cli_writeln("  id={$m->id} name={$m->name} criadex={$m->criadex_model_id} provider={$m->provider_id}");
+    }
+
+    cli_writeln('Bot types: ' . count($leftovers['types']));
+    foreach ($leftovers['types'] as $t) {
+        cli_writeln("  id={$t->id} name={$t->name}");
+    }
+
+    cli_writeln('Bots: ' . count($leftovers['bots']));
+    foreach ($leftovers['bots'] as $b) {
+        cli_writeln("  id={$b->id} name={$b->name} type={$b->bot_type} model={$b->model_id}");
+    }
+
+    cli_writeln('Intents on E2E bots: ' . count($leftovers['intents']));
+    foreach ($leftovers['intents'] as $i) {
+        cli_writeln("  intent={$i->id} bot={$i->bot_id}");
+    }
+}
+
+/**
+ * Remove E2E entities from Moodle and Criadex.
+ *
+ * @param int $botid
+ * @param int $criadexmodelid
+ * @param int $modelid
+ * @param int $providerid
+ * @param int $bottypeid
+ * @return string[] Warnings when cleanup partially failed.
+ */
+function local_cria_e2e_cleanup_run(
+    int $botid,
+    int $criadexmodelid,
+    int $modelid,
+    int $providerid,
+    int $bottypeid
+): array {
+    global $DB;
+
+    $warnings = [];
+
+    if ($botid > 0) {
+        try {
+            $cleanupbot = new bot($botid);
+            if (!$cleanupbot->delete_record()) {
+                $warnings[] = "Moodle bot id={$botid} could not be deleted";
+            }
+        } catch (\Throwable $e) {
+            $DB->delete_records('local_cria_bot', ['id' => $botid]);
+            $warnings[] = 'Bot delete fell back to DB only: ' . $e->getMessage();
+        }
+    }
+
+    if ($criadexmodelid > 0) {
+        $deleteresponse = criadex::delete_model($criadexmodelid, 'ollama');
+        if (!api_response::is_success($deleteresponse)) {
+            $warnings[] = 'Criadex model delete failed: ' . api_response::error_message($deleteresponse);
+        }
+        $DB->delete_records_select('local_cria_models', 'criadex_model_id = :cid', ['cid' => $criadexmodelid]);
+    } else if ($modelid > 0) {
+        $DB->delete_records('local_cria_models', ['id' => $modelid]);
+    }
+
+    if ($providerid > 0) {
+        $DB->delete_records('local_cria_providers', ['id' => $providerid]);
+    }
+    if ($bottypeid > 0) {
+        $DB->delete_records('local_cria_type', ['id' => $bottypeid]);
+    }
+
+    return $warnings;
+}
+
+/**
+ * Purge all orphaned E2E entities found in Moodle.
+ *
+ * @param array $leftovers
+ * @return void
+ */
+function local_cria_e2e_purge_leftovers(array $leftovers): void {
+    global $DB;
+
+    $criadexids = [];
+    foreach ($leftovers['models'] as $m) {
+        if (!empty($m->criadex_model_id)) {
+            $criadexids[(int) $m->criadex_model_id] = true;
+        }
+    }
+
+    foreach ($leftovers['bots'] as $b) {
+        $cleanupbot = new bot($b->id);
+        if (!$cleanupbot->delete_record()) {
+            cli_writeln("Failed to delete bot id={$b->id}");
+        } else {
+            cli_writeln("Deleted bot id={$b->id}");
+        }
+    }
+
+    foreach (array_keys($criadexids) as $criadexid) {
+        $response = criadex::delete_model($criadexid, 'ollama');
+        if (api_response::is_success($response)) {
+            cli_writeln("Deleted Criadex model id={$criadexid}");
+        } else {
+            cli_writeln('Criadex delete failed for id=' . $criadexid . ': ' . api_response::error_message($response));
+        }
+        $DB->delete_records_select('local_cria_models', 'criadex_model_id = :cid', ['cid' => $criadexid]);
+    }
+
+    foreach ($leftovers['providers'] as $p) {
+        $DB->delete_records('local_cria_providers', ['id' => $p->id]);
+        cli_writeln("Deleted provider id={$p->id}");
+    }
+
+    foreach ($leftovers['types'] as $t) {
+        $DB->delete_records('local_cria_type', ['id' => $t->id]);
+        cli_writeln("Deleted bot type id={$t->id}");
+    }
+
+    cli_writeln('Purge complete.');
+}
 
 $longparams = [
     'help' => false,
     'keep' => false,
+    'list-leftovers' => false,
+    'purge-leftovers' => false,
 ];
-list($options) = cli_get_params($longparams, ['h' => 'help']);
+list($options) = cli_get_params($longparams, [
+    'h' => 'help',
+    'list-leftovers' => 'list-leftovers',
+    'purge-leftovers' => 'purge-leftovers',
+]);
 
 if ($options['help']) {
     echo "Create provider → model → bot type → bot and verify Criadex/Criabot sync.\n";
-    echo "Options:\n  --keep  Do not delete test entities after run\n";
+    echo "Options:\n";
+    echo "  --keep             Do not delete test entities after a create run\n";
+    echo "  --list-leftovers   List orphaned E2E test entities in Moodle\n";
+    echo "  --purge-leftovers  Delete orphaned E2E test entities from Moodle and Criadex\n";
+    exit(0);
+}
+
+if ($options['list-leftovers'] || $options['purge-leftovers']) {
+    cli_heading('E2E leftovers in Moodle');
+    $leftovers = local_cria_e2e_find_leftovers();
+    local_cria_e2e_list_leftovers($leftovers);
+
+    if ($options['purge-leftovers']) {
+        cli_heading('Purging E2E leftovers');
+        local_cria_e2e_purge_leftovers($leftovers);
+    }
+
     exit(0);
 }
 
 global $DB, $USER;
 
-$tag = 'e2e-' . gmdate('Ymd-His');
+$tag = gmdate('Ymd-His');
 $failures = 0;
 
 /**
@@ -162,18 +350,16 @@ $check(
 
 if (!$options['keep']) {
     cli_heading('Cleanup');
-    if (!empty($intentrow->id)) {
-        $INTENT = new intent($intentrow->id);
-        $INTENT->delete_record();
+    $cleanwarnings = local_cria_e2e_cleanup_run($botid, $criadexmodelid, $modelid, $providerid, $bottypeid);
+
+    if (!empty($cleanwarnings)) {
+        cli_writeln('Cleanup completed with warnings (use --purge-leftovers if entities remain):');
+        foreach ($cleanwarnings as $warning) {
+            cli_writeln("  - {$warning}");
+        }
+    } else {
+        cli_writeln('Test entities removed.');
     }
-    $DB->delete_records('local_cria_bot', ['id' => $botid]);
-    if ($criadexmodelid > 0) {
-        criadex::delete_model($criadexmodelid, 'ollama');
-    }
-    $DB->delete_records('local_cria_models', ['id' => $modelid]);
-    $DB->delete_records('local_cria_providers', ['id' => $providerid]);
-    $DB->delete_records('local_cria_type', ['id' => $bottypeid]);
-    cli_writeln('Test entities removed.');
 }
 
 cli_writeln($failures === 0 ? 'E2E PASS' : "E2E FAIL ({$failures} checks failed)");
