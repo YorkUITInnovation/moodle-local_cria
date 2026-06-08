@@ -75,6 +75,16 @@ class content implements \renderable, \templatable
         $INTENTS = new intents($this->bot_id);
         $intents = array_values($INTENTS->get_records_with_related_data($this->active_intent_id));
         $INTENT = new intent($this->active_intent_id);
+        $caneditcontent = has_capability('local/cria:edit_bot_content', $context);
+
+        foreach ($intents as $intentrow) {
+            if ($caneditcontent) {
+                $intentrow->edit_url = (new \moodle_url('/local/cria/edit_intent.php', [
+                    'bot_id' => $this->bot_id,
+                    'id' => $intentrow->id,
+                ]))->out(false);
+            }
+        }
 
         $data = [
             'bot_id' => $this->bot_id,
@@ -83,7 +93,12 @@ class content implements \renderable, \templatable
             'use_fine_tuning' => $BOT->get_fine_tuning(),
             'content_page' => true,
             'return_url' => 'content',
-            'file_state' => $INTENT->check_file_state()
+            'file_state' => $INTENT->check_file_state(),
+            'can_edit_content' => $caneditcontent,
+            'use_bot_server' => $BOT->use_bot_server(),
+            'add_intent_url' => $caneditcontent && $BOT->use_bot_server()
+                ? (new \moodle_url('/local/cria/edit_intent.php', ['bot_id' => $this->bot_id]))->out(false)
+                : '',
         ];
 
         return $data;

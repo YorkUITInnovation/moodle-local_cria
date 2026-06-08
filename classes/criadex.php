@@ -117,6 +117,24 @@ class criadex
     }
 
     /**
+     * Merge duplicate generic models in Criadex (same provider_type + api_model).
+     *
+     * @return mixed
+     */
+    public static function dedupe_models()
+    {
+        $config = get_config('local_cria');
+
+        return gpt::_make_call(
+            $config->criadex_url,
+            $config->criadex_api_key,
+            [],
+            '/models/dedupe',
+            'POST'
+        );
+    }
+
+    /**
      * @param $model_id
      * @param $system_message
      * @param $prompt

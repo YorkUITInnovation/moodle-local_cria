@@ -67,10 +67,10 @@ if ($mform->is_cancelled()) {
         $params = $DB->get_record('local_cria_models', ['id' => $id]);
         $MODEL_OBJ = new model($id);
         $results = criadex::update_model($params->criadex_model_id, $data->value, $MODEL_OBJ->get_provider_type());
-        if (isset($results->status) && $results->status == '200') {
+        if (\local_cria\api_response::is_success($results)) {
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
+            \core\notification::error(\local_cria\api_response::error_message($results));
         }
     } else {
         $data->usermodified = $USER->id;
@@ -79,14 +79,15 @@ if ($mform->is_cancelled()) {
         $id  = $DB->insert_record('local_cria_models', $data);
         $provider_type = (new \local_cria\provider($data->provider_id))->get_type();
         $results = criadex::create_model($data->value, $provider_type);
-        if (isset($results->status) && $results->status == '200') {
+        if (\local_cria\api_response::is_success($results)) {
             $params = new stdClass();
             $params->id = $id;
             $params->criadex_model_id = $results->model->id ?? 0;
             $DB->update_record('local_cria_models', $params);
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            \core\notification::error(($results->status ?? 'Error') . "\n" . ($results->message ?? '') . "\n" . ($results->code ?? ''));
+            $DB->delete_records('local_cria_models', ['id' => $id]);
+            \core\notification::error(\local_cria\api_response::error_message($results));
         }
     }
 } else {

@@ -72,13 +72,10 @@ if ($mform->is_cancelled()) {
         $id = $data->id;
         $params = $DB->get_record('local_cria_models', ['id' => $id]);
         $results = criadex::update_model($params->criadex_model_id, $data->value, $provider_type);
-        if (isset($results->status) && $results->status == '200') {
+        if (\local_cria\api_response::is_success($results)) {
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            $msg = isset($results->status) ? $results->status : 'Unknown error';
-            $msg .= isset($results->message) ? "\n" . $results->message : '';
-            $msg .= isset($results->code) ? "\n" . $results->code : '';
-            \core\notification::error($msg);
+            \core\notification::error(\local_cria\api_response::error_message($results));
         }
     } else {
         $data->usermodified = $USER->id;
@@ -86,17 +83,18 @@ if ($mform->is_cancelled()) {
         $data->timecreated = time();
         $id = $DB->insert_record('local_cria_models', $data);
         $results = criadex::create_model($data->value, $provider_type);
-        if (isset($results->status) && $results->status == '200') {
+        if (\local_cria\api_response::is_success($results)) {
             $params = new stdClass();
             $params->id = $id;
             $params->criadex_model_id = $results->model->id ?? 0;
             $DB->update_record('local_cria_models', $params);
             redirect($CFG->wwwroot . '/local/cria/bot_models.php');
         } else {
-            $msg = isset($results->status) ? $results->status : 'Criadex route not available for provider type: ' . $provider_type;
-            $msg .= isset($results->message) ? "\n" . $results->message : '';
-            $msg .= isset($results->code) ? "\n" . $results->code : '';
-            \core\notification::error($msg);
+            $DB->delete_records('local_cria_models', ['id' => $id]);
+            \core\notification::error(\local_cria\api_response::error_message(
+                $results,
+                'Criadex route not available for provider type: ' . $provider_type
+            ));
         }
     }
 } else {

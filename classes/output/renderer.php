@@ -34,6 +34,16 @@ class renderer extends \plugin_renderer_base {
     }
 
     /**
+     * @param \templatable $syncstatus
+     * @return bool|string
+     * @throws \moodle_exception
+     */
+    public function render_sync_status(\templatable $syncstatus) {
+        $data = $syncstatus->export_for_template($this);
+        return $this->render_from_template('local_cria/sync_status', $data);
+    }
+
+    /**
      * Used with root/index.php
      * @param \templatable $dashboard
      * @return type

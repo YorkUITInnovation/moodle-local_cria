@@ -28,9 +28,9 @@
  * ************************************************************************ */
 namespace local_cria\output;
 
+use local_cria\api_response;
 use local_cria\bot;
-use local_cria\cria;
-use local_cria\output\type;
+use local_cria\criabot;
 
 class bot_app implements \renderable, \templatable
 {
@@ -61,8 +61,10 @@ class bot_app implements \renderable, \templatable
 
         $chat_id = 0;
         if ($BOT->use_bot_server()) {
-            $session = cria::start_chat($this->bot_id . '-' . $BOT->get_default_intent_id());
-            $chat_id = $session->chat_id;
+            $session = criabot::chat_start();
+            if (api_response::is_success($session) && !empty($session->chat_id)) {
+                $chat_id = $session->chat_id;
+            }
         }
 
         $data = [

@@ -76,15 +76,21 @@ class local_cria_external_bot_type extends external_api {
         //OPTIONAL but in most web service it should present
         $context = \context_system::instance();
         self::validate_context($context);
-        // Get all bots for this type
-        $bots = $DB->get_records('local_cria', array('bot_type' => $id));
-        // Delete all files for each bot and the bot
-        foreach ($bots as $bot) {
-            $DB->delete_records('local_cria_files', array('bot_id' => $bot->id));
-            $DB->delete_records('local_cria', array('id' => $bot->id));
+        $bots = $DB->get_records('local_cria_bot', ['bot_type' => $id]);
+        foreach ($bots as $botrow) {
+            $BOT = new \local_cria\bot($botrow->id);
+            $intents = $DB->get_records('local_cria_intents', ['bot_id' => $botrow->id]);
+            foreach ($intents as $intentrow) {
+                $INTENT = new \local_cria\intent($intentrow->id);
+                $INTENT->delete_record();
+            }
+            if (!$BOT->use_bot_server()) {
+                criabot::bot_delete((string) $botrow->id);
+            }
+            $DB->delete_records('local_cria_bot', ['id' => $botrow->id]);
         }
-        // Delete the type
-        $DB->delete_records('local_cria_type', array('id' => $id));
+
+        $DB->delete_records('local_cria_type', ['id' => $id]);
 
         return true;
     }

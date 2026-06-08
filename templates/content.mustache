@@ -24,9 +24,19 @@
                             aria-controls="content{{id}}"
                             aria-selected="{{#active}}true{{/active}}{{^active}}false{{/active}}">
                         {{name}}
+                        {{#edit_url}}
+                            <a class="btn-edit-intent ml-2" href="{{edit_url}}" title="{{#str}}edit_intent, local_cria{{/str}}">
+                                <i class="icon fa fa-pencil fa-fw" aria-hidden="true"></i>
+                            </a>
+                        {{/edit_url}}
                     </button>
                 </li>
             {{/intents}}
+            {{#add_intent_url}}
+                <li class="nav-item ml-2 align-self-center">
+                    <a class="btn btn-sm btn-secondary" href="{{add_intent_url}}">{{#str}}add_intent, local_cria{{/str}}</a>
+                </li>
+            {{/add_intent_url}}
         </ul>
         <div class="tab-content" id="cria-content-tab">
             {{#intents}}

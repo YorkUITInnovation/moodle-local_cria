@@ -169,12 +169,23 @@ class intent extends crud
 
         if ($data->published) {
             $NEW_INTENT = new intent($new_intent_id);
+            $BOT = new bot($NEW_INTENT->get_bot_id());
+            if (!$BOT->has_valid_model_links()) {
+                \core\notification::error(get_string('sync_bot_missing_models', 'local_cria'));
+                return $new_intent_id;
+            }
             $result = $NEW_INTENT->create_intent_on_bot_server();
-            // Update intent bot_api_key
-            $params = new \stdClass();
-            $params->id = $new_intent_id;
-            $params->bot_api_key = $result->bot_api_key;
-            $DB->update_record('local_cria_intents', $params);
+            if (api_response::is_success($result) && !empty($result->bot_api_key)) {
+                $params = new \stdClass();
+                $params->id = $new_intent_id;
+                $params->bot_api_key = $result->bot_api_key;
+                $DB->update_record('local_cria_intents', $params);
+            } else {
+                \core\notification::error(api_response::error_message(
+                    $result,
+                    get_string('sync_bot_push_failed', 'local_cria')
+                ));
+            }
         }
         return $new_intent_id;
     }
@@ -448,8 +459,16 @@ class intent extends crud
         } else {
             $question_content = criabot::question_create($this->get_bot_name(), $data);
         }
+        if (!is_object($question_content)) {
+            api_response::notify_error(
+                $question_content,
+                get_string('sync_content_push_failed', 'local_cria')
+            );
+            return get_string('sync_content_push_failed', 'local_cria');
+        }
+
         // Update question indexed
-        if ($question_content->status == 200) {
+        if (api_response::is_success($question_content)) {
             $DB->set_field(
                 'local_cria_question',
                 'published',
@@ -475,12 +494,11 @@ class intent extends crud
                 );
             }
             return 200;
-        } else {
-            \core\notification::error(
-                'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message
-            );
-            return 'STATUS: ' . $question_content->status . ' CODE: ' . $question_content->code . ' Message: ' . $question_content->message;
         }
+
+        api_response::notify_error($question_content, get_string('sync_content_push_failed', 'local_cria'));
+        api_response::log_issue('Criabot question publish ' . $this->get_bot_name(), $question_content);
+        return api_response::error_message($question_content, get_string('sync_content_push_failed', 'local_cria'));
     }
 
     /**
@@ -558,23 +576,42 @@ class intent extends crud
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public function update_intent_on_bot_server()
+    public function update_intent_on_bot_server(bool $notify = true)
     {
         $bot_name = $this->bot_id . '-' . $this->id;
         $bot_exists = criabot::bot_about((string)$bot_name);
 
-        if ($bot_exists->status == 404) {
+        $BOT = new bot($this->bot_id);
+        if (!$BOT->has_valid_model_links()) {
+            if ($notify) {
+                \core\notification::error(get_string('sync_bot_missing_models', 'local_cria'));
+            }
+            return false;
+        }
+
+        if (!is_object($bot_exists) || !isset($bot_exists->status)) {
+            if ($notify) {
+                api_response::notify_error($bot_exists, get_string('sync_criabot_unreachable', 'local_cria'));
+            }
+            api_response::log_issue('Criabot intent about ' . $bot_name, $bot_exists);
+            return false;
+        }
+
+        if ((int) $bot_exists->status === 404) {
             $result = criabot::bot_create((string)$bot_name, $this->get_bot_parameters_json());
         } else {
             $result = criabot::bot_update((string)$bot_name, $this->get_bot_parameters_json());
         }
-        if ($result->status == 200) {
+
+        if (api_response::is_success($result)) {
             return true;
-        } else {
-            \core\notification::error(
-                'STATUS: ' . $result->status . ' CODE: ' . $result->code . ' Message: ' . $result->message
-            );
         }
+
+        if ($notify) {
+            api_response::notify_error($result, get_string('sync_bot_push_failed', 'local_cria'));
+        }
+        api_response::log_issue('Criabot intent push ' . $bot_name, $result);
+        return false;
     }
 
     /**
@@ -698,6 +735,10 @@ class intent extends crud
             $content_data['error_message'] = json_encode($results, JSON_PRETTY_PRINT);
             $content_data['timemodified'] = time();
             $DB->update_record('local_cria_files', $content_data);
+            api_response::log_issue(
+                'CriaParse file ' . $file_name . ' (intent ' . $this->id . ')',
+                (object) ['status' => $results['status'] ?? 0, 'message' => $results['message'] ?? json_encode($results)]
+            );
         } else {
             $nodes = $results['nodes'];
             // Send nodes to indexing server
@@ -705,11 +746,18 @@ class intent extends crud
             $content_data['nodes'] = json_encode($nodes, JSON_PRETTY_PRINT);
             $content_data['timemodified'] = time();
 
-            if ($upload->status != 200) {
+            if (!api_response::is_success($upload)) {
                 // Update file record with error and move on to the next file
                 $content_data['indexed'] = $FILE::INDEXING_FAILED;
-                $content_data['error_message'] = 'Error uploading file to indexing server: ' . json_encode($upload, JSON_PRETTY_PRINT);
+                $content_data['error_message'] = api_response::error_message(
+                    $upload,
+                    get_string('sync_index_upload_failed', 'local_cria')
+                );
                 $DB->update_record('local_cria_files', $content_data);
+                api_response::log_issue(
+                    'Criabot document upload ' . $file_name . ' (intent ' . $this->id . ')',
+                    $upload
+                );
             } else {
                 // Update file record with completed
                 $content_data['indexed'] = $FILE::INDEXING_COMPLETE;

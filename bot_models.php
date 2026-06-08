@@ -23,9 +23,9 @@ require_login(1, false);
 $context = context_system::instance();
 
 try {
-    \local_cria\models::sync_from_criadex();
+    \local_cria\sync_manager::run_model_sync(false);
 } catch (\Throwable $e) {
-    // Keep dashboard available even if backend sync is temporarily unavailable.
+    \core\notification::warning(get_string('sync_models_failed', 'local_cria'));
 }
 
 \local_cria\base::page(

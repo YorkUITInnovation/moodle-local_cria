@@ -137,7 +137,7 @@ class file extends crud
      */
     public function __construct($id = 0)
     {
-        global $CFG, $DB, $DB;
+        global $CFG, $DB;
 
         $this->table = 'local_cria_files';
 
@@ -480,18 +480,26 @@ class file extends crud
             '/',
             $this->get_name()
         );
-        if ($result->status == '200') {
+        if (\local_cria\api_response::is_success($result)) {
             $file->delete();
             // Delete on local database
             $DB->delete_records($this->table, array('id' => $this->get_id()));
             return true;
-        } else {
-            if ($file) {
-                $file->delete();
-            }
-            $DB->delete_records($this->table, array('id' => $this->get_id()));
-            return false;
         }
+
+        \local_cria\api_response::notify_error(
+            $result,
+            get_string('sync_content_delete_failed', 'local_cria')
+        );
+        \local_cria\api_response::log_issue(
+            'Criabot document delete ' . $this->get_bot_name() . '/' . $this->get_name(),
+            $result
+        );
+        if ($file) {
+            $file->delete();
+        }
+        $DB->delete_records($this->table, array('id' => $this->get_id()));
+        return false;
     }
 
     public function update_record($data): int
@@ -518,7 +526,7 @@ class file extends crud
         }
 
         $textToDelete = substr($string, $beginningPos, ($endPos + strlen($end)) - $beginningPos);
-        return delete_all_between($beginning, $end, str_replace($textToDelete, '', $string));
+        return $this->delete_all_between($beginning, $end, str_replace($textToDelete, '', $string));
         // Recursion to ensure all occurrences are replaced
     }
 
@@ -557,7 +565,7 @@ class file extends crud
                 case 'html':
                 case 'doc':
                 case 'rtf':
-                    $converted_file = $FILE->convert_file_to_docx($path, $file_name, $content_data['file_type']);
+                    $converted_file = $this->convert_file_to_docx($path, $file_name, $content_data['file_type']);
                     $converted_file_name = str_replace('.' . $content_data['file_type'], '.docx', $file_name);
                     $content_data['file_type'] = 'docx';
                     $content_data['name'] = $converted_file_name;

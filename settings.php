@@ -57,6 +57,15 @@ if ($hassiteconfig) {
         'http://criadex:25574', PARAM_TEXT, 255
     ));
 
+    $settings->add(new admin_setting_configtext(
+        'local_cria/ragflow_url',
+        get_string('ragflow_url', 'local_cria'),
+        get_string('ragflow_url_help', 'local_cria'),
+        'http://ragflow:9380',
+        PARAM_URL,
+        255
+    ));
+
     $settings->add( new admin_setting_configtext(
         'local_cria/criaparse_url',
         get_string('criaparse_url', 'local_cria'),

@@ -41,16 +41,28 @@ if ($mform->is_cancelled()) {
     //Handle form cancel operation, if cancel button is present on form
     redirect($CFG->wwwroot . '/local/cria/bot_types.php');
 } else if ($data = $mform->get_data()) {
+    $typeid = 0;
     if ($data->id) {
         $data->usermodified = $USER->id;
         $data->timemodified = time();
         $DB->update_record('local_cria_type', $data);
+        $typeid = (int) $data->id;
     } else {
         $data->usermodified = $USER->id;
         $data->timemodified = time();
         $data->timecreated = time();
-        $DB->insert_record('local_cria_type', $data);
+        $typeid = (int) $DB->insert_record('local_cria_type', $data);
     }
+
+    if ($typeid > 0) {
+        $repush = \local_cria\sync_manager::repush_bots_for_type($typeid);
+        if ($repush->failed > 0) {
+            \core\notification::warning(get_string('sync_repush_bots_partial', 'local_cria', $repush));
+        } else if ($repush->pushed > 0) {
+            \core\notification::success(get_string('sync_repush_bots_success', 'local_cria', $repush->pushed));
+        }
+    }
+
     redirect($CFG->wwwroot . '/local/cria/bot_types.php');
 
 } else {

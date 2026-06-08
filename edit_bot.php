@@ -33,9 +33,9 @@ $context = CONTEXT_SYSTEM::instance();
 require_login(1, false);
 
 try {
-    \local_cria\models::sync_from_criadex();
+    \local_cria\sync_manager::run_model_sync(false);
 } catch (\Throwable $e) {
-    // Keep bot editing available if temporary sync issues occur.
+    // Silent pull keeps model dropdowns fresh without prompting on every bot edit.
 }
 
 if ($id) {
@@ -172,4 +172,3 @@ $mform->display();
 //*** DISPLAY FOOTER ***
 //**********************
 echo $OUTPUT->footer();
-?>

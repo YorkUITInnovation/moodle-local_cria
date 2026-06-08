@@ -54,6 +54,15 @@ function local_cria_navdrawer_items()
         );
     }
 
+    if (has_capability('local/cria:view_providers', $context)) {
+        $items[] = navdrawer::add(
+            get_string('sync_status', 'local_cria'),
+            null,
+            new moodle_url('/local/cria/sync_status.php'),
+            'bi-arrow-repeat',
+        );
+    }
+
     if (has_capability('local/cria:view_bot_types', $context)) {
         $items[] = navdrawer::add(
             get_string('bot_types', 'local_cria'),

@@ -77,10 +77,16 @@ class local_cria_external_cria extends external_api
 
         $config = get_config('local_cria');
 
+        $criaboturl = $config->criabot_url ?? $config->bot_server_url ?? '';
+        $apikey = $config->criadex_api_key ?? $config->bot_server_api_key ?? '';
+
         $cria_config = [];
-        $cria_config[0]['bot_server_api_key'] = $config->bot_server_api_key;
-        $cria_config[0]['bot_server_url'] = $config->bot_server_url;
-        $cria_config[0]['embedding_server_url'] = $config->criaembed_url;
+        $cria_config[0]['criabot_url'] = $criaboturl;
+        $cria_config[0]['criadex_api_key'] = $apikey;
+        $cria_config[0]['embedding_server_url'] = $config->criaembed_url ?? '';
+        // Legacy field names kept for older embed clients.
+        $cria_config[0]['bot_server_url'] = $criaboturl;
+        $cria_config[0]['bot_server_api_key'] = $apikey;
         return $cria_config;
     }
 
@@ -89,9 +95,11 @@ class local_cria_external_cria extends external_api
      */
     public static function get_config_details() {
         $fields = array(
-            'bot_server_api_key' => new external_value(PARAM_TEXT, 'CriaBot API Key', false),
-            'bot_server_url' => new external_value(PARAM_TEXT, 'CriaBot server url', true),
-            'embedding_server_url' => new external_value(PARAM_TEXT, 'CriaEmbed server url', true)
+            'criabot_url' => new external_value(PARAM_URL, 'Criabot server url', false),
+            'criadex_api_key' => new external_value(PARAM_TEXT, 'Criadex API key', false),
+            'embedding_server_url' => new external_value(PARAM_URL, 'CriaEmbed server url', false),
+            'bot_server_api_key' => new external_value(PARAM_TEXT, 'Legacy Criabot API key alias', false),
+            'bot_server_url' => new external_value(PARAM_URL, 'Legacy Criabot server url alias', false),
         );
         return new external_single_structure($fields);
     }

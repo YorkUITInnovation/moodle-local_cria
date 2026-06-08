@@ -1,0 +1,43 @@
+<div class="local-cria-sync-status">
+    <div class="mb-3">
+        {{#healthy}}
+            <div class="alert alert-success">{{#str}}sync_overall_healthy, local_cria{{/str}}</div>
+        {{/healthy}}
+        {{^healthy}}
+            <div class="alert alert-warning">{{#str}}sync_overall_issues, local_cria{{/str}}</div>
+        {{/healthy}}
+        <p>{{#str}}sync_last_model_sync, local_cria{{/str}}: <strong>{{last_model_sync}}</strong></p>
+        <p class="text-muted">{{#str}}sync_auto_help, local_cria{{/str}}</p>
+    </div>
+
+    <div class="mb-4">
+        <a class="btn btn-primary mr-2" href="{{sync_models_url}}">{{#str}}sync_action_pull_models, local_cria{{/str}}</a>
+        <a class="btn btn-secondary mr-2" href="{{reconcile_models_url}}">{{#str}}sync_action_reconcile_models, local_cria{{/str}}</a>
+        <a class="btn btn-secondary mr-2" href="{{dedupe_models_url}}">{{#str}}sync_action_dedupe_models, local_cria{{/str}}</a>
+        <a class="btn btn-warning" href="{{repush_bots_url}}">{{#str}}sync_action_repush_bots, local_cria{{/str}}</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>{{#str}}sync_check_label, local_cria{{/str}}</th>
+                <th>{{#str}}sync_check_status, local_cria{{/str}}</th>
+                <th>{{#str}}sync_check_detail, local_cria{{/str}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#checks}}
+            <tr>
+                <td>{{label}}</td>
+                <td>
+                    {{#ok}}<span class="text-success">{{status}}</span>{{/ok}}
+                    {{^ok}}<span class="text-danger">{{status}}</span>{{/ok}}
+                </td>
+                <td>{{detail}}</td>
+            </tr>
+            {{/checks}}
+        </tbody>
+    </table>
+
+    <div class="alert alert-info mt-4">{{ragflow_ui_note}}</div>
+</div>

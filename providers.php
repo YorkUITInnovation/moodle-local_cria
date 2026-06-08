@@ -26,9 +26,9 @@ if (!has_capability('local/cria:view_providers', $context)) {
 }
 
 try {
-    \local_cria\models::sync_from_criadex();
+    \local_cria\sync_manager::run_model_sync(false);
 } catch (\Throwable $e) {
-    // Do not block provider page when sync endpoint is unavailable.
+    \core\notification::warning(get_string('sync_models_failed', 'local_cria'));
 }
 
 \local_cria\base::page(

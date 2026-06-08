@@ -991,10 +991,6 @@ class bot extends crud
      */
     public function get_bot_parameters_json(): string
     {
-        $MODEL = new \local_cria\model($this->model_id);
-        $EMBEDDING_MODEL = new \local_cria\model($this->embedding_id);
-        $RERANK_MODEL = new \local_cria\model($this->rerank_model_id);
-
         $params = new \stdClass();
         $params->max_reply_tokens = $this->get_max_tokens();
         $params->temperature = $this->get_temperature();
@@ -1007,10 +1003,10 @@ class bot extends crud
         $params->no_context_message = $this->get_no_context_message();
         $params->no_context_use_message = $this->get_no_context_use_message();
         $params->no_context_llm_guess = $this->get_no_context_llm_guess();
-        $params->system_message = $this->get_bot_system_message();
-        $params->llm_model_id = $MODEL->get_criadex_model_id();
-        $params->embedding_model_id = $EMBEDDING_MODEL->get_criadex_model_id();
-        $params->rerank_model_id = $RERANK_MODEL->get_criadex_model_id();
+        $params->system_message = $this->concatenate_system_messages();
+        $params->llm_model_id = $this->resolve_criadex_model_id((int) $this->model_id);
+        $params->embedding_model_id = $this->resolve_criadex_model_id((int) $this->embedding_id);
+        $params->rerank_model_id = $this->resolve_criadex_model_id((int) $this->rerank_model_id);
         $params->llm_generate_related_prompts = $this->get_llm_generate_related_prompts();
         $params->web_search_enabled = $this->get_web_search_enabled();
         $params->web_search_global_enabled = (bool) get_config('local_cria', 'web_search_global_enabled');
@@ -1081,8 +1077,38 @@ class bot extends crud
      */
     public function get_criadex_model_id(): int
     {
-        $MODEL = new \local_cria\model($this->model_id);
-        return $MODEL->get_criadex_model_id();
+        return $this->resolve_criadex_model_id((int) $this->model_id);
+    }
+
+    /**
+     * Resolve a Moodle model row id to its linked Criadex model id.
+     *
+     * @param int $modelid
+     * @return int
+     */
+    private function resolve_criadex_model_id(int $modelid): int
+    {
+        if ($modelid <= 0) {
+            return 0;
+        }
+        $model = new \local_cria\model($modelid);
+        return (int) $model->get_criadex_model_id();
+    }
+
+    /**
+     * Whether this bot has valid Criadex links for required model fields.
+     *
+     * @return bool
+     */
+    public function has_valid_model_links(): bool
+    {
+        if ($this->resolve_criadex_model_id((int) $this->model_id) <= 0) {
+            return false;
+        }
+        if ($this->resolve_criadex_model_id((int) $this->embedding_id) <= 0) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -1252,8 +1278,11 @@ class bot extends crud
     public function get_bot_type_system_message(): string
     {
         global $DB;
-        $bot_type = $DB->get_record('local_cria_type', array('id' => $this->bot_type));
-        return $bot_type->system_message ?? '';
+        if (empty($this->bot_type)) {
+            return '';
+        }
+        $bottype = $DB->get_record('local_cria_type', ['id' => $this->bot_type]);
+        return $bottype->system_message ?? '';
     }
 
     /**
@@ -1263,8 +1292,14 @@ class bot extends crud
     public function use_bot_server(): string
     {
         global $DB;
-        $bot_type = $DB->get_record('local_cria_type', array('id' => $this->bot_type));
-        return $bot_type->use_bot_server;
+        if (empty($this->bot_type)) {
+            return '0';
+        }
+        $bottype = $DB->get_record('local_cria_type', ['id' => $this->bot_type]);
+        if (!$bottype) {
+            return '0';
+        }
+        return (string) ($bottype->use_bot_server ?? '0');
     }
 
     /**
@@ -1496,16 +1531,34 @@ class bot extends crud
      * @return void
      * @throws \dml_exception
      */
-    public function create_bot_on_bot_server($intent_id = 0)
+    public function create_bot_on_bot_server($intent_id = 0, bool $notify = true)
     {
-        // Bot name based on whether an intent id is passed
-        if ($intent_id == 0) {
-            $bot_name = $this->id;
-        } else {
-            $bot_name = $this->id . '-' . $intent_id;
+        if (!$this->has_valid_model_links()) {
+            if ($notify) {
+                \core\notification::error(get_string('sync_bot_missing_models', 'local_cria'));
+            }
+            return (object) [
+                'status' => 400,
+                'code' => 'INVALID_MODEL',
+                'message' => get_string('sync_bot_missing_models', 'local_cria'),
+            ];
         }
-        // Bot names are fomratted as bot_id-intent_id
-        return criabot::bot_create($bot_name, $this->get_bot_parameters_json());
+
+        if ($intent_id == 0) {
+            $botname = $this->id;
+        } else {
+            $botname = $this->id . '-' . $intent_id;
+        }
+
+        $result = criabot::bot_create($botname, $this->get_bot_parameters_json());
+        if (!api_response::is_success($result)) {
+            if ($notify) {
+                api_response::notify_error($result, get_string('sync_bot_push_failed', 'local_cria'));
+            }
+            api_response::log_issue('Criabot bot create ' . $botname, $result);
+        }
+
+        return $result;
     }
 
     /**
@@ -1513,18 +1566,35 @@ class bot extends crud
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    public function update_bot_on_bot_server($intent_id = 0)
+    public function update_bot_on_bot_server($intent_id = 0, bool $notify = true)
     {
+        if (!$this->has_valid_model_links()) {
+            if ($notify) {
+                \core\notification::error(get_string('sync_bot_missing_models', 'local_cria'));
+            }
+            return false;
+        }
+
         // Bot name based on whether an intent id is passed
         if ($intent_id == 0) {
-            $bot_name = $this->id;
+            $botname = $this->id;
         } else {
-            $bot_name = $this->id . '-' . $intent_id;
+            $botname = $this->id . '-' . $intent_id;
         }
-        $bot_exists = criabot::bot_about($bot_name);
+
+        $botexists = criabot::bot_about($botname);
+        if (!is_object($botexists) || !isset($botexists->status)) {
+            if ($notify) {
+                api_response::notify_error($botexists, get_string('sync_criabot_unreachable', 'local_cria'));
+            }
+            api_response::log_issue('Criabot bot about ' . $botname, $botexists);
+            return false;
+        }
+
         $update = false;
-        if ($bot_exists->status == 404 && $intent_id == 0) {
-            //Create intent
+        $result = null;
+
+        if ((int) $botexists->status === 404 && $intent_id == 0) {
             $INTENT = new intent();
             $data = new \stdClass();
             $data->bot_id = $this->id;
@@ -1532,31 +1602,35 @@ class bot extends crud
             $data->name = 'General';
             $data->description = 'General intent for bot.';
             $data->published = 1;
-            $intent_id = $INTENT->insert_record($data);
-        } elseif ($bot_exists->status == 404 && $intent_id != 0) {
-            // Create bot
-            $result = $this->create_bot_on_bot_server($intent_id);
+            $newintentid = $INTENT->insert_record($data);
+            return $this->update_bot_on_bot_server($newintentid, $notify);
+        }
+
+        if ((int) $botexists->status === 404 && $intent_id != 0) {
+            $result = $this->create_bot_on_bot_server($intent_id, $notify);
         } else {
-            $result = criabot::bot_update($bot_name, $this->get_bot_parameters_json());
+            $result = criabot::bot_update($botname, $this->get_bot_parameters_json());
             $update = true;
         }
-        if ($result->status == 200) {
-            // If an update was performed, and there is an intent, update all intents for this bot.
+
+        if (api_response::is_success($result)) {
             if ($update && $intent_id != 0) {
                 $INTENTS = new intents($this->id);
                 foreach ($INTENTS->get_records() as $intent) {
                     $INTENT = new intent($intent->id);
                     if ($INTENT->get_published() && $INTENT->get_is_default() == 0) {
-                        $INTENT->update_intent_on_bot_server();
+                        $INTENT->update_intent_on_bot_server($notify);
                     }
                 }
             }
             return true;
-        } else {
-            \core\notification::error(
-                'STATUS: ' . $result->status . ' CODE: ' . $result->code . ' Message: ' . $result->message
-            );
         }
+
+        if ($notify) {
+            api_response::notify_error($result, get_string('sync_bot_push_failed', 'local_cria'));
+        }
+        api_response::log_issue('Criabot bot update ' . $botname, $result);
+        return false;
     }
 
     /**

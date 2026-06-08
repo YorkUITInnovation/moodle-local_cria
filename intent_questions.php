@@ -20,8 +20,8 @@ global $CFG, $OUTPUT, $SESSION, $PAGE, $DB, $COURSE, $USER;
 
 require_login(1, false);
 
-$bot_id = required_parAM('bot_id', PARAM_INT);
-$intent_id = required_parAM('intent_id', PARAM_INT);
+$bot_id = required_param('bot_id', PARAM_INT);
+$intent_id = required_param('intent_id', PARAM_INT);
 
 $context = context_system::instance();
 

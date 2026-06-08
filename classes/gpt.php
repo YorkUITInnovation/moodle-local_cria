@@ -145,9 +145,25 @@ class gpt
             curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         }
 
-        $result = json_decode(curl_exec($ch));
-
+        $raw = curl_exec($ch);
+        $curlerrno = curl_errno($ch);
+        $curlerror = curl_error($ch);
+        $httpcode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        $result = json_decode($raw);
+        if (!is_object($result)) {
+            $result = new \stdClass();
+            $result->status = $httpcode > 0 ? $httpcode : 0;
+            $result->code = 'HTTP_ERROR';
+            if ($curlerrno !== 0) {
+                $result->message = $curlerror;
+            } else if ($raw === false || $raw === '') {
+                $result->message = 'Empty response from ' . $url;
+            } else {
+                $result->message = 'Invalid JSON response from ' . $url;
+            }
+        }
 
         return $result;
     }
