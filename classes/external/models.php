@@ -53,7 +53,7 @@ class local_cria_external_models extends external_api {
     public static function delete_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Model id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Model id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -104,7 +104,7 @@ class local_cria_external_models extends external_api {
     public static function get_max_tokens_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Model id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Model id', VALUE_DEFAULT, 0)
             )
         );
     }

@@ -55,7 +55,7 @@ class local_cria_external_bot extends external_api
     {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Content id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Content id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -112,243 +112,243 @@ class local_cria_external_bot extends external_api
                 'name' => new external_value(
                     PARAM_TEXT,
                     'Bot name',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'description' => new external_value(
                     PARAM_TEXT,
                     'Bot description',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'bot_type' => new external_value(
                     PARAM_INT,
                     'Bot type',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'bot_system_message' => new external_value(
                     PARAM_TEXT,
                     'Bot type',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'model_id' => new external_value(
                     PARAM_INT,
                     'Cria GPT model used',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'embedding_id' => new external_value(
                     PARAM_INT,
                     'Bot server',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'rerank_model_id' => new external_value(
                     PARAM_INT,
                     'Rerank model ID',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'requires_content_prompt' => new external_value(
                     PARAM_INT,
                     'Requires content prompt',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'requires_user_prompt' => new external_value(
                     PARAM_INT,
                     'Requires user prompt',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'user_prompt' => new external_value(
                     PARAM_TEXT,
                     'User prompt',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'welcome_message' => new external_value(
                     PARAM_TEXT,
                     'Welcome message for embedded bot',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'theme_color' => new external_value(
                     PARAM_TEXT,
                     'Hex code for embedded bot color. Default Red',
-                    false,
+                    VALUE_DEFAULT,
                     '#e31837'
                 ),
                 'max_tokens' => new external_value(
                     PARAM_INT,
                     'Max tokens',
-                    false,
+                    VALUE_DEFAULT,
                     4000
                 ),
                 'temperature' => new external_value(
                     PARAM_FLOAT,
                     'Temperature',
-                    false,
+                    VALUE_DEFAULT,
                     0.1
                 ),
                 'top_p' => new external_value(PARAM_FLOAT,
                     'Top p',
-                    false,
+                    VALUE_DEFAULT,
                     0.1
                 ),
                 'top_k' => new external_value(
                     PARAM_INT,
                     'Number of similarity nodes retrieved',
-                    false, 30
+                    VALUE_DEFAULT, 30
                 ),
                 'top_n' => new external_value(
                     PARAM_INT,
                     'Top number of nodes returned out of the top_k',
-                    false, 10
+                    VALUE_DEFAULT, 10
                 ),
                 'min_k' => new external_value(
                     PARAM_FLOAT,
                     'Min k',
-                    false, 0.6
+                    VALUE_DEFAULT, 0.6
                 ),
                 'min_relevance' => new external_value(
                     PARAM_FLOAT,
                     'Min relevance',
-                    false,
+                    VALUE_DEFAULT,
                     0.8
                 ),
                 'max_context' => new external_value(
                     PARAM_INT,
                     'Max context',
-                    false,
+                    VALUE_DEFAULT,
                     120000
                 ),
                 'no_context_message' => new external_value(
                     PARAM_TEXT,
                     'No context message',
-                    false,
+                    VALUE_DEFAULT,
                     'Nothing found'
                 ),
                 'no_context_use_message' => new external_value(
                     PARAM_INT,
                     'Should we use the no context message',
-                    false,
+                    VALUE_DEFAULT,
                     1
                 ),
                 'no_context_llm_guess' => new external_value(
                     PARAM_INT,
                     'Should we use the LLM to generate an answer if no context found',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'email' => new external_value(
                     PARAM_TEXT,
                     'Email of user should revieve notification if an answer was not found in the knowledgebase',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'available_child' => new external_value(
                     PARAM_INT,
                     'Should this bot be available to other bots',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'parse_strategy' => new external_value(
                     PARAM_TEXT,
                     'Waht parsing strategy shoudl be used by default? Currently, only two available: GENERIC, ALSYLABUS',
-                    false,
+                    VALUE_DEFAULT,
                     'GENERIC'
                 ),
                 'botwatermark' => new external_value(
                     PARAM_INT,
                     'Should we add the Cria watermark to the bot',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'title' => new external_value(
                     PARAM_TEXT,
                     'The title of the bot for the embed',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'subtitle' => new external_value(
                     PARAM_TEXT,
                     'The subtitle of the bot for the embed',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'embed_position' => new external_value(
                     PARAM_INT,
                     'The position the embed bot will have on a page',
-                    false,
+                    VALUE_DEFAULT,
                     1
                 ),
                 'theme_color' => new external_value(
                     PARAM_TEXT,
                     'The color of the embeded bot',
-                    false,
+                    VALUE_DEFAULT,
                     '#e31837'
                 ),
                 'icon_file_name' => new external_value(
                     PARAM_TEXT,
                     'Icon file name',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'icon_file_content' => new external_value(
                     PARAM_RAW,
                     'File content encoded in Base64',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'bot_locale' => new external_value(
                     PARAM_TEXT,
                     'The locale of the bot',
-                    false,
+                    VALUE_DEFAULT,
                     'en'
                 ),
                 'child_bots' => new external_value(
                     PARAM_RAW,
                     'List of bot name',
-                    false,
+                    VALUE_DEFAULT,
                     '#e31837'
                 ),
                 'publish' => new external_value(
                     PARAM_INT,
                     'Make this bot available with Cria dashboard',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'id' => new external_value(
                     PARAM_INT,
                     'bot id. If available, an update command will be executed',
-                    false,
+                    VALUE_DEFAULT,
                     0
                 ),
                 'related_prompts' => new external_value(
                     PARAM_RAW,
                     'A JSON array of prompts in this format: [{"label":"A label","prompt":"A prompt"}]',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'bot_help_text' => new external_value(
                     PARAM_TEXT,
                     'Text used for the hover tooltip and alt parameter for the embed',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'bot_contact' => new external_value(
                     PARAM_TEXT,
                     'An email and/or phone number for the bot contact. This will show up in the contact information for the embed bot',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'bot_trust_warning' => new external_value(
                     PARAM_TEXT,
                     'A disclaimer message that will show up in the embed bot',
-                    false,
+                    VALUE_DEFAULT,
                     ''
                 ),
                 'variables' => new external_value(
@@ -541,30 +541,22 @@ class local_cria_external_bot extends external_api
         if ($id) {
             $BOT->update_record((object)$params);
             unset($BOT);
-            // Create new bot object so that new parmaeters can be used.
-            $UPDATED_BOT = new bot($id);
-            if ($UPDATED_BOT->use_bot_server()) {
-                $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
-            }
+            $savedbot = new bot($id);
+            $savedbot->sync_to_criabot(false);
         } else {
             $id = $BOT->insert_record((object)$params);
 
-            // Add icon file if there is one
             if ($icon_file_name) {
-                // Create temporary folder
                 $tempdir = $CFG->dataroot . '/temp/cria';
                 base::create_directory_if_not_exists($tempdir);
                 $tempdir = $tempdir . '/' . $id;
                 base::create_directory_if_not_exists($tempdir);
                 file_put_contents($tempdir . '/' . $icon_file_name, base64_decode($icon_file_content));
-                // Create moodle file
                 $fs = get_file_storage();
-                // Delete any existing files in thebot_icon filearea
                 $files = $fs->get_area_files($context->id, 'local_cria', 'bot_icon', $id);
                 foreach ($files as $file) {
                     $file->delete();
                 }
-                // Create new file
                 $fileinfo = array(
                     'component' => 'local_cria',
                     'filearea' => 'bot_icon',
@@ -575,20 +567,10 @@ class local_cria_external_bot extends external_api
                 );
                 $file = $fs->create_file_from_pathname($fileinfo, $tempdir . '/' . $icon_file_name);
             }
-            unset($BOT);
-            // Create new bot object so that new parmaeters can be used.
-            $NEW_UPDATED_BOT = new bot($id);
-            if ($NEW_UPDATED_BOT->use_bot_server()) {
-                $NEW_UPDATED_BOT->update_bot_on_bot_server($NEW_UPDATED_BOT->get_default_intent_id());
-            }
-            unset($NEW_UPDATED_BOT);
-            // Perform a second time to make sure the settigns are updated.
-            // get bot record
-            $new_bot = $DB->get_record('local_cria_bot', ['id' => $id]);
-            $UPDATED_BOT = new bot($new_bot->id);
-            $UPDATED_BOT->update_record($new_bot);
-        }
 
+            $savedbot = new bot($id);
+            $savedbot->sync_to_criabot(false);
+        }
 
         return $id;
     }
@@ -616,7 +598,7 @@ class local_cria_external_bot extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'Bot id', false, 0)
+                'bot_id' => new external_value(PARAM_INT, 'Bot id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -665,7 +647,7 @@ class local_cria_external_bot extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'Bot id', false, 0)
+                'bot_id' => new external_value(PARAM_INT, 'Bot id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -716,7 +698,7 @@ class local_cria_external_bot extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'Bot id', false, 0)
+                'bot_id' => new external_value(PARAM_INT, 'Bot id', VALUE_DEFAULT, 0)
             )
         );
     }

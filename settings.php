@@ -66,6 +66,24 @@ if ($hassiteconfig) {
         255
     ));
 
+    $settings->add(new admin_setting_configpasswordunmask(
+        'local_cria/ragflow_api_key',
+        get_string('ragflow_api_key', 'local_cria'),
+        get_string('ragflow_api_key_help', 'local_cria'),
+        '',
+        PARAM_TEXT,
+        255
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_cria/ragflow_tenant_id',
+        get_string('ragflow_tenant_id', 'local_cria'),
+        get_string('ragflow_tenant_id_help', 'local_cria'),
+        '',
+        PARAM_ALPHANUMEXT,
+        32
+    ));
+
     $settings->add( new admin_setting_configtext(
         'local_cria/criaparse_url',
         get_string('criaparse_url', 'local_cria'),

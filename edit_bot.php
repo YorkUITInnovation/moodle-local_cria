@@ -106,20 +106,14 @@ if ($mform->is_cancelled()) {
         $BOT = new bot($data->id);
         $data->description = $data->description_editor['text'];
         $BOT->update_record($data);
-        // Unset existing bot object
-
         unset($BOT);
-        // Create new bot object so that new parmaeters can be used.
         $UPDATED_BOT = new bot($data->id);
-        if ($UPDATED_BOT->use_bot_server()) {
-            $UPDATED_BOT->update_bot_on_bot_server($UPDATED_BOT->get_default_intent_id());
-        }
+        $UPDATED_BOT->sync_to_criabot(true);
     } else {
         $data->description = $data->description_editor['text'];
         $BOT = new bot();
         $id = $BOT->insert_record($data);
-        // Unset existing bot object
-        unset($bot);
+        unset($BOT);
     }
 
     file_save_draft_area_files(
@@ -135,6 +129,10 @@ if ($mform->is_cancelled()) {
             'maxfiles' => 1
         ]
     );
+
+    if (empty($data->id)) {
+        (new bot($id))->sync_to_criabot(true);
+    }
 
     if ($data->id) {
         redirect($CFG->wwwroot . '/local/cria/' . $return . '.php?bot_id=' . $data->id);

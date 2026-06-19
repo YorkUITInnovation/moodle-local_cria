@@ -105,7 +105,7 @@ class local_cria_external_criabot extends external_api
     {
         return new external_function_parameters(
             array(
-                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', false, ''),
+                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', VALUE_DEFAULT, ''),
             )
         );
     }
@@ -149,7 +149,7 @@ class local_cria_external_criabot extends external_api
     {
         return new external_function_parameters(
             array(
-                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', false, ''),
+                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', VALUE_DEFAULT, ''),
             )
         );
     }
@@ -297,7 +297,7 @@ class local_cria_external_criabot extends external_api
     {
         return new external_function_parameters(
             array(
-                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', false, ''),
+                'chat_id' => new external_value(PARAM_RAW, 'ID of the chat session', VALUE_DEFAULT, ''),
             )
         );
     }
@@ -364,8 +364,8 @@ class local_cria_external_criabot extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', false, 0),
-                'bot_api_key' => new external_value(PARAM_RAW, 'BOT api key', false, ''),
+                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', VALUE_DEFAULT, 0),
+                'bot_api_key' => new external_value(PARAM_RAW, 'BOT api key', VALUE_DEFAULT, ''),
             )
         );
     }

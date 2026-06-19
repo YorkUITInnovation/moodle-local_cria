@@ -54,7 +54,7 @@ class local_cria_external_synonym extends external_api {
     public static function delete_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Synonym id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Synonym id', VALUE_DEFAULT, 0)
             )
         );
     }

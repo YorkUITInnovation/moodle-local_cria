@@ -57,7 +57,7 @@ class local_cria_external_question extends external_api
     {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Question id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Question id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -119,14 +119,14 @@ class local_cria_external_question extends external_api
     {
         return new external_function_parameters(
             array(
-                'intentid' => new external_value(PARAM_INT, 'The intent id', false, 0),
-                'name' => new external_value(PARAM_TEXT, 'Name for the question', false, ''),
-                'value' => new external_value(PARAM_TEXT, 'The question being asked', false, ''),
-                'answer' => new external_value(PARAM_RAW, 'The answer for the question', false, ''),
-                'relatedquestions' => new external_value(PARAM_RAW, 'A JSON array: [{"label":"Label name", "prompt":"The prompt"}]', false, ''),
-                'lang' => new external_value(PARAM_TEXT, 'Default en', false, 'en'),
-                'generateanswer' => new external_value(PARAM_INT, 'Whether the answer should be returned as is or paraphrased by LLM', false, 0),
-                'examplequestions' => new external_value(PARAM_RAW, 'JSON of examples [{"value":"An example question"}]', false, ''),
+                'intentid' => new external_value(PARAM_INT, 'The intent id', VALUE_DEFAULT, 0),
+                'name' => new external_value(PARAM_TEXT, 'Name for the question', VALUE_DEFAULT, ''),
+                'value' => new external_value(PARAM_TEXT, 'The question being asked', VALUE_DEFAULT, ''),
+                'answer' => new external_value(PARAM_RAW, 'The answer for the question', VALUE_DEFAULT, ''),
+                'relatedquestions' => new external_value(PARAM_RAW, 'A JSON array: [{"label":"Label name", "prompt":"The prompt"}]', VALUE_DEFAULT, ''),
+                'lang' => new external_value(PARAM_TEXT, 'Default en', VALUE_DEFAULT, 'en'),
+                'generateanswer' => new external_value(PARAM_INT, 'Whether the answer should be returned as is or paraphrased by LLM', VALUE_DEFAULT, 0),
+                'examplequestions' => new external_value(PARAM_RAW, 'JSON of examples [{"value":"An example question"}]', VALUE_DEFAULT, ''),
             )
         );
     }
@@ -211,7 +211,7 @@ class local_cria_external_question extends external_api
     {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Question id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Question id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -267,7 +267,7 @@ class local_cria_external_question extends external_api
     {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Question id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Question id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -507,7 +507,7 @@ class local_cria_external_question extends external_api
     {
         return new external_function_parameters(
             array(
-                'intent_id' => new external_value(PARAM_INT, 'Intent id', false, 0)
+                'intent_id' => new external_value(PARAM_INT, 'Intent id', VALUE_DEFAULT, 0)
             )
         );
     }

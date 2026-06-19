@@ -505,10 +505,8 @@ class bot extends crud
      */
     public function get_bot_api_key(): string
     {
-        global $DB;
-        // Get default intent for this bot
-        $default_intent = $DB->get_record('local_cria_intents', ['bot_id' => $this->id, 'is_default' => 1]);
-        return $default_intent->bot_api_key ?? '';
+        $defaultintent = $this->get_default_intent_record();
+        return $defaultintent->bot_api_key ?? '';
     }
 
     /**
@@ -1167,17 +1165,9 @@ class bot extends crud
 
         $id = $DB->insert_record($this->table, $data);
 
-        $NEW_BOT = new bot($id);
-        // Create intents for this bot
-        // Only if bot uses bot server
-        // Otherwise, create bot on bot server
-        if ($NEW_BOT->use_bot_server()) {
-            $intent_id = $this->create_default_intent($id);
-            // Create embed server code
-            $cria_embed = criaembed::manage_insert($intent_id);
-        } else {
-            $NEW_BOT->create_bot_on_bot_server(0);
-        }
+        $newbot = new bot($id);
+        $newbot->sync_to_criabot(false);
+
         return $id;
     }
 
@@ -1228,27 +1218,23 @@ class bot extends crud
      * @throws \coding_exception
      * @throws \dml_exception
      */
-    protected function create_default_intent($bot_id)
+    protected function create_default_intent($bot_id): int
     {
-        $INTENT = new intent();
-        // If default intent does not exist, create it
-        if (!$INTENT->default_intent_exists($bot_id)) {
-            $params = new \stdClass();
-            $params->bot_id = $bot_id;
-            $params->is_default = 1;
-            $params->name = 'General';
-            $params->description = 'General intent for bot.';
-            $params->published = 1;
-            // Insert record. Bot will be created automatically on bot server.
-            $intent_id = $INTENT->insert_record($params);
-
-            return $intent_id;
-        } else {
-            // Update the bot on bot server
-            $BOT = new bot($bot_id);
-            $update_bot = $BOT->update_bot_on_bot_server($BOT->get_default_intent_id());
-            return $update_bot;
+        $BOT = new bot($bot_id);
+        $intentid = $BOT->normalize_default_intents();
+        if ($intentid > 0) {
+            return $intentid;
         }
+
+        $INTENT = new intent();
+        $params = new \stdClass();
+        $params->bot_id = $bot_id;
+        $params->is_default = 1;
+        $params->name = 'General';
+        $params->description = 'General intent for bot.';
+        $params->published = 1;
+
+        return (int) $INTENT->insert_record($params);
     }
 
     /**
@@ -1510,20 +1496,115 @@ class bot extends crud
     }
 
     /**
-     * Get default intent id for this bot
+     * Return the canonical default intent id for this bot (lowest id when duplicates exist).
+     *
      * @return int
      */
     public function get_default_intent_id(): int
     {
+        $intent = $this->get_default_intent_record();
+        return $intent ? (int) $intent->id : 0;
+    }
+
+    /**
+     * Keep one default intent per bot and clear duplicate default flags.
+     *
+     * @return int Canonical default intent id, or 0 when none exist.
+     */
+    public function normalize_default_intents(): int
+    {
         global $DB;
-        $intent = $DB->get_record('local_cria_intents', ['bot_id' => $this->id, 'is_default' => 1], 'id');
-        return $intent->id ?? 0;
+
+        $defaults = $DB->get_records(
+            'local_cria_intents',
+            ['bot_id' => $this->id, 'is_default' => 1],
+            'id ASC'
+        );
+
+        if (empty($defaults)) {
+            return 0;
+        }
+
+        $keepid = (int) array_key_first($defaults);
+        foreach ($defaults as $intentid => $intent) {
+            if ((int) $intentid === $keepid) {
+                continue;
+            }
+            $DB->set_field('local_cria_intents', 'is_default', 0, ['id' => $intentid]);
+        }
+
+        return $keepid;
+    }
+
+    /**
+     * @return \stdClass|null
+     */
+    protected function get_default_intent_record(): ?\stdClass
+    {
+        global $DB;
+
+        $this->normalize_default_intents();
+
+        return $DB->get_record(
+            'local_cria_intents',
+            ['bot_id' => $this->id, 'is_default' => 1],
+            '*',
+            IGNORE_MULTIPLE
+        ) ?: null;
     }
 
     public function get_all_intents(): array
     {
         global $DB;
         return $DB->get_records('local_cria_intents', ['bot_id' => $this->id]);
+    }
+
+    /**
+     * Push bot configuration to Criabot (and embed when the bot type uses intents).
+     *
+     * @param bool $notify Show Moodle notifications on failure.
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function sync_to_criabot(bool $notify = true): bool {
+        // If external services are not configured, skip network sync to avoid failures
+        $config = get_config('local_cria');
+        if (empty($config->criabot_url) || empty($config->criadex_api_key)) {
+            debugging('Cria external services not configured; skipping sync_to_criabot', DEBUG_DEVELOPER);
+            return true;
+        }
+
+        if (!$this->has_valid_model_links()) {
+            if ($notify) {
+                \core\notification::error(get_string('sync_bot_missing_models', 'local_cria'));
+            }
+            return false;
+        }
+
+        if ($this->use_bot_server()) {
+            $intentid = (int) $this->get_default_intent_id();
+            if ($intentid <= 0) {
+                $intentid = (int) $this->create_default_intent($this->id);
+            }
+            if ($intentid <= 0) {
+                if ($notify) {
+                    \core\notification::error(get_string('sync_bot_push_failed', 'local_cria'));
+                }
+                return false;
+            }
+
+            $embedbot = criaembed::manage_get_config($intentid);
+            if (!is_object($embedbot) || (int) ($embedbot->status ?? 0) !== 200) {
+                criaembed::manage_insert($intentid);
+            } else {
+                criaembed::manage_update($intentid);
+            }
+
+            return (bool) $this->update_bot_on_bot_server($intentid, $notify);
+        }
+
+        return (bool) $this->update_bot_on_bot_server(0, $notify);
     }
 
     /**
@@ -1595,14 +1676,10 @@ class bot extends crud
         $result = null;
 
         if ((int) $botexists->status === 404 && $intent_id == 0) {
-            $INTENT = new intent();
-            $data = new \stdClass();
-            $data->bot_id = $this->id;
-            $data->is_default = 1;
-            $data->name = 'General';
-            $data->description = 'General intent for bot.';
-            $data->published = 1;
-            $newintentid = $INTENT->insert_record($data);
+            $newintentid = (int) $this->create_default_intent($this->id);
+            if ($newintentid <= 0) {
+                return false;
+            }
             return $this->update_bot_on_bot_server($newintentid, $notify);
         }
 

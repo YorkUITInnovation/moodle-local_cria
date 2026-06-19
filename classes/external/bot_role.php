@@ -52,7 +52,7 @@ class local_cria_external_bot_role extends external_api {
     public static function delete_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Role id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Role id', VALUE_DEFAULT, 0)
             )
         );
     }

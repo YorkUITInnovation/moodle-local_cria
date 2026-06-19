@@ -28,20 +28,33 @@ $longparams = [
     'help' => false,
     'sync' => false,
     'dedupe' => false,
+    'cleanup-unlinked' => false,
+    'auto-repair' => false,
     'repush-bots' => false,
 ];
 list($options) = cli_get_params($longparams, ['h' => 'help']);
 
 if ($options['help']) {
     echo "Verify and optionally repair Cria ↔ Criadex ↔ Criabot sync.\n\n";
+    echo "Run inside Docker:\n";
+    echo "  docker exec criabot-cria-1 php /var/www/html/local/cria/cli/sync_verify.php\n\n";
     echo "Options:\n";
-    echo "  --sync         Pull models from Criadex before checks\n";
-    echo "  --dedupe       Merge duplicate models in Criadex and Moodle\n";
-    echo "  --repush-bots  Re-push all bots with valid model links to Criabot\n";
+    echo "  --sync              Pull models from Criadex before checks\n";
+    echo "  --dedupe            Merge duplicate models in Criadex and Moodle\n";
+    echo "  --cleanup-unlinked  Remove unused local models with no Criadex id\n";
+    echo "  --auto-repair       Sync models, cleanup unlinked, dedupe local, repush bots\n";
+    echo "  --repush-bots       Re-push all bots with valid model links to Criabot\n";
     exit(0);
 }
 
 cli_heading('Cria sync verification');
+
+if ($options['auto-repair']) {
+    $repair = sync_manager::run_auto_repair();
+    foreach ($repair->messages as $message) {
+        cli_writeln(($repair->success ? 'OK' : 'WARN') . ' — ' . $message);
+    }
+}
 
 if ($options['dedupe']) {
     $deduperesult = sync_manager::dedupe_models();
@@ -61,6 +74,14 @@ if ($options['sync']) {
     cli_writeln(($result->success ? 'OK' : 'FAIL') . ' — ' . $result->message);
 }
 
+if ($options['cleanup-unlinked']) {
+    $cleanup = sync_manager::cleanup_unlinked_models();
+    cli_writeln(($cleanup->success ? 'OK' : 'FAIL') . ' — ' . $cleanup->message);
+    if (!empty($cleanup->blocked)) {
+        cli_writeln('Blocked (still referenced by bots): ' . implode(', ', $cleanup->blocked));
+    }
+}
+
 $report = sync_manager::get_health_report();
 cli_writeln('Overall: ' . ($report['healthy'] ? 'HEALTHY' : 'ISSUES'));
 cli_writeln('Last model sync: ' . $report['last_model_sync']);
@@ -68,6 +89,9 @@ cli_writeln('Last model sync: ' . $report['last_model_sync']);
 foreach ($report['checks'] as $check) {
     $status = $check['ok'] ? 'OK' : 'FAIL';
     cli_writeln(sprintf('[%s] %s — %s', $status, $check['label'], $check['detail']));
+    if (!$check['ok'] && !empty($check['solution'])) {
+        cli_writeln('      fix: ' . $check['solution']);
+    }
 }
 
 cli_heading('Database counts');

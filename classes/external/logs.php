@@ -56,16 +56,16 @@ class local_cria_external_logs extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', false, 0),
-                'prompt' => new external_value(PARAM_TEXT, 'Question asked by user', false, ''),
-                'message' => new external_value(PARAM_TEXT, 'Response from GPT', false, ''),
-                'prompt_tokens' => new external_value(PARAM_INT, 'Number of prompt tokens used', false, 0),
-                'completion_tokens' => new external_value(PARAM_INT, 'Number of completion tokens used', false, 0),
-                'total_tokens' => new external_value(PARAM_INT, 'Total tokens', false, 0),
-                'ip' => new external_value(PARAM_TEXT, 'Total tokens', false, ''),
-                'user_id' => new external_value(PARAM_INT, 'User ID from within Cria server', false, 0),
-                'other' => new external_value(PARAM_RAW, 'Other data in JSON format', false, ''),
-                'index_context' => new external_value(PARAM_RAW, 'Context from index server', false, '')
+                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', VALUE_DEFAULT, 0),
+                'prompt' => new external_value(PARAM_TEXT, 'Question asked by user', VALUE_DEFAULT, ''),
+                'message' => new external_value(PARAM_TEXT, 'Response from GPT', VALUE_DEFAULT, ''),
+                'prompt_tokens' => new external_value(PARAM_INT, 'Number of prompt tokens used', VALUE_DEFAULT, 0),
+                'completion_tokens' => new external_value(PARAM_INT, 'Number of completion tokens used', VALUE_DEFAULT, 0),
+                'total_tokens' => new external_value(PARAM_INT, 'Total tokens', VALUE_DEFAULT, 0),
+                'ip' => new external_value(PARAM_TEXT, 'Total tokens', VALUE_DEFAULT, ''),
+                'user_id' => new external_value(PARAM_INT, 'User ID from within Cria server', VALUE_DEFAULT, 0),
+                'other' => new external_value(PARAM_RAW, 'Other data in JSON format', VALUE_DEFAULT, ''),
+                'index_context' => new external_value(PARAM_RAW, 'Context from index server', VALUE_DEFAULT, '')
             )
         );
     }

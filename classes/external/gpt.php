@@ -60,14 +60,14 @@ class local_cria_external_gpt extends external_api
     {
         return new external_function_parameters(
             array(
-                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', false, 0),
-                'chat_id' => new external_value(PARAM_RAW, 'Chat ID from indexing server', false, 'none'),
-                'prompt' => new external_value(PARAM_RAW, 'Question asked by user', false, ''),
-                'content' => new external_value(PARAM_RAW, 'User content', false, ''),
+                'bot_id' => new external_value(PARAM_INT, 'ID of the bot being used', VALUE_DEFAULT, 0),
+                'chat_id' => new external_value(PARAM_RAW, 'Chat ID from indexing server', VALUE_DEFAULT, 'none'),
+                'prompt' => new external_value(PARAM_RAW, 'Question asked by user', VALUE_DEFAULT, ''),
+                'content' => new external_value(PARAM_RAW, 'User content', VALUE_DEFAULT, ''),
                 'filters' => new external_value(PARAM_RAW,
                     'Filters as a JSON object containing the following keys {"must":[], "must_not": [], "should": []}',
-                    false, ''),
-                'log_other' => new external_value(PARAM_RAW, 'Other data to log in JSON format', false, '')
+                    VALUE_DEFAULT, ''),
+                'log_other' => new external_value(PARAM_RAW, 'Other data to log in JSON format', VALUE_DEFAULT, '')
             )
         );
     }
@@ -254,7 +254,7 @@ class local_cria_external_gpt extends external_api
                     $log_other
                 );
             } else {
-                $message = gpt::get_response($bot_id, $prompt, $content, false);
+                $message = gpt::get_response($bot_id, $prompt, $content, VALUE_OPTIONAL);
                 $message->stacktrace = '[]';
                 $message->file_name = '';
             }
@@ -285,14 +285,14 @@ class local_cria_external_gpt extends external_api
     {
 //        return new external_multiple_structure(self::response_details());
         $fields = array(
-            'prompt_tokens' => new external_value(PARAM_INT, 'Number of prompt tokens', false),
+            'prompt_tokens' => new external_value(PARAM_INT, 'Number of prompt tokens', VALUE_OPTIONAL),
             'completion_tokens' => new external_value(PARAM_INT, 'Number of completion tokens used', true),
             'total_tokens' => new external_value(PARAM_INT, 'Total tokens used', true),
             'cost' => new external_value(PARAM_FLOAT, 'Cost of GTP call', true),
             'file_name' => new external_value(PARAM_TEXT, 'File name from which response was generated', true),
             'message' => new external_value(PARAM_RAW, 'ID Number', true),
-            'criabot_response' => new external_value(PARAM_RAW, 'Criabot Response', false),
-            'stacktrace' => new external_value(PARAM_RAW, 'Stacktrace data', false)
+            'criabot_response' => new external_value(PARAM_RAW, 'Criabot Response', VALUE_OPTIONAL),
+            'stacktrace' => new external_value(PARAM_RAW, 'Stacktrace data', VALUE_OPTIONAL)
         );
         return new external_single_structure($fields);
     }

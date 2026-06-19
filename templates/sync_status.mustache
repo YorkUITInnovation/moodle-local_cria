@@ -11,10 +11,13 @@
     </div>
 
     <div class="mb-4">
-        <a class="btn btn-primary mr-2" href="{{sync_models_url}}">{{#str}}sync_action_pull_models, local_cria{{/str}}</a>
-        <a class="btn btn-secondary mr-2" href="{{reconcile_models_url}}">{{#str}}sync_action_reconcile_models, local_cria{{/str}}</a>
-        <a class="btn btn-secondary mr-2" href="{{dedupe_models_url}}">{{#str}}sync_action_dedupe_models, local_cria{{/str}}</a>
-        <a class="btn btn-warning" href="{{repush_bots_url}}">{{#str}}sync_action_repush_bots, local_cria{{/str}}</a>
+        <a class="btn btn-success mr-2 mb-2" href="{{auto_repair_url}}">{{#str}}sync_action_auto_repair, local_cria{{/str}}</a>
+        <a class="btn btn-primary mr-2 mb-2" href="{{sync_models_url}}">{{#str}}sync_action_pull_models, local_cria{{/str}}</a>
+        <a class="btn btn-secondary mr-2 mb-2" href="{{reconcile_models_url}}">{{#str}}sync_action_reconcile_models, local_cria{{/str}}</a>
+        <a class="btn btn-secondary mr-2 mb-2" href="{{dedupe_models_url}}">{{#str}}sync_action_dedupe_models, local_cria{{/str}}</a>
+        <a class="btn btn-secondary mr-2 mb-2" href="{{cleanup_unlinked_url}}">{{#str}}sync_action_cleanup_unlinked, local_cria{{/str}}</a>
+        <a class="btn btn-warning mr-2 mb-2" href="{{repush_bots_url}}">{{#str}}sync_action_repush_bots, local_cria{{/str}}</a>
+        <a class="btn btn-outline-secondary mb-2" href="{{settings_url}}">{{#str}}sync_action_open_settings, local_cria{{/str}}</a>
     </div>
 
     <table class="table table-striped">
@@ -23,6 +26,7 @@
                 <th>{{#str}}sync_check_label, local_cria{{/str}}</th>
                 <th>{{#str}}sync_check_status, local_cria{{/str}}</th>
                 <th>{{#str}}sync_check_detail, local_cria{{/str}}</th>
+                <th>{{#str}}sync_check_solution, local_cria{{/str}}</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +38,19 @@
                     {{^ok}}<span class="text-danger">{{status}}</span>{{/ok}}
                 </td>
                 <td>{{detail}}</td>
+                <td>
+                    {{#solution}}<p class="mb-1">{{solution}}</p>{{/solution}}
+                    {{#has_action}}
+                        <a class="btn btn-sm btn-outline-primary" href="{{actionurl}}">{{actionlabel}}</a>
+                    {{/has_action}}
+                    {{#has_items}}
+                        <ul class="mb-0 pl-3">
+                            {{#items}}
+                                <li><a href="{{url}}">{{label}}</a></li>
+                            {{/items}}
+                        </ul>
+                    {{/has_items}}
+                </td>
             </tr>
             {{/checks}}
         </tbody>

@@ -52,6 +52,37 @@ if ($action === 'dedupemodels') {
     redirect(new moodle_url('/local/cria/sync_status.php'));
 }
 
+if ($action === 'cleanupunlinked') {
+    require_sesskey();
+    $result = sync_manager::cleanup_unlinked_models();
+    if ($result->success) {
+        \core\notification::success($result->message);
+        if (!empty($result->blocked)) {
+            \core\notification::warning(get_string(
+                'sync_cleanup_unlinked_blocked_detail',
+                'local_cria',
+                implode(', ', $result->blocked)
+            ));
+        }
+    } else {
+        \core\notification::warning($result->message);
+    }
+    redirect(new moodle_url('/local/cria/sync_status.php'));
+}
+
+if ($action === 'autorepair') {
+    require_sesskey();
+    $result = sync_manager::run_auto_repair();
+    foreach ($result->messages as $message) {
+        if ($result->success) {
+            \core\notification::success($message);
+        } else {
+            \core\notification::warning($message);
+        }
+    }
+    redirect(new moodle_url('/local/cria/sync_status.php'));
+}
+
 if ($action === 'repushbots') {
     require_sesskey();
     $repush = sync_manager::repush_all_bots();

@@ -335,6 +335,238 @@ class sync_manager {
     }
 
     /**
+     * Remove local model rows that are not linked to Criadex and not used by any bot.
+     *
+     * @return \stdClass
+     */
+    public static function cleanup_unlinked_models(): \stdClass {
+        global $DB;
+
+        $result = (object) [
+            'success' => false,
+            'removed' => 0,
+            'blocked' => [],
+            'message' => '',
+        ];
+
+        self::sync_models_from_criadex(false);
+
+        $unlinked = $DB->get_records_select(
+            'local_cria_models',
+            'criadex_model_id IS NULL OR criadex_model_id = 0',
+            null,
+            'id ASC'
+        );
+
+        foreach ($unlinked as $model) {
+            $modelid = (int) $model->id;
+            if (self::is_model_referenced($modelid)) {
+                $result->blocked[] = $modelid . ' (' . ($model->name ?? '') . ')';
+                continue;
+            }
+            $DB->delete_records('local_cria_models', ['id' => $modelid]);
+            $result->removed++;
+        }
+
+        $result->success = true;
+        $result->message = get_string('sync_cleanup_unlinked_success', 'local_cria', (object) [
+            'removed' => $result->removed,
+            'blocked' => count($result->blocked),
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Run safe automated repairs for common drift (models + Criabot push).
+     *
+     * @return \stdClass
+     */
+    public static function run_auto_repair(): \stdClass {
+        $result = (object) [
+            'success' => true,
+            'messages' => [],
+        ];
+
+        $sync = self::sync_models_from_criadex(false);
+        if ($sync->success) {
+            $result->messages[] = $sync->message;
+        } else {
+            $result->success = false;
+            $result->messages[] = $sync->message;
+        }
+
+        $cleanup = self::cleanup_unlinked_models();
+        $result->messages[] = $cleanup->message;
+        if (!empty($cleanup->blocked)) {
+            $result->messages[] = get_string(
+                'sync_cleanup_unlinked_blocked_detail',
+                'local_cria',
+                implode(', ', $cleanup->blocked)
+            );
+        }
+
+        $localdeduped = self::dedupe_local_models();
+        if ($localdeduped > 0) {
+            $result->messages[] = get_string('sync_local_dedupe_removed', 'local_cria', $localdeduped);
+        }
+
+        $repush = self::repush_all_bots();
+        if ($repush->pushed > 0 || $repush->failed > 0 || $repush->skipped > 0) {
+            $result->messages[] = get_string('sync_repush_bots_partial', 'local_cria', $repush);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int $modelid
+     * @return bool
+     */
+    private static function is_model_referenced(int $modelid): bool {
+        global $DB;
+
+        if ($modelid <= 0) {
+            return false;
+        }
+
+        return $DB->record_exists('local_cria_bot', ['model_id' => $modelid])
+            || $DB->record_exists('local_cria_bot', ['embedding_id' => $modelid])
+            || $DB->record_exists('local_cria_bot', ['rerank_model_id' => $modelid]);
+    }
+
+    /**
+     * @param array $botids
+     * @return array
+     */
+    private static function build_bot_edit_items(array $botids): array {
+        $items = [];
+        foreach ($botids as $botid) {
+            $botid = (int) $botid;
+            if ($botid <= 0) {
+                continue;
+            }
+            $items[] = [
+                'url' => (new \moodle_url('/local/cria/edit_bot.php', ['bot_id' => $botid]))->out(false),
+                'label' => get_string('sync_bot_edit_link', 'local_cria', $botid),
+            ];
+        }
+        return $items;
+    }
+
+    /**
+     * @return array
+     */
+    private static function find_unlinked_model_labels(): array {
+        global $DB;
+
+        $models = $DB->get_records_select(
+            'local_cria_models',
+            'criadex_model_id IS NULL OR criadex_model_id = 0',
+            null,
+            'id ASC'
+        );
+        $labels = [];
+        foreach ($models as $model) {
+            $labels[] = $model->id . ' (' . ($model->name ?? '') . ')';
+        }
+        return $labels;
+    }
+
+    /**
+     * @param string $checkid
+     * @param array $context
+     * @return array
+     */
+    private static function remediation_for_check(string $checkid, array $context = []): array {
+        global $CFG;
+
+        $settingsurl = (new \moodle_url('/admin/settings.php', ['section' => 'local_cria_settings']))->out(false);
+        $syncurl = (new \moodle_url('/local/cria/sync_status.php'))->out(false);
+
+        switch ($checkid) {
+            case 'criadex_url':
+            case 'criabot_url':
+            case 'api_key':
+                return [
+                    'solution' => get_string('sync_solution_settings', 'local_cria'),
+                    'actionurl' => $settingsurl,
+                    'actionlabel' => get_string('sync_action_open_settings', 'local_cria'),
+                ];
+            case 'criadex_models':
+            case 'criabot':
+            case 'ragflow':
+                return [
+                    'solution' => get_string('sync_solution_service_unreachable', 'local_cria'),
+                    'actionurl' => $settingsurl,
+                    'actionlabel' => get_string('sync_action_open_settings', 'local_cria'),
+                ];
+            case 'ragflow_credentials':
+                return [
+                    'solution' => get_string('sync_solution_ragflow_credentials', 'local_cria'),
+                    'actionurl' => $settingsurl,
+                    'actionlabel' => get_string('sync_action_open_settings', 'local_cria'),
+                ];
+            case 'local_models_linked':
+                $solution = get_string('sync_solution_unlinked_models', 'local_cria');
+                if (!empty($context['unlinkedlabels'])) {
+                    $solution .= ' ' . get_string(
+                        'sync_solution_unlinked_models_list',
+                        'local_cria',
+                        implode(', ', $context['unlinkedlabels'])
+                    );
+                }
+                return [
+                    'solution' => $solution,
+                    'actionurl' => (new \moodle_url('/local/cria/sync_status.php', [
+                        'action' => 'cleanupunlinked',
+                        'sesskey' => sesskey(),
+                    ]))->out(false),
+                    'actionlabel' => get_string('sync_action_cleanup_unlinked', 'local_cria'),
+                ];
+            case 'bots_model_links':
+                return [
+                    'solution' => get_string('sync_solution_bots_model_links', 'local_cria'),
+                    'actionurl' => (new \moodle_url('/local/cria/bot_models.php'))->out(false),
+                    'actionlabel' => get_string('sync_action_open_models', 'local_cria'),
+                ];
+            case 'criabot_bots':
+                return [
+                    'solution' => get_string('sync_solution_missing_criabot_bots', 'local_cria'),
+                    'actionurl' => (new \moodle_url('/local/cria/sync_status.php', [
+                        'action' => 'repushbots',
+                        'sesskey' => sesskey(),
+                    ]))->out(false),
+                    'actionlabel' => get_string('sync_action_repush_bots', 'local_cria'),
+                ];
+            case 'bot_type_assigned':
+                return [
+                    'solution' => get_string('sync_solution_missing_bot_type', 'local_cria'),
+                    'items' => self::build_bot_edit_items($context['botids'] ?? []),
+                ];
+            case 'provider_types':
+                return [
+                    'solution' => get_string('sync_solution_provider_types', 'local_cria'),
+                    'actionurl' => (new \moodle_url('/local/cria/sync_status.php', [
+                        'action' => 'syncmodels',
+                        'sesskey' => sesskey(),
+                    ]))->out(false),
+                    'actionlabel' => get_string('sync_action_pull_models', 'local_cria'),
+                ];
+            case 'bot_types':
+                return [
+                    'solution' => get_string('sync_solution_no_bot_types', 'local_cria'),
+                    'actionurl' => (new \moodle_url('/local/cria/bot_types.php'))->out(false),
+                    'actionlabel' => get_string('sync_action_manage_bot_types', 'local_cria'),
+                ];
+            default:
+                return [
+                    'solution' => get_string('sync_solution_generic', 'local_cria', $syncurl),
+                ];
+        }
+    }
+
+    /**
      * Build a health report for the sync status dashboard.
      *
      * @return array
@@ -428,6 +660,14 @@ class sync_manager {
             $ragflowstatus->detail ?? get_string('sync_check_unreachable', 'local_cria')
         );
 
+        $ragflowcredentials = ragflow::check_credentials();
+        $checks[] = self::make_check(
+            'ragflow_credentials',
+            get_string('sync_check_ragflow_credentials', 'local_cria'),
+            !empty($ragflowcredentials->ok),
+            $ragflowcredentials->detail ?? get_string('sync_check_unreachable', 'local_cria')
+        );
+
         $providertypes = $DB->get_records_menu('local_cria_providers', null, '', 'id, type');
         $remotetypes = [];
         if (api_response::is_success($modelsresponse) && !empty($modelsresponse->models)) {
@@ -470,6 +710,16 @@ class sync_manager {
                 : get_string('sync_check_criabot_bots_missing', 'local_cria', implode(', ', $missingbots))
         );
 
+        $botsmissingtype = self::find_bots_missing_bot_type();
+        $checks[] = self::make_check(
+            'bot_type_assigned',
+            get_string('sync_check_bot_type_assigned', 'local_cria'),
+            empty($botsmissingtype),
+            empty($botsmissingtype)
+                ? get_string('sync_check_bot_type_assigned_ok', 'local_cria')
+                : get_string('sync_check_bot_type_assigned_missing', 'local_cria', implode(', ', $botsmissingtype))
+        );
+
         $bottypecount = $DB->count_records('local_cria_type');
         $checks[] = self::make_check(
             'bot_types',
@@ -482,6 +732,20 @@ class sync_manager {
         $lastsynclabel = $lastsync > 0
             ? userdate($lastsync, get_string('strftimedatetime', 'langconfig'))
             : get_string('never', 'local_cria');
+
+        $unlinkedlabels = self::find_unlinked_model_labels();
+        $remediationcontext = [
+            'local_models_linked' => ['unlinkedlabels' => $unlinkedlabels],
+            'bot_type_assigned' => ['botids' => $botsmissingtype],
+        ];
+
+        foreach ($checks as $index => $check) {
+            if (!empty($check['ok'])) {
+                continue;
+            }
+            $context = $remediationcontext[$check['id']] ?? [];
+            $checks[$index] = self::apply_remediation($check, self::remediation_for_check($check['id'], $context));
+        }
 
         return [
             'checks' => $checks,
@@ -615,7 +879,6 @@ class sync_manager {
             }
 
             if (empty($botrow->bot_type)) {
-                $missing[] = get_string('sync_missing_bot_type', 'local_cria', $botrow->id);
                 continue;
             }
 
@@ -623,6 +886,24 @@ class sync_manager {
             if (!api_response::is_success($about) && (int) ($about->status ?? 0) === 404) {
                 $missing[] = (string) $botrow->id;
             }
+        }
+
+        return $missing;
+    }
+
+    /**
+     * Bots saved without a bot type cannot push to Criabot correctly.
+     *
+     * @return array List of bot ids missing bot_type.
+     */
+    public static function find_bots_missing_bot_type(): array {
+        global $DB;
+
+        $missing = [];
+        $bots = $DB->get_records_select('local_cria_bot', 'bot_type IS NULL OR bot_type = 0');
+
+        foreach ($bots as $botrow) {
+            $missing[] = (string) $botrow->id;
         }
 
         return $missing;
@@ -647,6 +928,27 @@ class sync_manager {
         }
 
         return $count;
+    }
+
+    /**
+     * @param array $check
+     * @param array $remediation
+     * @return array
+     */
+    private static function apply_remediation(array $check, array $remediation): array {
+        if (!empty($remediation['solution'])) {
+            $check['solution'] = $remediation['solution'];
+        }
+        if (!empty($remediation['actionurl'])) {
+            $check['has_action'] = true;
+            $check['actionurl'] = $remediation['actionurl'];
+            $check['actionlabel'] = $remediation['actionlabel'] ?? '';
+        }
+        if (!empty($remediation['items'])) {
+            $check['has_items'] = true;
+            $check['items'] = $remediation['items'];
+        }
+        return $check;
     }
 
     /**

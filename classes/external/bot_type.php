@@ -51,7 +51,7 @@ class local_cria_external_bot_type extends external_api {
     public static function delete_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Content id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Content id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -114,7 +114,7 @@ class local_cria_external_bot_type extends external_api {
     public static function get_system_message_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Bot type id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Bot type id', VALUE_DEFAULT, 0)
             )
         );
     }

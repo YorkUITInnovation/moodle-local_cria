@@ -95,11 +95,11 @@ class local_cria_external_cria extends external_api
      */
     public static function get_config_details() {
         $fields = array(
-            'criabot_url' => new external_value(PARAM_URL, 'Criabot server url', false),
-            'criadex_api_key' => new external_value(PARAM_TEXT, 'Criadex API key', false),
-            'embedding_server_url' => new external_value(PARAM_URL, 'CriaEmbed server url', false),
-            'bot_server_api_key' => new external_value(PARAM_TEXT, 'Legacy Criabot API key alias', false),
-            'bot_server_url' => new external_value(PARAM_URL, 'Legacy Criabot server url alias', false),
+            'criabot_url' => new external_value(PARAM_URL, 'Criabot server url', VALUE_OPTIONAL),
+            'criadex_api_key' => new external_value(PARAM_TEXT, 'Criadex API key', VALUE_OPTIONAL),
+            'embedding_server_url' => new external_value(PARAM_URL, 'CriaEmbed server url', VALUE_OPTIONAL),
+            'bot_server_api_key' => new external_value(PARAM_TEXT, 'Legacy Criabot API key alias', VALUE_OPTIONAL),
+            'bot_server_url' => new external_value(PARAM_URL, 'Legacy Criabot server url alias', VALUE_OPTIONAL),
         );
         return new external_single_structure($fields);
     }

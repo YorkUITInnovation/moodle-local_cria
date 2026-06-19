@@ -58,7 +58,7 @@ class local_cria_external_content extends external_api {
     public static function delete_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Content id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Content id', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -115,8 +115,8 @@ class local_cria_external_content extends external_api {
     public static function publish_urls_parameters() {
         return new external_function_parameters(
             array(
-                'intent_id' => new external_value(PARAM_INT, 'Intent id', false, 0),
-                'urls' => new external_value(PARAM_RAW, 'Web page URLs', false, '')
+                'intent_id' => new external_value(PARAM_INT, 'Intent id', VALUE_DEFAULT, 0),
+                'urls' => new external_value(PARAM_RAW, 'Web page URLs', VALUE_DEFAULT, '')
             )
         );
     }
@@ -175,7 +175,7 @@ class local_cria_external_content extends external_api {
     public static function publish_files_parameters() {
         return new external_function_parameters(
             array(
-                'intent_id' => new external_value(PARAM_INT, 'Intent id', false, 0),
+                'intent_id' => new external_value(PARAM_INT, 'Intent id', VALUE_DEFAULT, 0),
             )
         );
     }
@@ -227,7 +227,7 @@ class local_cria_external_content extends external_api {
                 'intentid' => new external_value(PARAM_INT, 'Intent id'),
                 'filename' => new external_value(PARAM_TEXT, 'name of the file'),
                 'filecontent' => new external_value(PARAM_RAW, 'Content of the file encoded in base64'),
-                'parsingstrategy' => new external_value(PARAM_TEXT, 'Parsing strategy', false, '')
+                'parsingstrategy' => new external_value(PARAM_TEXT, 'Parsing strategy', VALUE_DEFAULT, '')
             )
         );
     }
@@ -360,7 +360,7 @@ class local_cria_external_content extends external_api {
     public static function training_status_parameters() {
         return new external_function_parameters(
             array(
-                'id' => new external_value(PARAM_INT, 'Content id', false, 0)
+                'id' => new external_value(PARAM_INT, 'Content id', VALUE_DEFAULT, 0)
             )
         );
     }

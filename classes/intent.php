@@ -210,11 +210,7 @@ class intent extends crud
     public function default_intent_exists($bot_id)
     {
         global $DB;
-        $result = $DB->get_record('local_cria_intents', ['bot_id' => $bot_id, 'is_default' => 1]);
-        if ($result) {
-            return true;
-        }
-        return false;
+        return $DB->record_exists('local_cria_intents', ['bot_id' => $bot_id, 'is_default' => 1]);
     }
 
     /**

@@ -51,6 +51,15 @@ class sync_status implements \renderable, \templatable {
                 'action' => 'repushbots',
                 'sesskey' => sesskey(),
             ]))->out(false),
+            'cleanup_unlinked_url' => (new \moodle_url('/local/cria/sync_status.php', [
+                'action' => 'cleanupunlinked',
+                'sesskey' => sesskey(),
+            ]))->out(false),
+            'auto_repair_url' => (new \moodle_url('/local/cria/sync_status.php', [
+                'action' => 'autorepair',
+                'sesskey' => sesskey(),
+            ]))->out(false),
+            'settings_url' => (new \moodle_url('/admin/settings.php', ['section' => 'local_cria_settings']))->out(false),
             'ragflow_ui_note' => get_string('sync_ragflow_ui_note', 'local_cria'),
         ];
     }
