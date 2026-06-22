@@ -23,7 +23,7 @@ require_login(1, false);
 $context = context_system::instance();
 
 try {
-    \local_cria\sync_manager::run_model_sync(false);
+    \local_cria\sync_manager::run_model_sync(false, true);
 } catch (\Throwable $e) {
     \core\notification::warning(get_string('sync_models_failed', 'local_cria'));
 }

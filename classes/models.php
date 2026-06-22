@@ -37,7 +37,7 @@ class models {
 	 */
 	public function __construct() {
 	    global $DB;
-	    $this->results = $DB->get_records('local_cria_models', [], 'name ASC');
+	    $this->results = self::get_usable_records();
 	}
 
     /**
@@ -49,6 +49,110 @@ class models {
     public static function sync_from_criadex(): void
     {
         sync_manager::sync_models_from_criadex();
+    }
+
+    /**
+     * Return synced models that are linked to Criadex and usable for bots.
+     *
+     * @return array
+     */
+    public static function get_usable_records(): array {
+        global $DB;
+
+        $records = $DB->get_records_select(
+            'local_cria_models',
+            'criadex_model_id > 0',
+            null,
+            'name ASC'
+        );
+
+        $usable = [];
+        foreach ($records as $record) {
+            if (self::is_usable_record($record)) {
+                $usable[$record->id] = $record;
+            }
+        }
+
+        return $usable;
+    }
+
+    /**
+     * @param \stdClass $record
+     * @return bool
+     */
+    public static function is_usable_record(\stdClass $record): bool {
+        if ((int) ($record->criadex_model_id ?? 0) <= 0) {
+            return false;
+        }
+
+        $value = json_decode((string) ($record->value ?? ''), true);
+        if (!is_array($value)) {
+            return true;
+        }
+
+        if (!empty($value['is_rerank'])) {
+            return true;
+        }
+        if (!empty($record->is_embedding)) {
+            return true;
+        }
+
+        $modeltype = strtolower((string) ($value['model_type'] ?? ''));
+        if ($modeltype === 'rerank') {
+            return true;
+        }
+
+        $providertype = strtolower((string) ($value['provider_type'] ?? ''));
+        if ($providertype === 'ragflow') {
+            return true;
+        }
+
+        if ($providertype === 'azure') {
+            $resource = (string) ($value['api_resource'] ?? '');
+            if ($resource !== '' && str_starts_with($resource, 'your-resource')) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param bool $embedding
+     * @param bool $rerank
+     * @return array
+     */
+    private static function filter_records_by_role(bool $embedding, bool $rerank): array {
+        $records = self::get_usable_records();
+        $filtered = [];
+
+        foreach ($records as $record) {
+            $value = json_decode((string) ($record->value ?? ''), true);
+            if (!is_array($value)) {
+                $value = [];
+            }
+
+            $isrerank = !empty($value['is_rerank'])
+                || strtolower((string) ($value['model_type'] ?? '')) === 'rerank';
+            $isembedding = !empty($record->is_embedding)
+                || in_array(strtolower((string) ($value['model_type'] ?? '')), ['embedding', 'embed'], true);
+
+            if ($embedding && !$rerank && $isembedding) {
+                $filtered[$record->id] = $record;
+                continue;
+            }
+
+            if (!$embedding && $rerank && $isrerank) {
+                $filtered[$record->id] = $record;
+                continue;
+            }
+
+            if (!$embedding && !$rerank && !$isembedding && !$isrerank) {
+                $filtered[$record->id] = $record;
+            }
+        }
+
+        return $filtered;
     }
 
 	/**
@@ -67,6 +171,10 @@ class models {
         $i = 0;
         foreach($results as $r) {
             $MODEL = new model($r->id);
+            $value = json_decode((string) $MODEL->get_value(), true);
+            if (!is_array($value)) {
+                $value = [];
+            }
             $models[$i]['id'] = $MODEL->get_id();
             $models[$i]['name'] = $MODEL->get_name();
             $models[$i]['value'] = $MODEL->get_value();
@@ -74,6 +182,15 @@ class models {
             $models[$i]['provider_id'] = $MODEL->get_provider_id();
             $models[$i]['provider_idnumber'] = $MODEL->get_provider_idnumber();
             $models[$i]['provider_name'] = $MODEL->get_provider_name();
+            $modeltype = strtolower((string) ($value['model_type'] ?? 'chat'));
+            if ($modeltype === 'embedding' || $modeltype === 'embed') {
+                $modeltypelabel = get_string('model_type_embedding', 'local_cria');
+            } else if ($modeltype === 'rerank') {
+                $modeltypelabel = get_string('model_type_rerank', 'local_cria');
+            } else {
+                $modeltypelabel = get_string('model_type_chat', 'local_cria');
+            }
+            $models[$i]['model_type'] = $modeltypelabel;
             $models[$i]['usermodified'] = $MODEL->get_usermodified();
             $models[$i]['timecreated'] = $MODEL->get_timecreated();
             $models[$i]['timemodified'] = $MODEL->get_timemodified();
@@ -92,23 +209,11 @@ class models {
 	  * Modify as required. 
 	 */
 	public function get_select_array($embedding = false, $rerank = false) {
-        global $DB;
 	    $array = [
 	        '' => get_string('select', 'local_cria')
 	      ];
 
-        if ($embedding && !$rerank) {
-           $results =  $DB->get_records('local_cria_models', ['is_embedding' => 1], 'name ASC');
-        } else if (!$embedding && $rerank) {
-            $rerank_providers = $DB->get_records('local_cria_providers', ['type' => 'cohere']);
-            $results = [];
-            foreach ($rerank_providers as $rp) {
-                $provider_models = $DB->get_records('local_cria_models', ['provider_id' => $rp->id], 'name ASC');
-                $results = $results + $provider_models;
-            }
-        } else {
-            $results = $DB->get_records('local_cria_models', ['is_embedding' => 0], 'name ASC');
-        }
+        $results = self::filter_records_by_role((bool) $embedding, (bool) $rerank);
 	      foreach($results as $r) {
 	            $array[$r->id] = $r->name;
 	      }

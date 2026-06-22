@@ -117,6 +117,24 @@ class criadex
     }
 
     /**
+     * Sync Ragflow tenant models into the Criadex registry.
+     *
+     * @return mixed
+     */
+    public static function sync_ragflow_models()
+    {
+        $config = get_config('local_cria');
+
+        return gpt::_make_call(
+            $config->criadex_url,
+            $config->criadex_api_key,
+            [],
+            '/models/ragflow/sync',
+            'POST'
+        );
+    }
+
+    /**
      * Merge duplicate generic models in Criadex (same provider_type + api_model).
      *
      * @return mixed

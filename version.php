@@ -13,7 +13,7 @@
 */
 
 
-$plugin->version = 2026060508;
+$plugin->version = 2026060510;
 $plugin->requires = 2022112800; //Moodle 4.1
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '1.5.0';
