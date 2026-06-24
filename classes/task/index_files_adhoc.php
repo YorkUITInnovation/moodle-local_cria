@@ -13,6 +13,7 @@
 
 namespace local_cria\task;
 
+use local_cria\file;
 use local_cria\intent;
 
 class index_files_adhoc extends \core\task\adhoc_task
@@ -24,8 +25,23 @@ class index_files_adhoc extends \core\task\adhoc_task
      */
     public function execute()
     {
+        global $DB;
+
         $data = $this->get_custom_data();
-        $INTENT = new intent($data->intent_id);
-        $INTENT->index_files($data->file_id);
+        $intentid = (int) ($data->intent_id ?? 0);
+        $fileid = (int) ($data->file_id ?? 0);
+
+        if ($intentid <= 0) {
+            mtrace('local_cria index_files_adhoc: missing intent_id');
+            return;
+        }
+
+        $intent = new intent($intentid);
+        if ($fileid > 0) {
+            $intent->index_files($fileid);
+            return;
+        }
+
+        $intent->index_pending_files();
     }
 }

@@ -1009,6 +1009,7 @@ class bot extends crud
         $params->web_search_enabled = $this->get_web_search_enabled();
         $params->web_search_global_enabled = (bool) get_config('local_cria', 'web_search_global_enabled');
         $params->parent_bot_names = array_map('strval', self::get_parent_bot_ids_for_child($this->id));
+        $params->requires_documents = (bool) (int) $this->use_bot_server();
 
         $params = json_encode($params);
 
@@ -1150,7 +1151,9 @@ class bot extends crud
         global $DB, $USER;
 
         if (isset($data->child_bots)) {
-            $data->child_bots = json_encode($data->child_bots);
+            if (is_array($data->child_bots)) {
+                $data->child_bots = json_encode($data->child_bots);
+            }
         }
 
         if (!isset($data->timecreated)) {
@@ -1179,12 +1182,20 @@ class bot extends crud
      */
     public function update_record($data): int
     {
-        $old_child_bots = json_decode($this->child_bots, true) ?: [];
+        $old_child_bots = json_decode($this->child_bots, true);
+        if (!is_array($old_child_bots)) {
+            $old_child_bots = [];
+        }
         $new_child_bots = $old_child_bots;
 
         if (isset($data->child_bots)) {
-            $new_child_bots = is_array($data->child_bots) ? $data->child_bots : [];
-            $data->child_bots = json_encode($data->child_bots);
+            if (is_array($data->child_bots)) {
+                $new_child_bots = $data->child_bots;
+                $data->child_bots = json_encode($data->child_bots);
+            } else {
+                $decoded = json_decode((string) $data->child_bots, true);
+                $new_child_bots = is_array($decoded) ? $decoded : [];
+            }
         }
 
         parent::update_record($data);
@@ -1676,6 +1687,10 @@ class bot extends crud
         $result = null;
 
         if ((int) $botexists->status === 404 && $intent_id == 0) {
+            if (!$this->use_bot_server()) {
+                $result = $this->create_bot_on_bot_server(0, $notify);
+                return api_response::is_success($result);
+            }
             $newintentid = (int) $this->create_default_intent($this->id);
             if ($newintentid <= 0) {
                 return false;
@@ -1768,6 +1783,19 @@ class bot extends crud
                 unset($INTENT);
             }
 
+        } else {
+            $botname = (string) $this->get_bot_name();
+            criabot::bot_delete($botname);
+            foreach ($this->get_all_intents() as $intent) {
+                $strayname = $this->id . '-' . $intent->id;
+                if ($strayname === $botname) {
+                    continue;
+                }
+                $strayabout = criabot::bot_about($strayname);
+                if (is_object($strayabout) && (int) ($strayabout->status ?? 0) !== 404) {
+                    criabot::bot_delete($strayname);
+                }
+            }
         }
         return $DB->delete_records($this->table, array('id' => $this->get_id()));
     }

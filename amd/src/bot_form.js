@@ -6,18 +6,29 @@ import select2 from 'local_cria/select2';
 
 export const init = () => {
     // Set child_bots as select2
-    $('#id_child_bots').select2({
-        'theme': 'bootstrap4',
-    });
-    // Add a few classes to the select2 element
-    $('.select2-selection__choice__remove').addClass('btn btn-sm btn-danger mr-1');
-    // set_tone_button();
-    // set_length_button();
+    if ($('#id_child_bots').length) {
+        $('#id_child_bots').select2({
+            'theme': 'bootstrap4',
+        });
+        // Add a few classes to the select2 element
+        $('.select2-selection__choice__remove').addClass('btn btn-sm btn-danger mr-1');
+    }
+    process_bot_form();
     get_bot_type_message();
-    // get_model_max_tokens();
-    // set_tone_parameters();
-    // set_length_parameters();
 };
+
+/**
+ * Show loader while the bot form is submitting.
+ */
+function process_bot_form() {
+    $('#id_submitbutton').off('click.criaBotForm');
+    $('#id_submitbutton').on('click.criaBotForm', function() {
+        const loader = document.getElementById('cria-loader');
+        if (loader) {
+            loader.style.display = 'flex';
+        }
+    });
+}
 
 /**
  * Delete a content

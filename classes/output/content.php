@@ -83,6 +83,9 @@ class content implements \renderable, \templatable
                     'bot_id' => $this->bot_id,
                     'id' => $intentrow->id,
                 ]))->out(false);
+                $intentrow->upload_url = (new \moodle_url('/local/cria/edit_content.php', [
+                    'intent_id' => $intentrow->id,
+                ]))->out(false);
             }
         }
 

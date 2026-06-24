@@ -38,6 +38,67 @@ use local_cria\ragflow;
 use local_cria\sync_manager;
 
 /**
+ * Pick linked embedding + rerank models after syncing from Criadex.
+ *
+ * @return array{embedding:int,rerank:int}|null
+ */
+function local_cria_sync_e2e_pick_support_models(): ?array {
+    global $DB;
+
+    sync_manager::ensure_providers_for_remote_types();
+    $sync = sync_manager::sync_models_from_criadex(false);
+    if (empty($sync->success)) {
+        return null;
+    }
+
+    $sql = "SELECT m.id, m.criadex_model_id, m.is_embedding, m.name, m.value, p.type AS provider_type
+              FROM {local_cria_models} m
+              JOIN {local_cria_providers} p ON p.id = m.provider_id
+             WHERE m.criadex_model_id > 0
+          ORDER BY p.id ASC, m.is_embedding DESC, m.name ASC, m.id ASC";
+    $rows = $DB->get_records_sql($sql);
+
+    $embedding = null;
+    $rerank = null;
+
+    foreach ($rows as $row) {
+        if (!empty($row->is_embedding) && $embedding === null) {
+            $embedding = $row;
+            continue;
+        }
+        $ptype = strtolower((string) ($row->provider_type ?? ''));
+        $value = json_decode((string) ($row->value ?? ''), true);
+        $modeltype = is_array($value) ? strtolower((string) ($value['model_type'] ?? '')) : '';
+        if ($ptype === 'cohere' && $rerank === null) {
+            $rerank = $row;
+            continue;
+        }
+        if ($modeltype === 'rerank' && $rerank === null) {
+            $rerank = $row;
+        }
+    }
+
+    if ($rerank === null) {
+        foreach ($rows as $row) {
+            $ptype = strtolower((string) ($row->provider_type ?? ''));
+            if ($ptype === 'ragflow' && empty($row->is_embedding)) {
+                $rerank = $row;
+                break;
+            }
+        }
+    }
+
+    if ($embedding === null || $rerank === null) {
+        return null;
+    }
+
+    return [
+        'embedding' => (int) $embedding->id,
+        'rerank' => (int) $rerank->id,
+    ];
+}
+
+/**
  * Find orphaned E2E entities in Moodle.
  *
  * @return array{providers: array, models: array, types: array, bots: array, intents: array}
@@ -285,11 +346,15 @@ if (!empty($ragflowcredentials->skipped)) {
 }
 
 try {
-    $embedding = $DB->get_record('local_cria_models', ['is_embedding' => 1, 'criadex_model_id' => 11]);
-    $rerank = $DB->get_record('local_cria_models', ['provider_id' => 1], '*', IGNORE_MULTIPLE);
-    if (!$embedding || !$rerank) {
-        cli_error('Need at least one linked embedding model and cohere rerank model in Moodle DB.');
+    $supportmodels = local_cria_sync_e2e_pick_support_models();
+    if ($supportmodels === null) {
+        cli_error(
+            'Need at least one linked embedding model and rerank model in Moodle DB after Criadex sync. '
+            . 'Run Site admin → Cria → Sync models from Criadex, or check Ragflow tenant model sync.'
+        );
     }
+    $embedding = $DB->get_record('local_cria_models', ['id' => $supportmodels['embedding']], '*', MUST_EXIST);
+    $rerank = $DB->get_record('local_cria_models', ['id' => $supportmodels['rerank']], '*', MUST_EXIST);
 
     $provider = new \stdClass();
     $provider->name = "E2E Provider {$tag}";
@@ -366,7 +431,7 @@ try {
     $botdata->fine_tuning = 1;
     $botdata->theme_color = '#e31837';
     $botdata->bot_locale = 'en-US';
-    $botdata->child_bots = json_encode([]);
+    $botdata->child_bots = [];
 
     $BOT = new bot();
     $botid = $BOT->insert_record($botdata);

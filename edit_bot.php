@@ -96,6 +96,7 @@ if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot . '/local/cria/' . $return . '.php?bot_id=' . $id);
 } else if ($data = $mform->get_data()) {
     $return = $data->return;
+    $iscreate = empty($data->id);
     unset($data->return);
     // unset bot_api_key and bot_name
     unset($data->bot_api_key);
@@ -134,13 +135,23 @@ if ($mform->is_cancelled()) {
         (new bot($id))->sync_to_criabot(true);
     }
 
-    if ($data->id) {
-        redirect($CFG->wwwroot . '/local/cria/' . $return . '.php?bot_id=' . $data->id);
-    } else {
-        redirect($CFG->wwwroot . '/local/cria/edit_bot.php?bot_id=' . $id);
+    if ($iscreate) {
+        redirect(
+            new moodle_url('/local/cria/edit_bot.php', ['bot_id' => $id]),
+            get_string('bot_created_success', 'local_cria'),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     }
+
+    redirect(
+        new moodle_url('/local/cria/' . $return . '.php', ['bot_id' => $data->id]),
+        get_string('bot_updated_success', 'local_cria'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 } else {
-    $mform->set_data($mform);
+    $mform->set_data($formdata);
 }
 
 base::page(
@@ -164,6 +175,8 @@ echo $OUTPUT->header();
 //
 
 $mform->display();
+
+echo $OUTPUT->render_from_template('local_cria/loader', []);
 
 
 //**********************

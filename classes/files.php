@@ -336,16 +336,7 @@ class files
             }
         }
 
-        // Run adhoc task to index files
-        $task = new \local_cria\task\index_files_adhoc();
-        // Run task as logged in user
-        $task->set_userid($USER->id);
-        $task->set_custom_data([
-            'intent_id' => $this->intent_id,
-            'file_id' => $record->id
-        ]);
-
-        \core\task\manager::queue_adhoc_task($task);
+        intent::schedule_index_file((int) $this->intent_id, (int) $record->id);
 
         return $status;
     }

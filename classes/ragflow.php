@@ -221,4 +221,197 @@ class ragflow {
         );
         return $result;
     }
+
+    /**
+     * Ragflow-safe display name (matches Criadex kb_sync sanitize_ragflow_name).
+     *
+     * @param string $value
+     * @param int $maxlen
+     * @return string
+     */
+    public static function sanitize_name(string $value, int $maxlen = 128): string {
+        $chars = preg_split('//u', trim($value), -1, PREG_SPLIT_NO_EMPTY);
+        $filtered = '';
+        if (is_array($chars)) {
+            foreach ($chars as $ch) {
+                if (mb_ord($ch) <= 0xFFFF) {
+                    $filtered .= $ch;
+                }
+            }
+        }
+        $text = trim(preg_replace('/\s+/', ' ', $filtered) ?? '');
+        if ($text === '') {
+            $text = 'cria-group';
+        }
+        if (mb_strlen($text) > $maxlen) {
+            $text = mb_substr($text, 0, $maxlen);
+        }
+        return $text;
+    }
+
+    /**
+     * @param string $method
+     * @param string $path
+     * @param array|null $jsonbody
+     * @return array|null
+     */
+    private static function api_request(string $method, string $path, ?array $jsonbody = null): ?array {
+        $apikey = self::get_api_key();
+        if ($apikey === '') {
+            return null;
+        }
+
+        $url = rtrim(self::get_url(), '/') . $path;
+        $ch = curl_init($url);
+        $headers = [
+            'Authorization: Bearer ' . $apikey,
+            'Accept: application/json',
+        ];
+        $options = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        ];
+        if ($jsonbody !== null) {
+            $payload = json_encode($jsonbody);
+            $headers[] = 'Content-Type: application/json';
+            $options[CURLOPT_HTTPHEADER] = $headers;
+            $options[CURLOPT_CUSTOMREQUEST] = $method;
+            $options[CURLOPT_POSTFIELDS] = $payload;
+        } else {
+            $options[CURLOPT_CUSTOMREQUEST] = $method;
+        }
+        curl_setopt_array($ch, $options);
+        $body = curl_exec($ch);
+        curl_close($ch);
+        if ($body === false || $body === '') {
+            return null;
+        }
+        $decoded = json_decode($body, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * @param string $path
+     * @param string|null $name
+     * @return array
+     */
+    private static function list_api_items(string $path, ?string $name = null): array {
+        $items = [];
+        for ($page = 1; $page <= 20; $page++) {
+            $params = ['page' => $page, 'page_size' => 100];
+            if ($name !== null && $name !== '') {
+                $params['name'] = $name;
+            }
+            $query = http_build_query($params);
+            $payload = self::api_request('GET', $path . '?' . $query);
+            if (!is_array($payload)) {
+                break;
+            }
+            $data = $payload['data'] ?? null;
+            $batch = [];
+            if (is_array($data) && isset($data['docs']) && is_array($data['docs'])) {
+                $batch = $data['docs'];
+            } else if (is_array($data) && isset($data['chats']) && is_array($data['chats'])) {
+                $batch = $data['chats'];
+            } else if (is_array($data) && array_is_list($data)) {
+                $batch = $data;
+            }
+            if ($batch === []) {
+                break;
+            }
+            $items = array_merge($items, $batch);
+            if (count($batch) < 100) {
+                break;
+            }
+        }
+        return $items;
+    }
+
+    /**
+     * @param string $endpoint
+     * @param array $ids
+     * @return void
+     */
+    private static function delete_ids(string $endpoint, array $ids): void {
+        $ids = array_values(array_filter(array_map('strval', $ids)));
+        if ($ids === []) {
+            return;
+        }
+        foreach (array_chunk($ids, 50) as $batch) {
+            self::api_request('DELETE', $endpoint, ['ids' => $batch]);
+        }
+    }
+
+    /**
+     * Remove Ragflow chat + dataset created for a Criabot document-index group.
+     *
+     * @param string $criabotname e.g. 181-172
+     * @return void
+     */
+    public static function cleanup_bot_sync_targets(string $criabotname): void {
+        $criabotname = trim($criabotname);
+        if ($criabotname === '' || self::get_api_key() === '') {
+            return;
+        }
+
+        $chatname = self::sanitize_name($criabotname, 120);
+        $datasetname = self::sanitize_name($criabotname . '-document-index');
+
+        $chatids = [];
+        foreach (self::list_api_items('/api/v1/chats') as $chat) {
+            if (!empty($chat['id']) && (string) ($chat['name'] ?? '') === $chatname) {
+                $chatids[] = (string) $chat['id'];
+            }
+        }
+        self::delete_ids('/api/v1/chats', $chatids);
+
+        $datasetids = [];
+        foreach (self::list_api_items('/api/v1/datasets') as $dataset) {
+            if (!empty($dataset['id']) && (string) ($dataset['name'] ?? '') === $datasetname) {
+                $datasetids[] = (string) $dataset['id'];
+            }
+        }
+        self::delete_ids('/api/v1/datasets', $datasetids);
+    }
+
+    /**
+     * Remove Ragflow chats/datasets left by Moodle upload-required bots (botid-intentid pattern).
+     *
+     * @return int Number of Ragflow resources deleted
+     */
+    public static function cleanup_numeric_bot_artifacts(): int {
+        if (self::get_api_key() === '') {
+            return 0;
+        }
+
+        $removed = 0;
+        $chatids = [];
+        foreach (self::list_api_items('/api/v1/chats') as $chat) {
+            $name = (string) ($chat['name'] ?? '');
+            if (!empty($chat['id']) && preg_match('/^\d+-\d+$/', $name)) {
+                $chatids[] = (string) $chat['id'];
+            }
+        }
+        if ($chatids !== []) {
+            self::delete_ids('/api/v1/chats', $chatids);
+            $removed += count($chatids);
+        }
+
+        $datasetids = [];
+        foreach (self::list_api_items('/api/v1/datasets') as $dataset) {
+            $name = (string) ($dataset['name'] ?? '');
+            if (!empty($dataset['id']) && preg_match('/^\d+-\d+-document-index$/', $name)) {
+                $datasetids[] = (string) $dataset['id'];
+            }
+        }
+        if ($datasetids !== []) {
+            self::delete_ids('/api/v1/datasets', $datasetids);
+            $removed += count($datasetids);
+        }
+
+        return $removed;
+    }
 }

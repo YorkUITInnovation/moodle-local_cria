@@ -6,54 +6,57 @@ require_once($CFG->libdir.'/clilib.php');
 
 use local_cria\intent;
 
-// Define the input options.
-$longparams = array(
+$longparams = [
     'help' => false,
     'intentid' => '',
-);
+    'fileid' => '',
+];
 
-$shortparams = array(
+$shortparams = [
     'h' => 'help',
     'i' => 'intentid',
+    'f' => 'fileid',
+];
 
-);
-
-// now get cli options
 list($options, $unrecognized) = cli_get_params($longparams, $shortparams);
 
 if ($unrecognized) {
     $unrecognized = implode("\n  ", $unrecognized);
     cli_error(get_string('cliunknowoption', 'admin', $unrecognized));
 }
-file_put_contents('/var/www/moodledata/temp/intent_log.txt', date('Y-m-d H:i:s') . " - Script executed ". $options['intentid'] . " \n", FILE_APPEND);
+
 if ($options['help']) {
     $help =
-        "Index file for an intent.
-
-There are no security checks here because anybody who is able to
-execute this file may execute any PHP too.
+        "Index pending files for an intent.
 
 Options:
 -h, --help                    Print out this help
 -i, --intentid=intentid       The intent id to index files for
+-f, --fileid=fileid           Optional file id; indexes only that pending file
 
 Example:
-\$sudo -u www-data /usr/bin/php local/cria/cli/index_files.php -i=45
 \$sudo -u www-data /usr/bin/php local/cria/cli/index_files.php --intentid=45
+\$sudo -u www-data /usr/bin/php local/cria/cli/index_files.php --intentid=45 --fileid=192
 ";
 
     echo $help;
     die;
 }
 
-if ($options['intentid'] == '') {
+if ($options['intentid'] === '') {
     cli_heading('Index files');
-    $prompt = "Enter intent id";
-    $intentid = cli_input($prompt);
+    $intentid = (int) cli_input('Enter intent id');
 } else {
-    $intentid = $options['intentid'];
+    $intentid = (int) $options['intentid'];
 }
 
+$fileid = (int) ($options['fileid'] ?? 0);
 $INTENT = new intent($intentid);
 
-$INTENT->index_files();
+if ($fileid > 0) {
+    $result = $INTENT->index_files($fileid);
+    cli_writeln($result ? 'Indexed file ' . $fileid : 'No pending file indexed for id ' . $fileid);
+} else {
+    $processed = $INTENT->index_pending_files();
+    cli_writeln('Indexed ' . $processed . ' pending file(s) for intent ' . $intentid);
+}

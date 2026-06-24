@@ -318,6 +318,7 @@ class file extends crud
      */
     public function get_file_type_from_mime_type($mime_type): string
     {
+        $file_type = '';
         switch ($mime_type) {
             case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                 $file_type = 'docx';
@@ -337,6 +338,10 @@ class file extends crud
             case 'text/plain':
                 $file_type = 'txt';
                 break;
+            case 'text/markdown':
+            case 'text/x-markdown':
+                $file_type = 'md';
+                break;
             case 'text/rtf':
                 $file_type = 'rtf';
                 break;
@@ -351,6 +356,77 @@ class file extends crud
                 break;
         }
         return $file_type;
+    }
+
+    /**
+     * Infer file type from filename extension when MIME type is missing or generic.
+     *
+     * @param string $filename
+     * @return string
+     */
+    public function get_file_type_from_filename(string $filename): string
+    {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $map = [
+            'docx' => 'docx',
+            'doc' => 'doc',
+            'pdf' => 'pdf',
+            'xlsx' => 'xlsx',
+            'pptx' => 'pptx',
+            'txt' => 'txt',
+            'md' => 'md',
+            'markdown' => 'md',
+            'rtf' => 'rtf',
+            'html' => 'html',
+            'htm' => 'html',
+            'png' => 'png',
+            'jpg' => 'jpeg',
+            'jpeg' => 'jpeg',
+        ];
+
+        return $map[$extension] ?? '';
+    }
+
+    /**
+     * Resolve a MIME type suitable for CriaParse from file type or filename.
+     *
+     * @param string $filetype
+     * @param string $filename
+     * @return string
+     */
+    public function get_mime_type_for_parsing(string $filetype, string $filename = ''): string
+    {
+        switch ($filetype) {
+            case 'docx':
+                return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            case 'doc':
+                return 'application/msword';
+            case 'pdf':
+                return 'application/pdf';
+            case 'txt':
+                return 'text/plain';
+            case 'md':
+                return 'text/markdown';
+            case 'html':
+                return 'text/html';
+            case 'png':
+                return 'image/png';
+            case 'jpeg':
+                return 'image/jpeg';
+            case 'rtf':
+                return 'text/rtf';
+            default:
+                if ($filename !== '') {
+                    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    if (in_array($extension, ['md', 'markdown'], true)) {
+                        return 'text/markdown';
+                    }
+                    if ($extension === 'txt') {
+                        return 'text/plain';
+                    }
+                }
+                return 'application/octet-stream';
+        }
     }
 
     /**

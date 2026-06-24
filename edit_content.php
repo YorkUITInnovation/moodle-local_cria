@@ -179,10 +179,14 @@ if ($mform->is_cancelled()) {
         $data->intent_id
     );
     // Save files to file table
+    $queued_file_ids = [];
     foreach ($files as $file) {
         if ($file->get_filename() != '.' && $file->get_filename() != '' && in_array($file->get_filename(), $draft_area_filenames)) {
             // Insert file type
             $content_data['file_type'] = $FILE->get_file_type_from_mime_type($file->get_mimetype());
+            if ($content_data['file_type'] === '') {
+                $content_data['file_type'] = $FILE->get_file_type_from_filename($file->get_filename());
+            }
             // Set indexing to pending
             $content_data['indexed'] = $FILE::INDEXING_PENDING;
             // get file name
@@ -249,27 +253,21 @@ if ($mform->is_cancelled()) {
             ];
             if (!$DB->get_record('local_cria_files', $content_verification)) {
                 // Insert the content into the database
-                $file_id = $DB->insert_record('local_cria_files', $content_data);
+                $queued_file_ids[] = $DB->insert_record('local_cria_files', $content_data);
             }
         }
     }
 
     // Run adhoc task to index files
-    $task = new \local_cria\task\index_files_adhoc();
-    // Run task as logged in user
-    $task->set_userid($USER->id);
-    $task->set_custom_data([
-        'intent_id' => $data->intent_id,
-        'file_id' => $file_id,
-    ]);
-
-    \core\task\manager::queue_adhoc_task($task);
+    foreach ($queued_file_ids as $queued_file_id) {
+        intent::schedule_index_file((int) $data->intent_id, (int) $queued_file_id);
+    }
 
     // Redirect to content page
     redirect($CFG->wwwroot . '/local/cria/content.php?bot_id=' . $data->bot_id . '&intent_id=' . $data->intent_id);
 } else {
     // Show form
-    $mform->set_data($mform);
+    $mform->set_data($formdata);
 }
 
 

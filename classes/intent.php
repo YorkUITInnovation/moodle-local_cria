@@ -315,7 +315,11 @@ class intent extends crud
      */
     public function get_bot_name(): string
     {
-        return $this->bot_id . '-' . $this->id;
+        $BOT = new bot($this->bot_id);
+        if ($BOT->use_bot_server()) {
+            return $this->bot_id . '-' . $this->id;
+        }
+        return (string) $this->bot_id;
     }
 
     /**
@@ -562,7 +566,7 @@ class intent extends crud
      */
     public function create_intent_on_bot_server()
     {
-        $bot_name = $this->bot_id . '-' . $this->id;
+        $bot_name = $this->get_bot_name();
         $result = criabot::bot_create((string)$bot_name, $this->get_bot_parameters_json());
         return $result;
     }
@@ -574,7 +578,7 @@ class intent extends crud
      */
     public function update_intent_on_bot_server(bool $notify = true)
     {
-        $bot_name = $this->bot_id . '-' . $this->id;
+        $bot_name = $this->get_bot_name();
         $bot_exists = criabot::bot_about((string)$bot_name);
 
         $BOT = new bot($this->bot_id);
@@ -654,113 +658,261 @@ class intent extends crud
     }
 
     /**
-     * Index files for this intent
+     * Queue background indexing and run it immediately in the current request.
+     *
+     * @param int $intentid
+     * @param int $fileid
      * @return void
+     */
+    public static function schedule_index_file(int $intentid, int $fileid): void
+    {
+        global $USER;
+
+        $task = new \local_cria\task\index_files_adhoc();
+        if (!empty($USER->id)) {
+            $task->set_userid($USER->id);
+        }
+        $task->set_custom_data((object) [
+            'intent_id' => $intentid,
+            'file_id' => $fileid,
+        ]);
+        \core\task\manager::queue_adhoc_task($task);
+
+        try {
+            (new self($intentid))->index_files($fileid);
+        } catch (\Throwable $e) {
+            debugging('local_cria immediate file indexing failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Index all pending files for this intent.
+     *
+     * @return int Number of files processed.
+     * @throws \dml_exception
+     */
+    public function index_pending_files(): int
+    {
+        global $DB;
+
+        $pending = $DB->get_records('local_cria_files', [
+            'intent_id' => $this->id,
+            'indexed' => file::INDEXING_PENDING,
+        ], 'id ASC');
+
+        $processed = 0;
+        foreach ($pending as $pendingfile) {
+            if ($this->index_files((int) $pendingfile->id)) {
+                $processed++;
+            }
+        }
+
+        return $processed;
+    }
+
+    /**
+     * Index files for this intent
+     * @param int $file_id
+     * @return bool
      * @throws \dml_exception
      */
     public function index_files($file_id)
     {
         global $DB, $USER, $CFG;
-        // Create various objects
-        $PARSER = new criaparse();
-        $FILE = new file();
-        // Get plugin config
-        $config = get_config('local_cria');
-        // Set context
-        $context = \context_system::instance();
-        // Get all files that are in state other than completed
-        $file = $DB->get_record('local_cria_files', ['indexed' => $FILE::INDEXING_PENDING, 'id' => $file_id]);
 
-        // Get file list from criadex. Let's make sure it doesn't already exist
-        $criadex_files = criadex::list_content($this->get_bot_id())->document_index->files ?? [];
-        // If file already exists in criadex, skip it
-        if (in_array($file->name, $criadex_files)) {
+        $fileid = (int) $file_id;
+        if ($fileid <= 0) {
             return false;
         }
+
+        $FILE = new file();
+        $file = $DB->get_record('local_cria_files', [
+            'id' => $fileid,
+            'intent_id' => $this->id,
+            'indexed' => $FILE::INDEXING_PENDING,
+        ]);
+        if (!$file) {
+            return false;
+        }
+
+        try {
+            return $this->index_pending_file_record($file);
+        } catch (\Throwable $e) {
+            $DB->update_record('local_cria_files', (object) [
+                'id' => $file->id,
+                'indexed' => $FILE::INDEXING_FAILED,
+                'error_message' => json_encode([
+                    'message' => 'Indexing failed with an unexpected error.',
+                    'detail' => $e->getMessage(),
+                ], JSON_PRETTY_PRINT),
+                'timemodified' => time(),
+                'usermodified' => $USER->id ?? 0,
+            ]);
+            debugging('local_cria index_files failed for file ' . $fileid . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return false;
+        }
+    }
+
+    /**
+     * @param \stdClass $file
+     * @return bool
+     * @throws \dml_exception
+     */
+    private function index_pending_file_record(\stdClass $file): bool
+    {
+        global $DB, $USER, $CFG;
+
+        $FILE = new file();
+        $context = \context_system::instance();
+
+        $criadexfiles = criadex::list_document_file_names($this->get_bot_id());
+        if (in_array($file->name, $criadexfiles, true)) {
+            $DB->update_record('local_cria_files', (object) [
+                'id' => $file->id,
+                'indexed' => $FILE::INDEXING_COMPLETE,
+                'timemodified' => time(),
+                'usermodified' => $USER->id ?? 0,
+            ]);
+            return true;
+        }
+
         $BOT = new bot($this->get_bot_id());
-        // Set default path
-        $path = $CFG->dataroot . '/temp/cria';
-        base::create_directory_if_not_exists($path);
-        // Set path based on intent_id
         $path = $CFG->dataroot . '/temp/cria/' . $this->id;
+        base::create_directory_if_not_exists($CFG->dataroot . '/temp/cria');
         base::create_directory_if_not_exists($path);
-        // Get Moodle file
+
         $fs = get_file_storage();
-        $moodle_file = $fs->get_file($context->id, 'local_cria', 'content', $this->id, '/', $file->name);
-        // Update the file to indexing pending
-        $content_data = [
+        $moodlefile = $fs->get_file($context->id, 'local_cria', 'content', $this->id, '/', $file->name);
+        if (!$moodlefile) {
+            $DB->update_record('local_cria_files', (object) [
+                'id' => $file->id,
+                'indexed' => $FILE::INDEXING_FAILED,
+                'error_message' => json_encode(['message' => 'File not found in Moodle storage.'], JSON_PRETTY_PRINT),
+                'timemodified' => time(),
+                'usermodified' => $USER->id ?? 0,
+            ]);
+            return false;
+        }
+
+        $DB->update_record('local_cria_files', (object) [
             'id' => $file->id,
             'indexed' => $FILE::INDEXING_STARTED,
             'timemodified' => time(),
-            'usermodified' => $USER->id,
-        ];
-        $DB->update_record('local_cria_files', $content_data);
+            'usermodified' => $USER->id ?? 0,
+        ]);
 
-        // set bot parsing strategy
-        $bot_parsing_strategy = $BOT->get_parse_strategy();
-        // Insert file type
-        $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
-        // get file name
-        $file_name = $moodle_file->get_filename();
-        // Convert files to docx based on file type
-        // Copy file to path
-        $moodle_file->copy_content_to($path . '/' . $file_name);
-        // If $BOT->get_parse_strategy() is not equal to $data->parsingstrategy, then update $parsing_strategy
-        if ($file->parsingstrategy != $BOT->get_parse_strategy()) {
-            $bot_parsing_strategy = $file->parsingstrategy;
+        $botparsingstrategy = $BOT->get_parse_strategy();
+        $filename = $moodlefile->get_filename();
+        $filetype = $FILE->get_file_type_from_mime_type($moodlefile->get_mimetype());
+        if ($filetype === '') {
+            $filetype = $FILE->get_file_type_from_filename($filename);
         }
-        // Set parsing strategy based on file type.
-        $parsing_strategy = $PARSER->set_parsing_strategy_based_on_file_type(
-            $file_type,
-            $bot_parsing_strategy
-        );
-        // Get bot parameters to use proper model ids
-        $bot_parameters = json_decode($BOT->get_bot_parameters_json());
-//            mtrace('llm_model_id: ' . $bot_parameters->llm_model_id);
-//            mtrace('embedding_model_id: ' . $bot_parameters->embedding_model_id);
+        if ($filetype === '' && !empty($file->file_type)) {
+            $filetype = $file->file_type;
+        }
 
-        $results = $PARSER->execute(
-            $bot_parameters->llm_model_id,
-            $bot_parameters->embedding_model_id,
-            $parsing_strategy,
-            $path . '/' . $file_name
-        );
-        if ($results['status'] != 200) {
-            // Update file record with error and move on to the next file
-            $content_data['indexed'] = $FILE::INDEXING_FAILED;
-            $content_data['error_message'] = json_encode($results, JSON_PRETTY_PRINT);
-            $content_data['timemodified'] = time();
-            $DB->update_record('local_cria_files', $content_data);
-            api_response::log_issue(
-                'CriaParse file ' . $file_name . ' (intent ' . $this->id . ')',
-                (object) ['status' => $results['status'] ?? 0, 'message' => $results['message'] ?? json_encode($results)]
-            );
-        } else {
-            $nodes = $results['nodes'];
-            // Send nodes to indexing server
-            $upload = $FILE->upload_nodes_to_indexing_server($this->get_bot_name(), $nodes, $file_name, $file_type, false);
-            $content_data['nodes'] = json_encode($nodes, JSON_PRETTY_PRINT);
-            $content_data['timemodified'] = time();
+        $mimetype = $moodlefile->get_mimetype();
+        if ($mimetype === '' || $mimetype === 'application/octet-stream') {
+            $mimetype = $FILE->get_mime_type_for_parsing($filetype, $filename);
+        }
 
-            if (!api_response::is_success($upload)) {
-                // Update file record with error and move on to the next file
-                $content_data['indexed'] = $FILE::INDEXING_FAILED;
-                $content_data['error_message'] = api_response::error_message(
-                    $upload,
-                    get_string('sync_index_upload_failed', 'local_cria')
-                );
-                $DB->update_record('local_cria_files', $content_data);
-                api_response::log_issue(
-                    'Criabot document upload ' . $file_name . ' (intent ' . $this->id . ')',
-                    $upload
-                );
-            } else {
-                // Update file record with completed
-                $content_data['indexed'] = $FILE::INDEXING_COMPLETE;
-                $DB->update_record('local_cria_files', $content_data);
+        $moodlefile->copy_content_to($path . '/' . $filename);
+        if ($file->parsingstrategy != $BOT->get_parse_strategy()) {
+            $botparsingstrategy = $file->parsingstrategy;
+        }
+
+        $botparameters = json_decode($BOT->get_bot_parameters_json());
+        $llmmodelid = is_object($botparameters) ? (int) ($botparameters->llm_model_id ?? 0) : 0;
+        $embeddingmodelid = is_object($botparameters) ? (int) ($botparameters->embedding_model_id ?? 0) : 0;
+        $originalstrategy = criaparse::set_parsing_strategy_based_on_file_type(
+            $filetype,
+            $botparsingstrategy
+        );
+        $parsingstrategy = criaparse::resolve_indexing_strategy(
+            $filetype,
+            $botparsingstrategy,
+            $llmmodelid,
+            $embeddingmodelid
+        );
+
+        if ($parsingstrategy !== 'PARAGRAPH') {
+            if (
+                !is_object($botparameters)
+                || empty($botparameters->llm_model_id)
+                || empty($botparameters->embedding_model_id)
+            ) {
+                $DB->update_record('local_cria_files', (object) [
+                    'id' => $file->id,
+                    'indexed' => $FILE::INDEXING_FAILED,
+                    'error_message' => json_encode([
+                        'message' => get_string('sync_bot_missing_models', 'local_cria'),
+                    ], JSON_PRETTY_PRINT),
+                    'timemodified' => time(),
+                    'usermodified' => $USER->id ?? 0,
+                ]);
+                return false;
             }
         }
 
+        $results = criaparse::execute(
+            $parsingstrategy === 'PARAGRAPH' ? 0 : $botparameters->llm_model_id,
+            $parsingstrategy === 'PARAGRAPH' ? 0 : $botparameters->embedding_model_id,
+            $parsingstrategy,
+            $path . '/' . $filename,
+            $mimetype
+        );
+
+        if ($results === null || (int) ($results['status'] ?? 0) !== 200) {
+            $errormessage = $results['message'] ?? 'CriaParse request failed or returned no response.';
+            if (!empty($results['error'])) {
+                $errormessage .= ' ' . $results['error'];
+            }
+            $DB->update_record('local_cria_files', (object) [
+                'id' => $file->id,
+                'indexed' => $FILE::INDEXING_FAILED,
+                'error_message' => json_encode(
+                    $results ?? ['message' => 'CriaParse request failed or returned no response.'],
+                    JSON_PRETTY_PRINT
+                ),
+                'timemodified' => time(),
+                'usermodified' => $USER->id ?? 0,
+            ]);
+            api_response::log_issue(
+                'CriaParse file ' . $filename . ' (intent ' . $this->id . ')',
+                (object) [
+                    'status' => $results['status'] ?? 0,
+                    'message' => $errormessage,
+                ]
+            );
+            return false;
+        }
+
+        $nodes = $results['nodes'];
+        $upload = $FILE->upload_nodes_to_indexing_server($this->get_bot_name(), $nodes, $filename, $filetype, false);
+        $contentdata = (object) [
+            'id' => $file->id,
+            'nodes' => json_encode($nodes, JSON_PRETTY_PRINT),
+            'timemodified' => time(),
+            'usermodified' => $USER->id ?? 0,
+        ];
+
+        if (!api_response::is_success($upload)) {
+            $contentdata->indexed = $FILE::INDEXING_FAILED;
+            $contentdata->error_message = api_response::error_message(
+                $upload,
+                get_string('sync_index_upload_failed', 'local_cria')
+            );
+            $DB->update_record('local_cria_files', $contentdata);
+            api_response::log_issue(
+                'Criabot document upload ' . $filename . ' (intent ' . $this->id . ')',
+                $upload
+            );
+            return false;
+        }
+
+        $contentdata->indexed = $FILE::INDEXING_COMPLETE;
+        $DB->update_record('local_cria_files', $contentdata);
+        return true;
     }
 
 }

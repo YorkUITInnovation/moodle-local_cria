@@ -1,28 +1,28 @@
-<div class="card">
+<div class="card cria-questions-card" data-intent-id="{{id}}">
     <h3 class="card-header">
         <div class="col">
             <h3 class="float-left">{{#str}}questions, local_cria{{/str}}</h3>
         </div>
         <div class="col">
             <button type="button"
-                    id="criaDeleteSelectedQuestions"
-                    class="btn btn-link btn-lg float-right text-danger"
+                    class="cria-delete-selected-questions btn btn-link btn-lg float-right text-danger"
                     data-intent_id="{{id}}"
                     title="{{#str}}delete_all, local_cria{{/str}}"
             >
                 <i class="bi bi-x-circle"></i>
             </button>
             <!-- Export button -->
-            <button id="btnExportQuestions"
+                <button
                     type="button"
-                    class="btn btn-link btn-lg dropdown-toggle float-right"
+                    class="btn btn-link btn-lg dropdown-toggle float-right cria-export-questions"
                     title="{{#str}}export_questions, local_cria{{/str}}"
                     data-toggle="dropdown"
+                    data-bs-toggle="dropdown"
                     aria-haspopup="true"
                     aria-expanded="false">
                 <i class="bi bi-download"></i>
             </button>
-            <div class="dropdown-menu" aria-labelledby="btnExportQuestions">
+                <div class="dropdown-menu dropdown-menu-right">
                 <a class="dropdown-item"
                    href="{{config.wwwroot}}/local/cria/export/export_questions_excel.php?intent_id={{id}}"
                    title="Excel"
@@ -46,6 +46,7 @@
 
             <a type="button"
                     class="btn btn-link btn-lg ml-2 float-right cria-publish-questions"
+                    data-intent_id="{{id}}"
                     title="{{#str}}publish_questions, local_cria{{/str}}"
             >
                 <i class="bi bi-cloud-arrow-up"></i>
@@ -59,11 +60,11 @@
         </div>
     </h3>
     <div class="card-body">
-        <table id="cria-questions-table" class="table table-striped">
+        <table class="table table-striped cria-questions-table" data-intent-id="{{id}}">
             <thead>
             <tr>
                 <th>
-                    <input type="checkbox" id="cria-select-questions"/>
+                    <input type="checkbox" class="cria-select-questions"/>
 <!--                    <a-->
 <!--                        href="javascript:void(e);"-->
 <!--                        id="select-all-questions"-->

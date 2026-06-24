@@ -4,10 +4,12 @@ import ajax from 'core/ajax';
 import select2 from 'local_cria/select2';
 
 export const init = () => {
-    $('#id_keywords').select2({
-        'theme': 'classic',
-        'width': '100%'
-    });
+    if ($('#id_keywords').length) {
+        $('#id_keywords').select2({
+            'theme': 'classic',
+            'width': '100%'
+        });
+    }
     process_content();
     copy_nodes_to_clipboard();
     copy_error_message_to_clipboard();
@@ -19,7 +21,10 @@ export const init = () => {
 function process_content() {
     $("#id_submitbutton").off();
     $("#id_submitbutton").on('click', function () {
-        document.getElementById('cria-loader').style.display = 'flex';
+        const loader = document.getElementById('cria-loader');
+        if (loader) {
+            loader.style.display = 'flex';
+        }
     });
 }
 
@@ -27,8 +32,11 @@ function process_content() {
  * Copy contetns of nodes to the clipboard
  */
 function copy_nodes_to_clipboard() {
-    // When button cria-copy-nodes is clicked, copy the contents of the nodes to the clipboard. Do not use jQuery
-    document.getElementById('cria-copy-nodes').addEventListener('click', function() {
+    const button = document.getElementById('cria-copy-nodes');
+    if (!button) {
+        return;
+    }
+    button.addEventListener('click', function() {
         var nodes = document.getElementById('id_nodes');
         var range = document.createRange();
         range.selectNode(nodes);
@@ -51,8 +59,11 @@ function copy_nodes_to_clipboard() {
  * Copy contents of error_message to the clipboard
  */
 function copy_error_message_to_clipboard() {
-    // When button cria-copy-nodes is clicked, copy the contents of the nodes to the clipboard. Do not use jQuery
-    document.getElementById('cria-copy-error-message').addEventListener('click', function() {
+    const button = document.getElementById('cria-copy-error-message');
+    if (!button) {
+        return;
+    }
+    button.addEventListener('click', function() {
         var nodes = document.getElementById('id_error_message');
         var range = document.createRange();
         range.selectNode(nodes);

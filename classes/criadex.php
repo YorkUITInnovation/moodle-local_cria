@@ -261,4 +261,25 @@ class criadex
 
         return $groups;
     }
+
+    /**
+     * Return document file names already indexed in Criadex for a bot.
+     *
+     * @param int $botid
+     * @return string[]
+     * @throws \dml_exception
+     */
+    public static function list_document_file_names(int $botid): array
+    {
+        $groups = self::list_content($botid);
+        $documentindex = $groups->document_index ?? null;
+        if (!is_object($documentindex) || (int) ($documentindex->status ?? 0) !== 200) {
+            return [];
+        }
+        if (!isset($documentindex->files) || !is_array($documentindex->files)) {
+            return [];
+        }
+
+        return $documentindex->files;
+    }
 }

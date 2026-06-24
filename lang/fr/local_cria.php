@@ -53,12 +53,14 @@ $string['bot_api_key_instructions'] = 'La clé API et le nom du bot sont destin�
 $string['bot_api_key_help'] = 'La clé API est destinée à être utilisée directement avec CriaBot et non avec Cria elle-même. Si vous avez besoin d\'une clé API pour Cria, veuillez contacter l\'administrateur.';
 $string['bot_configuration'] = 'BotCraft';
 $string['bot_configuration_help'] = 'Créez facilement un bot en fournissant votre propre documentation et vos messages système.';
+$string['bot_created_success'] = 'Bot créé avec succès. Vous pouvez continuer à le configurer ci-dessous.';
 $string['bot_configurations'] = 'Configurations de bot';
 $string['bot_locale'] = 'Langue de synthèse vocale';
 $string['bot_locale_help'] = 'Sélectionnez la langue dans laquelle vous souhaitez que le bot parle.';
 $string['bot_models'] = 'Modèles';
 $string['bot_name'] = 'Nom du bot (utilisé avec CriaBot)';
 $string['bot_personality'] = 'Personnalité du bot';
+$string['bot_updated_success'] = 'Bot enregistré avec succès.';
 $string['bot_type'] = 'Type de bot';
 
 $string['bot_types'] = 'Types de bots';

@@ -304,6 +304,9 @@ class local_cria_external_content extends external_api {
         );
         // Get file type
         $file_type = $FILE->get_file_type_from_mime_type($moodle_file->get_mimetype());
+        if ($file_type === '') {
+            $file_type = $FILE->get_file_type_from_filename($filename);
+        }
         // Set parsing strategy
         if (empty($parsingstrategy)) {
             $parsingstrategy = $BOT->get_parse_strategy();
@@ -328,16 +331,7 @@ class local_cria_external_content extends external_api {
         // Delete temporary file
         unlink($file);
 
-        // Run adhoc task to index files
-        $task = new \local_cria\task\index_files_adhoc();
-        // Run task as logged in user
-        $task->set_userid($USER->id);
-        $task->set_custom_data([
-            'intent_id' => $intent_id,
-            'file_id' => $new_file_id,
-        ]);
-
-        \core\task\manager::queue_adhoc_task($task);
+        intent::schedule_index_file((int) $intent_id, (int) $new_file_id);
 
 
         return $new_file_id;
